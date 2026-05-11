@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       cancel_url: `${baseUrl}/api/payment/cancel?id=${orderId}`,
       ipn_url: `${baseUrl}/api/payment/ipn`,
       shipping_method: 'Courier',
-      product_name: 'BD Dukan Order',
+      product_name: 'ELYJEN Order',
       product_category: 'E-commerce',
       product_profile: 'general',
       cus_name: shippingAddress.fullName,
@@ -95,3 +95,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
+

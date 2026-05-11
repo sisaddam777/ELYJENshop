@@ -10,7 +10,7 @@ export async function getTenantDomain(): Promise<string> {
   // Strip port if present (e.g., localhost:3000 -> localhost)
   let domain = host.split(':')[0];
   
-  // Strip 'www.' if present for consistency (e.g., www.bd-dukan.com -> bd-dukan.com)
+  // Strip 'www.' if present for consistency (e.g., www.elyjen.shop -> elyjen.shop)
   if (domain.startsWith('www.')) {
     domain = domain.replace('www.', '');
   }
@@ -34,3 +34,4 @@ export function withTenant<T extends object>(data: T, domain: string): T & { dom
 export function forTenant<T extends object>(data: T, domain: string): T & { domain: string } {
   return withTenant(data, domain);
 }
+

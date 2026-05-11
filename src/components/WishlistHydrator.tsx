@@ -47,3 +47,4 @@ export function WishlistHydrator({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+

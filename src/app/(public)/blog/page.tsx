@@ -8,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const hostname = headersList.get('host') || 'localhost';
   const settings = await getCachedSettings(hostname);
-  const brandName = settings?.brandName || 'BD Dukan';
+  const brandName = settings?.brandName || 'ELYJEN';
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
   const baseUrl = `${protocol}://${hostname}`;
 
@@ -79,3 +79,4 @@ export default async function BlogListingPage({
     />
   );
 }
+

@@ -12,7 +12,7 @@ export default function LoadingSplash({
   brandName?: string;
 }) {
   const defaultWords = ["Quality", "Trust", "Shop", "Value"];
-  const words = brandName ? [brandName, ...defaultWords] : ["BD Dukan", ...defaultWords];
+  const words = brandName ? [brandName, ...defaultWords] : ["ELYJEN", ...defaultWords];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -100,3 +100,4 @@ export default function LoadingSplash({
     </div>
   );
 }
+

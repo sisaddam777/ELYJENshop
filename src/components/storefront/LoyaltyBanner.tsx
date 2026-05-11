@@ -54,7 +54,7 @@ export function LoyaltyBanner({ settings }: LoyaltyBannerProps) {
               background: 0x000000,
               shoulderLines: 0xFFFFFF,
               brokenLines: 0xFFFFFF,
-              leftCars: [0x0D8252, 0x064229, 0x0D8252], // Modified to match BD Dukan green brand
+              leftCars: [0x0D8252, 0x064229, 0x0D8252], // Modified to match ELYJEN green brand
               rightCars: [0xFFFFFF, 0xDDDDDD, 0xEEEEEE],
               sticks: 0x0D8252,
             }
@@ -70,7 +70,7 @@ export function LoyaltyBanner({ settings }: LoyaltyBannerProps) {
               Lifetime Rewards
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
-              JOIN THE <span className="text-primary">BD DUKAN</span> <br />
+              JOIN THE <span className="text-primary">ELYJEN</span> <br />
               LOYALTY CLUB
             </h2>
             <p className="text-gray-400 text-lg max-w-md">
@@ -121,3 +121,4 @@ export function LoyaltyBanner({ settings }: LoyaltyBannerProps) {
     </section>
   );
 }
+

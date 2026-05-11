@@ -87,3 +87,4 @@ export default function BlogDetailsV1({ blog, readingTime }: { blog: any, readin
     </div>
   );
 }
+

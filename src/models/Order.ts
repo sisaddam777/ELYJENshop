@@ -112,7 +112,7 @@ const OrderSchema: Schema<IOrder> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     isSalesCounted: { type: Boolean, default: false },
     manualPaymentDetails: {
@@ -128,3 +128,4 @@ const OrderSchema: Schema<IOrder> = new Schema(
 const Order: Model<IOrder> = mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
 
 export default Order;
+

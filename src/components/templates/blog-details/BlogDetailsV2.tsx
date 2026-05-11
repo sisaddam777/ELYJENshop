@@ -73,7 +73,7 @@ export default function BlogDetailsV2({ blog, readingTime }: BlogDetailsV2Props)
              </div>
              <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Words by</span>
-                <span className="text-sm font-bold">BD Dukan Editorial</span>
+                <span className="text-sm font-bold">ELYJEN Editorial</span>
              </div>
           </div>
         </header>
@@ -140,3 +140,4 @@ export default function BlogDetailsV2({ blog, readingTime }: BlogDetailsV2Props)
     </div>
   );
 }
+

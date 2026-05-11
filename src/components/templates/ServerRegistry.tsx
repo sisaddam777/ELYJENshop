@@ -95,3 +95,4 @@ export const BlogListingSelector = ({
     default: return <BlogListingV1 blogs={blogs} totalBlogs={totalBlogs} totalPages={totalPages} currentPage={currentPage} q={activeQ} style={activeStyle} />;
   }
 };
+

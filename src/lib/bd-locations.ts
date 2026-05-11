@@ -96,3 +96,4 @@ export const bdLocations: Record<string, string[]> = {
 };
 
 export const districts = Object.keys(bdLocations);
+

@@ -15,7 +15,7 @@ export default async function PublicLayout({ children }: { children: React.React
     console.error('Failed to fetch settings:', error);
   }
 
-  const marqueeText = settings?.marqueeText || 'Welcome to BD Dukan! Free shipping on orders over $500.';
+  const marqueeText = settings?.marqueeText || 'Welcome to ELYJEN! Free shipping on orders over $500.';
   const ui = {
     navbar: settings?.uiTemplates?.navbar || 'v1',
     footer: settings?.uiTemplates?.footer || 'v1',
@@ -30,3 +30,4 @@ export default async function PublicLayout({ children }: { children: React.React
     </>
   );
 }
+

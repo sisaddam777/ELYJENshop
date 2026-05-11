@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
     getCachedBanners(domain)
   ]);
 
-  const brandName = settings?.brandName || 'BD Dukan';
+  const brandName = settings?.brandName || 'ELYJEN';
   const description = settings?.siteDescription || 'Your ultimate destination for quality products.';
   const ogImage = banners?.[0]?.imageUrl || settings?.logo || '';
   
@@ -278,3 +278,4 @@ export default async function Home() {
     </div>
   );
 }
+

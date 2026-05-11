@@ -18,3 +18,4 @@ export type Product = ({ id: string; _id?: string } | { _id: string; id?: string
     [key: string]: any;
   };
 }
+

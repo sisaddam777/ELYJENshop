@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const aiConfig = settings?.aiConfig || {};
     
     const apiKey = aiConfig.openRouterApiKey || process.env.OPENROUTER_API_KEY;
-    const systemPrompt = aiConfig.systemPrompt || 'You are a helpful e-commerce assistant for BD Dukan.';
+    const systemPrompt = aiConfig.systemPrompt || 'You are a helpful e-commerce assistant for ELYJEN.';
 
     if (!apiKey) {
       console.error('OPENROUTER_API_KEY is missing');
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       apiKey: apiKey,
       defaultHeaders: {
         'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
-        'X-Title': `${settings?.brandName || 'BD Dukan'} - AI Assistant`,
+        'X-Title': `${settings?.brandName || 'ELYJEN'} - AI Assistant`,
       },
     });
 
@@ -86,3 +86,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to connect to AI' }, { status: 500 });
   }
 }
+

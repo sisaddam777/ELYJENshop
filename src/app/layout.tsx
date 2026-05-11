@@ -23,7 +23,8 @@ import {
   Quicksand,
   Josefin_Sans,
   Syne,
-  Space_Grotesk
+  Space_Grotesk,
+  Jost
 } from "next/font/google";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
@@ -170,6 +171,11 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+const jost = Jost({
+  variable: "--font-jost",
+  subsets: ["latin"],
+});
+
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -185,8 +191,8 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       metadataBase: new URL(baseUrl),
       title: {
-        default: settings.metaTitle || settings.brandName || "BD Dukan",
-        template: `%s | ${settings.brandName || "BD Dukan"}`,
+        default: settings.metaTitle || settings.brandName || "ELYJEN",
+        template: `%s | ${settings.brandName || "ELYJEN"}`,
       },
       description: settings.metaDescription || settings.brandName || "Your ultimate destination for quality products.",
       manifest: '/manifest.json',
@@ -198,21 +204,21 @@ export async function generateMetadata(): Promise<Metadata> {
       appleWebApp: {
         capable: true,
         statusBarStyle: 'default',
-        title: settings.brandName || "BD Dukan",
+        title: settings.brandName || "ELYJEN",
       },
       formatDetection: {
         telephone: false,
       },
       openGraph: {
-        title: settings.metaTitle || settings.brandName || "BD Dukan",
+        title: settings.metaTitle || settings.brandName || "ELYJEN",
         description: settings.metaDescription || settings.brandName || "Your ultimate destination for quality products.",
         url: baseUrl,
-        siteName: settings.brandName || "BD Dukan",
+        siteName: settings.brandName || "ELYJEN",
         type: 'website',
       },
       twitter: {
         card: 'summary_large_image',
-        title: settings.metaTitle || settings.brandName || "BD Dukan",
+        title: settings.metaTitle || settings.brandName || "ELYJEN",
         description: settings.metaDescription || settings.brandName || "Your ultimate destination for quality products.",
       },
       verification: {
@@ -229,7 +235,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   } catch (error) {
     return {
-      title: "BD Dukan",
+      title: "ELYJEN",
       description: "Your ultimate destination for quality products.",
     };
   }
@@ -286,7 +292,7 @@ export default async function RootLayout({
   const logoFontClass = `logo-font-${logoFont}`;
 
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${roboto.variable} ${montserrat.variable} ${playfair.variable} ${outfit.variable} ${lora.variable} ${manrope.variable} ${urbanist.variable} ${orbitron.variable} ${openSans.variable} ${lato.variable} ${oswald.variable} ${raleway.variable} ${nunito.variable} ${ubuntu.variable} ${merriweather.variable} ${kanit.variable} ${quicksand.variable} ${josefinSans.variable} ${syne.variable} ${spaceGrotesk.variable} ${themeClass} ${fontClass} ${logoFontClass}`} suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${roboto.variable} ${montserrat.variable} ${playfair.variable} ${outfit.variable} ${lora.variable} ${manrope.variable} ${urbanist.variable} ${orbitron.variable} ${openSans.variable} ${lato.variable} ${oswald.variable} ${raleway.variable} ${nunito.variable} ${ubuntu.variable} ${merriweather.variable} ${kanit.variable} ${quicksand.variable} ${josefinSans.variable} ${syne.variable} ${spaceGrotesk.variable} ${jost.variable} ${themeClass} ${fontClass} ${logoFontClass}`} suppressHydrationWarning>
       <head />
       <body
         className="antialiased min-h-full flex flex-col overflow-x-hidden font-sans"
@@ -345,3 +351,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

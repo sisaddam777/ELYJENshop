@@ -41,3 +41,4 @@ export default function ShopV1({ products, categories, searchParams, style }: { 
     </Suspense>
   );
 }
+

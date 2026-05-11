@@ -32,7 +32,7 @@ const BannerSchema: Schema<IBanner> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
   },
   { timestamps: true }
@@ -41,3 +41,4 @@ const BannerSchema: Schema<IBanner> = new Schema(
 const Banner: Model<IBanner> = mongoose.models.Banner || mongoose.model<IBanner>('Banner', BannerSchema);
 
 export default Banner;
+

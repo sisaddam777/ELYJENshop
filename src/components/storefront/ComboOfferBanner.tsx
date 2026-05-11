@@ -182,3 +182,4 @@ export function ComboOfferBanner({ activeCoupon, settings }: ComboOfferBannerPro
     </section>
   );
 }
+

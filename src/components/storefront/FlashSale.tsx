@@ -91,3 +91,4 @@ export function FlashSale({ products, saleEndTimestamp }: FlashSaleProps) {
     </section>
   );
 }
+

@@ -666,3 +666,4 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     </div>
   );
 }
+

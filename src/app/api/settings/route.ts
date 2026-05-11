@@ -16,7 +16,7 @@ export async function GET() {
     const settings = await GlobalSettings.findOne({ domain }).sort({ updatedAt: -1 });
     if (!settings) {
       return NextResponse.json({
-        brandName: process.env.NEXT_PUBLIC_STORE_NAME || "BD Dukan",
+        brandName: process.env.NEXT_PUBLIC_STORE_NAME || "ELYJEN",
         contact: {
           email: "support@bddukan.shop",
           phone: "+8801234567890",
@@ -31,8 +31,8 @@ export async function GET() {
           tiktok: '',
           whatsapp: ''
         },
-        marqueeText: "Welcome to BD Dukan!",
-        metaTitle: process.env.NEXT_PUBLIC_STORE_NAME || "BD Dukan",
+        marqueeText: "Welcome to ELYJEN!",
+        metaTitle: process.env.NEXT_PUBLIC_STORE_NAME || "ELYJEN",
         metaDescription: "The most popular online shop in Bangladesh.",
         logoUrl: "/logo.png",
         freeDeliveryThreshold: 0,
@@ -189,3 +189,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+

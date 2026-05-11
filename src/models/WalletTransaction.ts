@@ -34,7 +34,7 @@ const WalletTransactionSchema: Schema<IWalletTransaction> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
   },
   { timestamps: true }
@@ -48,3 +48,4 @@ const WalletTransaction: Model<IWalletTransaction> =
   mongoose.models.WalletTransaction || mongoose.model<IWalletTransaction>('WalletTransaction', WalletTransactionSchema);
 
 export default WalletTransaction;
+

@@ -29,34 +29,34 @@ export default function FooterV2() {
 
   const LINKS = {
     discovery: [
-      { label: 'Collection', href: '/shop' },
-      { label: 'Categories', href: '/categories' },
-      { label: 'Journal', href: '/blog' },
-      { label: 'Atelier', href: '/about' }
+      { label: 'Shop All', href: '/shop' },
+      { label: 'New Arrivals', href: '/shop?filter=new' },
+      { label: 'Best Sellers', href: '/shop?filter=popular' },
+      { label: 'Release Calendar', href: '/blog' }
     ],
     support: [
-      { label: 'Assistance', href: '/help' },
-      { label: 'Tracking', href: '/track' },
-      { label: 'Returns', href: '/returns' },
-      { label: 'Security', href: '/privacy' }
+      { label: 'Order Tracking', href: '/track-order' },
+      { label: 'Returns \u0026 Exchanges', href: '/returns' },
+      { label: 'Size Guide', href: '/size-guide' },
+      { label: 'Contact Support', href: '/contact' }
     ]
   };
 
   return (
-    <footer className="bg-black text-white pt-32 pb-12 px-6 overflow-hidden">
+    <footer className="bg-background border-t border-muted text-foreground pt-24 pb-12 px-6 font-jost">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 mb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
           
           {/* Brand Essence */}
-          <div className="lg:col-span-5 space-y-10">
-            <Link href="/" className="text-4xl font-black tracking-tighter hover:text-primary transition-colors">
-              BD DUKAN<span className="text-primary">.</span>
+          <div className="lg:col-span-4 space-y-8">
+            <Link href="/" className="text-4xl font-black tracking-tighter hover:text-primary transition-all inline-block italic">
+              ELYJEN<span className="text-primary">.</span>
             </Link>
-            <p className="text-neutral-500 text-lg max-w-sm leading-relaxed font-medium italic">
-              Curating high-precision commerce experiences for the modern explorer. Established in Dhaka, reaching globally.
+            <p className="text-muted-foreground text-base max-w-sm leading-relaxed font-medium">
+              Pushing the boundaries of footwear design. From performance athletics to high-street style. Born in the heart of Dhaka, engineering for the world.
             </p>
             {hasSocialLinks && (
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
                 {Object.entries(socialLinks).map(([platform, url]) => {
                   if (!url) return null;
                   const Icon = socialIconMap[platform];
@@ -68,10 +68,9 @@ export default function FooterV2() {
                       href={url as string} 
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Follow us on ${platform}`}
-                      className="h-12 w-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary transition-all group"
+                      className="h-10 w-10 rounded-full border border-muted flex items-center justify-center hover:bg-primary hover:border-primary transition-all group"
                     >
-                        <Icon className="h-5 w-5 text-neutral-400 group-hover:text-white" />
+                        <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary-foreground" />
                     </Link>
                   );
                 })}
@@ -80,25 +79,25 @@ export default function FooterV2() {
           </div>
 
           {/* Navigation Modules */}
-          <div className="lg:col-span-4 grid grid-cols-2 gap-12">
-             <div className="space-y-8">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Discovery</h4>
-                <ul className="space-y-4">
+          <div className="lg:col-span-5 grid grid-cols-2 gap-8">
+             <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-[0.4em] text-primary">Discovery</h4>
+                <ul className="space-y-3">
                    {LINKS.discovery.map(link => (
                      <li key={link.label}>
-                        <Link href={link.href} className="text-sm font-bold text-neutral-400 hover:text-white hover:tracking-widest transition-all">
+                        <Link href={link.href} className="text-sm font-bold text-muted-foreground hover:text-primary transition-all">
                            {link.label}
                         </Link>
                      </li>
                    ))}
                 </ul>
              </div>
-             <div className="space-y-8">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Assistance</h4>
-                <ul className="space-y-4">
+             <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-[0.4em] text-primary">Support</h4>
+                <ul className="space-y-3">
                    {LINKS.support.map(link => (
                      <li key={link.label}>
-                        <Link href={link.href} className="text-sm font-bold text-neutral-400 hover:text-white hover:tracking-widest transition-all">
+                        <Link href={link.href} className="text-sm font-bold text-muted-foreground hover:text-primary transition-all">
                            {link.label}
                         </Link>
                      </li>
@@ -107,35 +106,28 @@ export default function FooterV2() {
              </div>
           </div>
 
-          {/* Connect Module */}
-          <div className="lg:col-span-3 space-y-8">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">The Feed</h4>
-             <div className="space-y-6">
-                <p className="text-xs text-neutral-500 font-medium">Join our global network for elite updates and curated releases.</p>
+          {/* Newsletter */}
+          <div className="lg:col-span-3 space-y-6">
+             <h4 className="text-xs font-black uppercase tracking-[0.4em] text-primary">Newsletter</h4>
+             <div className="space-y-4">
+                <p className="text-xs text-muted-foreground font-medium">Get early access to drops and exclusive sneaker news.</p>
                 <form 
                   className="relative group"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    const email = (e.currentTarget.elements.namedItem('subscriptionEmail') as HTMLInputElement).value;
-                    if (email) {
-                      toast.success('Identity Registered. Welcome to the Network.');
-                      (e.target as HTMLFormElement).reset();
-                    }
+                    toast.success('You\u0027re on the list. Stay tuned.');
+                    (e.target as HTMLFormElement).reset();
                   }}
                 >
                    <input 
                     type="email"
-                    id="subscriptionEmail"
-                    name="subscriptionEmail"
-                    aria-label="Email address for subscription"
-                    className="w-full bg-transparent border-b border-white/20 pb-4 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-neutral-700" 
-                    placeholder="Enter Identity (Email)" 
+                    className="w-full bg-muted/30 border-b border-muted pb-3 text-sm focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50 font-bold" 
+                    placeholder="Enter email" 
                     required
                    />
                    <button 
                     type="submit"
-                    aria-label="Subscribe to newsletter"
-                    className="absolute right-0 bottom-4 text-primary hover:translate-x-2 transition-transform"
+                    className="absolute right-0 bottom-3 text-primary hover:scale-110 transition-transform"
                    >
                       <ArrowUpRight className="h-5 w-5" />
                    </button>
@@ -144,17 +136,18 @@ export default function FooterV2() {
           </div>
         </div>
 
-        {/* Legal Architectural Layer */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 text-[9px] font-black uppercase tracking-[0.3em] text-neutral-600">
-           <p>© {currentYear} BD DUKAN PREMIUM ATELIER. ALL RIGHTS RESERVED.</p>
-           <div className="flex items-center gap-12">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Protocol</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-              <Link href="/sitemap" className="hover:text-primary transition-colors">Architecture</Link>
+        {/* Bottom Bar */}
+        <div className="pt-10 border-t border-muted flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+           <p>© {currentYear} ELYJEN CO. ALL RIGHTS RESERVED.</p>
+           <div className="flex items-center gap-8">
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link href="/cookies" className="hover:text-primary transition-colors">Cookies</Link>
            </div>
-           <DeveloperLogo className="opacity-40 grayscale hover:grayscale-0 hover:opacity-100 invert" />
+           <DeveloperLogo className="opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all" />
         </div>
       </div>
     </footer>
   );
 }
+

@@ -55,3 +55,4 @@ export async function migrateGlobalSettings() {
     throw error;
   }
 }
+

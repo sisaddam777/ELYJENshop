@@ -17,3 +17,4 @@ export function ViewTracker({ id, type }: ViewTrackerProps) {
 
   return null;
 }
+

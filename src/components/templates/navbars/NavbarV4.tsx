@@ -73,7 +73,7 @@ export default function NavbarV4() {
 
         {/* Branding */}
         <Link href="/" className="text-2xl md:text-3xl font-black text-white shrink-0 tracking-tighter flex items-center gap-1">
-          BD DUKAN<span className="text-primary italic">SHOP</span>
+          ELYJEN<span className="text-primary italic">SHOP</span>
         </Link>
 
         {/* Professional Search System */}
@@ -267,3 +267,4 @@ export default function NavbarV4() {
     </nav>
   );
 }
+

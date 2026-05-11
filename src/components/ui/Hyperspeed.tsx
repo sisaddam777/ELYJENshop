@@ -1287,3 +1287,4 @@ const Hyperspeed: React.FC<HyperspeedProps> = ({ effectOptions = DEFAULT_EFFECT_
 };
 
 export default Hyperspeed;
+

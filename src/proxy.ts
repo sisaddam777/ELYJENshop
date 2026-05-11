@@ -9,8 +9,8 @@ export const proxy = auth(async (req) => {
   // Host detection
   const host = req.headers.get("host") || "";
   const hostname = host.split(':')[0].replace(/^www\./, '');
-  const isHub = hostname === 'bd-dukan.com' || 
-                hostname.endsWith('.bd-dukan.com') || 
+  const isHub = hostname === 'elyjen.shop' || 
+                hostname.endsWith('.elyjen.shop') || 
                 hostname === 'localhost';
 
   const isAdminRoute = nextUrl.pathname.startsWith("/admin");
@@ -60,3 +60,4 @@ export const proxy = auth(async (req) => {
 export const config = {
   matcher: ["/admin/:path*", "/login", "/register"],
 };
+

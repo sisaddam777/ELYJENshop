@@ -104,3 +104,4 @@ export function FAQSection({ faqs }: { faqs: FAQItem[] }) {
         </section>
     );
 }
+

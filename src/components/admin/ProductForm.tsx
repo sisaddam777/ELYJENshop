@@ -823,3 +823,4 @@ export function ProductForm({ initialData }: ProductFormProps) {
     </Form>
   );
 }
+

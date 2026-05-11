@@ -38,3 +38,4 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     sitemap: `${BASE_URL}/sitemap.xml`,
   };
 }
+

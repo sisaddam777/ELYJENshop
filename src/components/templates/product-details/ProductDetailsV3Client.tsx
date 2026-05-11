@@ -318,3 +318,4 @@ export default function ProductDetailsV3Client({ product }: ProductDetailsV3Clie
     </div>
   );
 }
+

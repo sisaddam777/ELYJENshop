@@ -200,3 +200,4 @@ export function QuickAddModal({ product, isOpen, onClose }: QuickAddModalProps) 
     </Dialog>
   );
 }
+

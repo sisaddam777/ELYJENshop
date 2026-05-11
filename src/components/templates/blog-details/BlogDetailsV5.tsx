@@ -74,3 +74,4 @@ export default function BlogDetailsV5({ blog, readingTime }: BlogDetailsV5Props)
     </div>
   );
 }
+

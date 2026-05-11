@@ -178,3 +178,4 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
         </Popover>
     );
 };
+

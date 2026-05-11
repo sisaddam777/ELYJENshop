@@ -29,7 +29,7 @@ const ExpenseSchema: Schema<IExpense> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
   },
   { timestamps: true }
@@ -38,3 +38,4 @@ const ExpenseSchema: Schema<IExpense> = new Schema(
 const Expense: Model<IExpense> = mongoose.models.Expense || mongoose.model<IExpense>('Expense', ExpenseSchema);
 
 export default Expense;
+

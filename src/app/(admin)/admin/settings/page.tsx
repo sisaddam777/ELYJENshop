@@ -265,7 +265,7 @@ export default function SettingsPage() {
                       <FormItem>
                         <FormLabel>Brand Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="BD Dukan" {...field} className="h-12 rounded-xl" />
+                          <Input placeholder="ELYJEN" {...field} className="h-12 rounded-xl" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Global Meta Title</FormLabel>
                           <FormControl>
-                            <Input placeholder="BD Dukan | Best Ecommerce in BD" {...field} />
+                            <Input placeholder="ELYJEN | Best Ecommerce in BD" {...field} />
                           </FormControl>
                           <FormDescription>Used as the primary browser title for the home page.</FormDescription>
                           <FormMessage />
@@ -323,7 +323,7 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Global Meta Description</FormLabel>
                           <FormControl>
-                            <Input placeholder="Shop the best products at BD Dukan..." {...field} />
+                            <Input placeholder="Shop the best products at ELYJEN..." {...field} />
                           </FormControl>
                           <FormDescription>Used for search engine snippets and social sharing.</FormDescription>
                           <FormMessage />
@@ -700,3 +700,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

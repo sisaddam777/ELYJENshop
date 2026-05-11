@@ -47,3 +47,4 @@ export function BlogSearch({ defaultValue = '' }: { defaultValue?: string }) {
     </div>
   );
 }
+

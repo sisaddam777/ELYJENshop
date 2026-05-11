@@ -34,7 +34,7 @@ const BlogSchema: Schema = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com' // Safe default for existing docs
+      default: 'elyjen.shop' // Safe default for existing docs
     },
     metaTitle: { 
       type: String, 
@@ -74,3 +74,4 @@ const BlogSchema: Schema = new Schema(
 BlogSchema.index({ slug: 1, domain: 1 }, { unique: true });
 
 export default mongoose.models.Blog || mongoose.model<IBlog>('Blog', BlogSchema);
+

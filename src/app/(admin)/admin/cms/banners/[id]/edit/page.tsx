@@ -54,3 +54,4 @@ export default function EditBannerPage({ params }: { params: Promise<{ id: strin
     </div>
   );
 }
+

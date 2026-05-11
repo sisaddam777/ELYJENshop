@@ -246,3 +246,4 @@ export function CouponForm({ initialData, onSuccess }: CouponFormProps) {
     </Form>
   );
 }
+

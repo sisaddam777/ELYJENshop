@@ -28,7 +28,7 @@ const CouponSchema: Schema<ICoupon> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     discountType: { 
       type: String, 
@@ -64,3 +64,4 @@ CouponSchema.index({ code: 1, domain: 1 }, { unique: true });
 const Coupon: Model<ICoupon> = mongoose.models.Coupon || mongoose.model<ICoupon>('Coupon', CouponSchema);
 
 export default Coupon;
+

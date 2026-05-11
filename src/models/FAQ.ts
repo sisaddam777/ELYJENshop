@@ -21,7 +21,7 @@ const FAQSchema: Schema<IFAQ> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     isActive: { type: Boolean, default: true },
   },
@@ -34,3 +34,4 @@ FAQSchema.index({ domain: 1, isActive: 1 });
 const FAQ: Model<IFAQ> = mongoose.models.FAQ || mongoose.model<IFAQ>('FAQ', FAQSchema);
 
 export default FAQ;
+

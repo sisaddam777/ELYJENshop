@@ -14,7 +14,7 @@ const reviews = [
   {
     name: "Ariful Islam",
     role: "Verified Buyer",
-    content: "The quality of the products is amazing. I was skeptical about ordering online, but BD Dukan proved me wrong. Delivery was super fast too!",
+    content: "The quality of the products is amazing. I was skeptical about ordering online, but ELYJEN proved me wrong. Delivery was super fast too!",
     avatar: "https://i.pravatar.cc/150?u=1"
   },
   {
@@ -116,3 +116,4 @@ export function Testimonials() {
     </section>
   );
 }
+

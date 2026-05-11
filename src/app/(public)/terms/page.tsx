@@ -5,8 +5,8 @@ import { Separator } from '@/components/ui/separator';
 import { FileText, ShoppingBag, Truck, UserCheck, Scale, HelpCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions | BD Dukan',
-  description: 'Understand the terms and conditions for shopping at BD Dukan.',
+  title: 'Terms & Conditions | ELYJEN',
+  description: 'Understand the terms and conditions for shopping at ELYJEN.',
 };
 
 async function getSettings() {
@@ -17,7 +17,7 @@ async function getSettings() {
     const settings = await GlobalSettings.findOne({ domain }).lean();
     if (!settings) {
       return {
-        brandName: "BD Dukan",
+        brandName: "ELYJEN",
         contact: {
           email: "support@bddukan.shop",
           phone: "+8801234567890"
@@ -39,7 +39,7 @@ async function getSettings() {
 
 export default async function TermsPage() {
   const settings = await getSettings();
-  const brandName = settings.brandName || "BD Dukan";
+  const brandName = settings.brandName || "ELYJEN";
   const contactEmail = settings.contact?.email || "support@bddukan.shop";
   const lastUpdated = "April 04, 2026";
 
@@ -192,3 +192,4 @@ export default async function TermsPage() {
     </div>
   );
 }
+

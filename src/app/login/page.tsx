@@ -42,14 +42,14 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const remoteTenant = searchParams.get('remote_tenant');
-  const hubDomain = process.env.NEXT_PUBLIC_HUB_DOMAIN || 'www.bd-dukan.com';
+  const hubDomain = process.env.NEXT_PUBLIC_HUB_DOMAIN || 'www.elyjen.shop';
 
   // Force WWW in production for consistency and to avoid Auth mismatch
   useEffect(() => {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
       const host = window.location.host;
-      if (host === 'bd-dukan.com') {
-        window.location.href = `https://www.bd-dukan.com${window.location.pathname}${window.location.search}`;
+      if (host === 'elyjen.shop') {
+        window.location.href = `https://www.elyjen.shop${window.location.pathname}${window.location.search}`;
       }
     }
   }, []);
@@ -82,8 +82,8 @@ export default function LoginPage() {
     try {
       const host = window.location.host;
       const currentHost = window.location.hostname.replace(/^www\./, '');
-      const isHub = currentHost === 'bd-dukan.com' || 
-                    currentHost.endsWith('.bd-dukan.com') || 
+      const isHub = currentHost === 'elyjen.shop' || 
+                    currentHost.endsWith('.elyjen.shop') || 
                     currentHost === 'localhost';
 
       if (!isHub) {
@@ -173,7 +173,7 @@ export default function LoginPage() {
           >
             <h2 className="text-4xl font-bold text-white mb-4 font-serif">Discover the Best Deals</h2>
             <p className="text-lg text-white/80 max-w-md">
-              Join BD Dukan today and get access to exclusive offers, personalized recommendations, and a seamless shopping experience.
+              Join ELYJEN today and get access to exclusive offers, personalized recommendations, and a seamless shopping experience.
             </p>
           </motion.div>
         </div>
@@ -342,3 +342,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

@@ -390,3 +390,4 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
     </div>
   );
 }
+

@@ -109,3 +109,4 @@ const cartSlice = createSlice({
 
 export const { addToCart, removeFromCart, clearCart, hydrateCart, setHydrated } = cartSlice.actions;
 export default cartSlice.reducer;
+

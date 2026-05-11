@@ -102,3 +102,4 @@ export default function HeroV4({ banners }: HeroV4Props) {
     </section>
   );
 }
+

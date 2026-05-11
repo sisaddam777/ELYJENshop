@@ -24,7 +24,7 @@ const CategorySchema: Schema<ICategory> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
   },
   { timestamps: true }
@@ -47,3 +47,4 @@ CategorySchema.pre('save', function (this: any) {
 const Category: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 
 export default Category;
+

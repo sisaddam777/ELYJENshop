@@ -248,3 +248,4 @@ export default function HeroV1({ banners }: HeroSliderProps) {
     </section>
   );
 }
+

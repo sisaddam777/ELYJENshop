@@ -375,3 +375,4 @@ export default function ProductDetailsV4Client({ product }: ProductDetailsV4Clie
     </div>
   );
 }
+

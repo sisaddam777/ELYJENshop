@@ -120,3 +120,4 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ s
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
+

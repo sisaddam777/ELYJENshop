@@ -9,3 +9,4 @@ const CrazySpinner = () => {
 };
 
 export default CrazySpinner;
+

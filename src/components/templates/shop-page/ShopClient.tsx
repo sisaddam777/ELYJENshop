@@ -392,3 +392,4 @@ export default function ShopClient({ initialProducts, initialCategories, searchP
     </div>
   );
 }
+

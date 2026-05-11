@@ -106,3 +106,4 @@ export function ImageUpload({ onUpload, value, label, className, iconClassName }
     </div>
   );
 }
+

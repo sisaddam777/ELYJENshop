@@ -115,3 +115,4 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
     </>
   );
 }
+

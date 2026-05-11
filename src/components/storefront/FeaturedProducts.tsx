@@ -46,3 +46,4 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
   );
 }
 
+

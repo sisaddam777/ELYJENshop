@@ -34,3 +34,4 @@ export function AddToCartButton({ product, className }: AddToCartButtonProps) {
     </Button>
   );
 }
+

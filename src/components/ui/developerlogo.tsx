@@ -34,3 +34,4 @@ const DeveloperLogo = ({ className = "" }: DeveloperLogoProps) => {
 };
 
 export default DeveloperLogo;
+

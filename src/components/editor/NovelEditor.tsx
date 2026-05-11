@@ -140,3 +140,4 @@ export default function NovelEditor({ initialValue, onChange, readOnly = false }
         </div >
     );
 }
+

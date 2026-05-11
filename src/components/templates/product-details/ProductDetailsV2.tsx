@@ -53,3 +53,4 @@ export default async function ProductDetailsV2({ product }: { product: any }) {
     </div>
   );
 }
+

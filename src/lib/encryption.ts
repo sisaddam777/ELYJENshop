@@ -115,3 +115,4 @@ export function decrypt(text: string | null | undefined): string | null {
     return null; 
   }
 }
+

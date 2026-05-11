@@ -360,3 +360,4 @@ export default function ProductDetailsV5Client({ product }: ProductDetailsV5Clie
     </div>
   );
 }
+

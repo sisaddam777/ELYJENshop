@@ -69,3 +69,4 @@ export default function CategoryV3({ categories }: CategoryV3Props) {
     </section>
   );
 }
+

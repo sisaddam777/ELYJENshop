@@ -25,7 +25,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const domain = await getTenantDomain();
   const settings = await getCachedSettings(domain);
 
-  const brandName = settings?.brandName || 'BD Dukan';
+  const brandName = settings?.brandName || 'ELYJEN';
   const themeName = settings?.uiTemplates?.theme?.toLowerCase() || 'default';
   const themeColor = THEME_COLORS[themeName] || THEME_COLORS.default;
 
@@ -53,3 +53,4 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     ],
   };
 }
+

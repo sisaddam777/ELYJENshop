@@ -45,3 +45,4 @@ function Slider({
 }
 
 export { Slider }
+

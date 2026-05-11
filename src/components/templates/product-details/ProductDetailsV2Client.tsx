@@ -377,3 +377,4 @@ export default function ProductDetailsV2Client({ product }: ProductDetailsV2Clie
     </div>
   );
 }
+

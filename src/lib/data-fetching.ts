@@ -268,3 +268,4 @@ export const getCachedActiveCoupon = (domain: string) => {
     { revalidate: 3600, tags: [CACHE_TAGS.coupons] }
   )();
 };
+

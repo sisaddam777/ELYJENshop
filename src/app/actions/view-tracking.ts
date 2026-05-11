@@ -22,3 +22,4 @@ export async function trackView(id: string, type: 'product' | 'blog') {
     return { success: false };
   }
 }
+

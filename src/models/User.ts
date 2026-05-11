@@ -54,7 +54,7 @@ const UserSchema: Schema<IUser> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     password: { type: String, select: false },
     role: { type: String, enum: ['super_admin', 'admin', 'user'], default: 'user' },
@@ -104,3 +104,4 @@ UserSchema.pre('save', async function () {
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User;
+

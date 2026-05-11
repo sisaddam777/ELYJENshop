@@ -54,3 +54,4 @@ export default function EditFAQPage({ params }: { params: Promise<{ id: string }
     </div>
   );
 }
+

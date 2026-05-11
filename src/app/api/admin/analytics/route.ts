@@ -274,3 +274,4 @@ function formatDate(daysAgo: number) {
 function formatGaDate(gaDate: string) {
   return `${gaDate.slice(0, 4)}-${gaDate.slice(4, 6)}-${gaDate.slice(6, 8)}`;
 }
+

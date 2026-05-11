@@ -173,3 +173,4 @@ export function ExpenseForm({ initialData, onSuccess }: ExpenseFormProps) {
     </Form>
   );
 }
+

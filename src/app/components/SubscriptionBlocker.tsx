@@ -48,3 +48,4 @@ export default function SubscriptionBlocker({ brandName, expiryDate }: Subscript
     </div>
   );
 }
+

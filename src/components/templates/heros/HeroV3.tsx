@@ -117,3 +117,4 @@ export default function HeroV3({ banners, onPlay }: HeroV3Props) {
     </section>
   );
 }
+

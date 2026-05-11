@@ -46,3 +46,4 @@ async function connectToDatabase() {
 }
 
 export default connectToDatabase;
+

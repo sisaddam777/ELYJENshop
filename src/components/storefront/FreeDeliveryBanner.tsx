@@ -29,3 +29,4 @@ export function FreeDeliveryBanner({ settings }: FreeDeliveryBannerProps) {
     </div>
   );
 }
+

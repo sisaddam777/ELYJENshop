@@ -64,3 +64,4 @@ export default function CategoryV4({ categories }: CategoryV4Props) {
     </section>
   );
 }
+

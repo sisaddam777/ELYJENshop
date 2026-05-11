@@ -152,7 +152,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     storeId: { type: String, required: false, unique: false }, // Will be set to required: true, unique: true after migration
     paymentConfig: {
@@ -193,18 +193,18 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     },
     uiTemplates: {
       layout: { type: String, default: 'fashion' },
-      navbar: { type: String, default: 'v1' },
-      hero: { type: String, default: 'v1' },
+      navbar: { type: String, default: 'v2' },
+      hero: { type: String, default: 'v2' },
       categories: { type: String, default: 'v1' },
-      productCard: { type: String, default: 'v1' },
+      productCard: { type: String, default: 'v6' },
       productDetail: { type: String, default: 'v1' },
       blogDetail: { type: String, default: 'v1' },
       shopListing: { type: String, default: 'v1' },
       blogListing: { type: String, default: 'v1' },
-      footer: { type: String, default: 'v1' },
-      theme: { type: String, default: 'green' },
-      logoFont: { type: String, default: 'orbitron' },
-      bodyFont: { type: String, default: 'inter' },
+      footer: { type: String, default: 'v2' },
+      theme: { type: String, default: 'black' },
+      logoFont: { type: String, default: 'jost' },
+      bodyFont: { type: String, default: 'jost' },
     },
     saasSubscription: {
       expiryDate: { type: Date, required: true, index: true },
@@ -243,3 +243,4 @@ const GlobalSettings: Model<IGlobalSettings> =
   mongoose.models.GlobalSettings || mongoose.model<IGlobalSettings>('GlobalSettings', GlobalSettingsSchema);
 
 export default GlobalSettings;
+

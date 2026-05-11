@@ -44,7 +44,7 @@ export default function NavbarV5() {
              <div className="h-12 w-12 bg-primary rounded-[1.5rem_0.5rem_1.5rem_0.5rem] rotate-45 group-hover:rotate-0 transition-all duration-700 flex items-center justify-center">
                 <span className="text-white font-black text-2xl -rotate-45 group-hover:rotate-0 transition-all">B</span>
              </div>
-             <span className="text-2xl font-black tracking-tighter hidden md:block">BD Dukan.</span>
+             <span className="text-2xl font-black tracking-tighter hidden md:block">ELYJEN.</span>
           </Link>
 
           {/* Centered Artistic Nav */}
@@ -236,3 +236,4 @@ export default function NavbarV5() {
     </nav>
   );
 }
+

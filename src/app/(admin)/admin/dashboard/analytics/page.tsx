@@ -387,3 +387,4 @@ function getMockData() {
     visitorTrends: [], searchTrends: [], topPages: [], topQueries: [], deviceData: [], countryData: [], sourceData: [], retentionData: []
   }
 }
+

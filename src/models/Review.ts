@@ -25,7 +25,7 @@ const ReviewSchema: Schema<IReview> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   },
@@ -35,3 +35,4 @@ const ReviewSchema: Schema<IReview> = new Schema(
 const Review: Model<IReview> = mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
 
 export default Review;
+

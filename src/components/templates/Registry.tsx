@@ -42,6 +42,7 @@ import ProductCardV2 from './product-cards/ProductCardV2';
 import ProductCardV3 from './product-cards/ProductCardV3';
 import ProductCardV4 from './product-cards/ProductCardV4';
 import ProductCardV5 from './product-cards/ProductCardV5';
+import ProductCardV6 from './product-cards/ProductCardV6';
 
 export const ProductCardSelector = ({ style, product, isFlashSale }: { style: string, product: any, isFlashSale?: boolean }) => {
   switch (style) {
@@ -50,6 +51,7 @@ export const ProductCardSelector = ({ style, product, isFlashSale }: { style: st
     case 'v3': return <ProductCardV3 product={product} isFlashSale={isFlashSale} />;
     case 'v4': return <ProductCardV4 product={product} isFlashSale={isFlashSale} />;
     case 'v5': return <ProductCardV5 product={product} isFlashSale={isFlashSale} />;
+    case 'v6': return <ProductCardV6 product={product} isFlashSale={isFlashSale} />;
     default: return <ProductCardV1 product={product} isFlashSale={isFlashSale} />;
   }
 };
@@ -63,3 +65,4 @@ export const CategorySelector = ({ style, categories }: { style: string, categor
     default: return <CategoryV1 categories={categories} />;
   }
 };
+

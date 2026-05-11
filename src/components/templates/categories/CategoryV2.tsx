@@ -62,3 +62,4 @@ export default function CategoryV2({ categories }: CategoryV2Props) {
     </section>
   );
 }
+

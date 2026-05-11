@@ -44,3 +44,4 @@ export interface ShippingProvider {
   createOrder(data: ShippingOrderData): Promise<ShippingOrderResponse>;
   trackOrder(trackingId: string): Promise<OrderTrackingResponse>;
 }
+

@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     console.warn('Hub Callback: No target found, redirecting to hub dashboard');
     const isProd = process.env.NODE_ENV === 'production';
     const hubDashUrl = isProd 
-      ? 'https://www.bd-dukan.com/dashboard' 
+      ? 'https://www.elyjen.shop/dashboard' 
       : new URL('/dashboard', req.url).toString();
     return NextResponse.redirect(hubDashUrl);
   }
@@ -67,3 +67,4 @@ export async function GET(req: NextRequest) {
   response.headers.set('Referrer-Policy', 'no-referrer');
   return response;
 }
+

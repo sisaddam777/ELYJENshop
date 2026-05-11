@@ -286,3 +286,4 @@ export default function ProductCardV4({ product, isFlashSale }: ProductCardProps
     </div>
   );
 }
+

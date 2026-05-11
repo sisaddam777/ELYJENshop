@@ -5,8 +5,8 @@ import { Separator } from '@/components/ui/separator';
 import { ShieldCheck, Info, Share2, Lock, Eye, Bell } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | BD Dukan',
-  description: 'Learn how BD Dukan collects, uses, and protects your personal information.',
+  title: 'Privacy Policy | ELYJEN',
+  description: 'Learn how ELYJEN collects, uses, and protects your personal information.',
 };
 
 async function getSettings() {
@@ -17,7 +17,7 @@ async function getSettings() {
     const settings = await GlobalSettings.findOne({ domain }).lean();
     if (!settings) {
       return {
-        brandName: "BD Dukan",
+        brandName: "ELYJEN",
         contact: {
           email: "support@bddukan.shop"
         }
@@ -37,7 +37,7 @@ async function getSettings() {
 
 export default async function PrivacyPage() {
   const settings = await getSettings();
-  const brandName = settings.brandName || "BD Dukan";
+  const brandName = settings.brandName || "ELYJEN";
   const contactEmail = settings.contact?.email || "support@bddukan.shop";
   const lastUpdated = "April 04, 2026";
 
@@ -183,3 +183,4 @@ export default async function PrivacyPage() {
     </div>
   );
 }
+

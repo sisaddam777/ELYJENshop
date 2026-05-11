@@ -64,7 +64,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
       index: true,
       trim: true,
       lowercase: true,
-      default: 'bd-dukan.com'
+      default: 'elyjen.shop'
     },
     stock: { type: Number, required: true, default: 0, min: [0, 'Stock cannot be negative'] },
     categories: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
@@ -136,3 +136,4 @@ ProductSchema.pre('validate', function(this: any) {
 const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
 
 export default Product;
+

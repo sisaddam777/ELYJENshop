@@ -40,3 +40,4 @@ const PageContent: Model<IPageContent> =
   mongoose.models.PageContent || mongoose.model<IPageContent>('PageContent', PageContentSchema);
 
 export default PageContent;
+

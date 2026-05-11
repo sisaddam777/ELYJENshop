@@ -30,3 +30,4 @@ const SliderSchema: Schema<ISlider> = new Schema(
 const Slider: Model<ISlider> = mongoose.models.Slider || mongoose.model<ISlider>('Slider', SliderSchema);
 
 export default Slider;
+

@@ -38,3 +38,4 @@ export async function uploadToImgBB(file: File | string): Promise<string> {
     throw error;
   }
 }
+

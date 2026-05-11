@@ -55,3 +55,4 @@ export async function GET() {
     return NextResponse.json({ activeUsersNow: 0, message: 'Failed to fetch realtime data' }, { status: 500 });
   }
 }
+

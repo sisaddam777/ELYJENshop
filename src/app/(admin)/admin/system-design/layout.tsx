@@ -11,3 +11,4 @@ export default async function SystemDesignLayout({ children }: { children: React
 
   return <>{children}</>;
 }
+

@@ -76,3 +76,4 @@ export default function CategoryV5({ categories }: CategoryV5Props) {
     </section>
   );
 }
+

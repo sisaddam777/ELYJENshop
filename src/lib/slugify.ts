@@ -21,3 +21,4 @@ export const slugify = (text: string): string => {
   .slice(0, 100)               // Limit length
   .replace(/^-+|-+$/g, '');    // Trim dashes from start and end
 };
+
