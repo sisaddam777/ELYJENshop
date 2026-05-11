@@ -20,8 +20,8 @@ export default function HeroV2({ banners }: HeroV2Props) {
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black font-jost">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        <Image 
-          src={image} 
+        <Image
+          src={image}
           alt={title}
           fill
           priority
@@ -37,7 +37,7 @@ export default function HeroV2({ banners }: HeroV2Props) {
             <Sparkles className="h-3 w-3" />
             Limited Drop 2026
           </div>
-          
+
           <h1 className="text-6xl md:text-[12rem] font-black tracking-[calc(-0.05em)] leading-none text-white uppercase italic">
             {title}
           </h1>
@@ -77,8 +77,6 @@ export default function HeroV2({ banners }: HeroV2Props) {
         </div>
       </div>
     </section>
-  );
-}
   );
 }
 
