@@ -57,6 +57,7 @@
 .logo-font-syne { --active-font-logo: var(--font-syne); }
 .logo-font-space-grotesk { --active-font-logo: var(--font-space-grotesk); }
 .logo-font-geist { --active-font-logo: var(--font-geist-sans); }
+.logo-font-jost { --active-font-logo: var(--font-jost); }
 
 @theme inline {
   --color-background: var(--background);
