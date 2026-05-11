@@ -17,13 +17,14 @@ export default async function PublicLayout({ children }: { children: React.React
 
   const marqueeText = settings?.marqueeText || 'Welcome to ELYJEN! Free shipping on orders over $500.';
   const ui = {
+    layout: settings?.uiTemplates?.layout || 'v1',
     navbar: settings?.uiTemplates?.navbar || 'v1',
     footer: settings?.uiTemplates?.footer || 'v1',
   };
 
   return (
     <>
-      <Marquee marqueeText={marqueeText} />
+      {ui.layout !== 'v2' && <Marquee marqueeText={marqueeText} />}
       <Navbar style={ui.navbar} />
       <main className="flex-1">{children}</main>
       <Footer style={ui.footer} />

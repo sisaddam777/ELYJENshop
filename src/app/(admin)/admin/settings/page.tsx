@@ -86,6 +86,7 @@ const settingsSchema = z.object({
     theme: z.string().default('green'),
     logoFont: z.string().default('orbitron'),
     bodyFont: z.string().default('inter'),
+    layout: z.string().default('v1'),
   }).optional(),
 });
 
@@ -124,6 +125,7 @@ export default function SettingsPage() {
         theme: 'green',
         logoFont: 'orbitron',
         bodyFont: 'inter',
+        layout: 'v1',
       },
     },
   });
@@ -167,11 +169,12 @@ export default function SettingsPage() {
                   rewardPercentage: result.data.subscriptionConfig?.rewardPercentage ?? 5,
                 },
                 logoUrl: result.data.logoUrl || '',
-                uiTemplates: {
-                  theme: result.data.uiTemplates?.theme || 'green',
-                  logoFont: result.data.uiTemplates?.logoFont || 'orbitron',
-                  bodyFont: result.data.uiTemplates?.bodyFont || 'inter',
-                },
+                  uiTemplates: {
+                    theme: result.data.uiTemplates?.theme || 'green',
+                    logoFont: result.data.uiTemplates?.logoFont || 'orbitron',
+                    bodyFont: result.data.uiTemplates?.bodyFont || 'inter',
+                    layout: result.data.uiTemplates?.layout || 'v1',
+                  },
               };
               form.reset(sanitizedData);
             }
@@ -286,20 +289,22 @@ export default function SettingsPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="marqueeText"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Marquee/Ticker Text</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Announcements, offers, promotions..." {...field} />
-                        </FormControl>
-                        <FormDescription>This text will display as a scrolling marquee at the top of the site.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {form.watch('uiTemplates.layout') !== 'v2' && (
+                    <FormField
+                      control={form.control}
+                      name="marqueeText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Marquee/Ticker Text</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Announcements, offers, promotions..." {...field} />
+                          </FormControl>
+                          <FormDescription>This text will display as a scrolling marquee at the top of the site.</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
