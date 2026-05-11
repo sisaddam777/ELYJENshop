@@ -34,7 +34,7 @@ import Swal from 'sweetalert2';
 
 
 
-const TEMPLATE_OPTIONS = ['v1', 'v2', 'v3', 'v4', 'v5'];
+const TEMPLATE_OPTIONS = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6'];
 const THEME_OPTIONS = ['default', 'black', 'caffeine', 'claude', 'elegant', 'marvel', 'material', 'midnight', 'nature', 'perplexity', 'slack', 'summer', 'sunset', 'valorant', 'supabase', 'amber', 'catppuccin', 'clay', 'cyberpunk', 'darkmatter', 'ocean', 'quantum', 't3', 'tangerine', 'vintage', 'green', 'red', 'rose', 'orange', 'blue', 'yellow', 'violet'];
 
 const TEMPLATE_CONFIG = [
@@ -73,6 +73,7 @@ const FONT_OPTIONS = [
   { id: 'syne', label: 'Syne (Artistic/Trendy)' },
   { id: 'space-grotesk', label: 'Space Grotesk (Futuristic/Tech)' },
   { id: 'orbitron', label: 'Orbitron (Futuristic)' },
+  { id: 'jost', label: 'Jost (Sporty/Clean)' },
   { id: 'geist', label: 'Geist (Next.js Default)' },
 ];
 
