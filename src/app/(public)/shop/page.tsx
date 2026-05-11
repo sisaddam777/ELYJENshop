@@ -46,11 +46,13 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   ]);
 
   const style = settings?.uiTemplates?.shopListing || 'v1';
+  const productCardStyle = settings?.uiTemplates?.productCard || 'v1';
 
   return (
     <Suspense fallback={<ShopFallback />}>
       <ShopListingSelector 
         style={style}
+        productCardStyle={productCardStyle}
         products={initialProducts} 
         categories={initialCategories} 
         searchParams={searchParams}

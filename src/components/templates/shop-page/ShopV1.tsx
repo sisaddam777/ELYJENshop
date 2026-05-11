@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import ShopClient from './ShopClient';
 import { ShopHeaderSkeleton, ProductCardSkeleton } from '@/components/storefront/Skeletons';
 
-export default function ShopV1({ products, categories, searchParams, style }: { products: any[], categories: any[], searchParams: any, style?: string }) {
+export default function ShopV1({ products, categories, searchParams, style, productCardStyle }: { products: any[], categories: any[], searchParams: any, style?: string, productCardStyle?: string }) {
   return (
     <Suspense fallback={
       // ... (keeping existing fallback code)
@@ -36,7 +36,7 @@ export default function ShopV1({ products, categories, searchParams, style }: { 
         initialProducts={products} 
         initialCategories={categories} 
         searchParams={searchParams}
-        cardStyle={style}
+        cardStyle={productCardStyle}
       />
     </Suspense>
   );
