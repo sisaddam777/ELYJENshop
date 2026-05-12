@@ -253,8 +253,14 @@ export async function GET(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('Analytics API Error:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    console.error('Main Analytics API Error Details:', {
+      domain,
+      propertyId,
+      error: error.message,
+      code: error.code,
+      details: error.details
+    });
+    return NextResponse.json({ message: `Internal Server Error: ${error.message}` }, { status: 500 });
   }
 }
 

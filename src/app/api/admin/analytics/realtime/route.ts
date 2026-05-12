@@ -51,8 +51,14 @@ export async function GET() {
     return NextResponse.json({ activeUsersNow });
 
   } catch (error: any) {
-    console.error('Realtime Analytics API Error:', error);
-    return NextResponse.json({ activeUsersNow: 0, message: 'Failed to fetch realtime data' }, { status: 500 });
+    console.error('Realtime Analytics API Error Details:', {
+      domain,
+      propertyId,
+      error: error.message,
+      code: error.code,
+      details: error.details
+    });
+    return NextResponse.json({ activeUsersNow: 0, message: `Failed to fetch realtime data: ${error.message}` }, { status: 500 });
   }
 }
 
