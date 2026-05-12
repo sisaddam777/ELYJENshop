@@ -45,6 +45,36 @@ async function seed() {
     { name: "Skateboarding Pro", slug: "skateboarding-pro", image: "/assets/sneakers/category/Skateboarding Pro.webp" },
   ];
 
+  const IMAGES = [
+    "elyjen_elite_sneakers_batch_1_1778584088477.webp",
+    "elyjen_flash_sale_batch_2_3_1778584394497.webp",
+    "elyjen_flash_sale_sneakers_batch_1_1778584111392.webp",
+    "elyjen_heritage_hightop_individual_1778584646796.webp",
+    "elyjen_individual_elite_x1_1778584506340.webp",
+    "elyjen_individual_speedrunner_pro_1778584523692.webp",
+    "elyjen_individual_trailblazer_xt_1778584560058.webp",
+    "elyjen_individual_urban_suede_1778584541869.webp",
+    "elyjen_new_arrival_batch_2_3_4_5_1778584415319.webp",
+    "elyjen_outdoor_trail_sneakers_batch_1_1778584161046.webp",
+    "elyjen_primeknit_prism_individual_1778584685121.webp",
+    "elyjen_sneakers_mixed_batch_2_1778584185995.webp",
+    "elyjen_solar_glide_individual_1778584629722.webp",
+    "elyjen_standard_series_mega_batch_1_8_1778584440791.webp",
+    "elyjen_stealth_midnight_individual_1778584614020.webp",
+    "elyjen_urban_glide_sneakers_batch_1_1778584139507.webp",
+    "featured_1_carbon_fiber_running_1778541531171.webp",
+    "featured_2_basketball_elite_1778541545796.webp",
+    "featured_3_mesh_trainer_1778541560320.webp",
+    "featured_4_marathon_shoe_1778541575255.webp",
+    "featured_5_designer_leather_1778541588720.webp",
+    "featured_6_skateboarding_shoe_1778541605531.webp",
+    "featured_7_cross_trainer_1778541620689.webp",
+    "featured_8_knit_sneaker_prism_1778541637121.webp",
+    "featured_sneaker_1_carbon_fiber_1778540537854.webp",
+    "featured_sneaker_2_basketball_elite_1778540553041.webp",
+    "skate_category_img_new_1778540384573.webp"
+  ];
+
   console.log("CLEANING DATABASE FOR ELYJEN...");
   await productsCollection.deleteMany({ domain });
   await categoriesCollection.deleteMany({ domain });
@@ -66,22 +96,10 @@ async function seed() {
 
   const products = [];
 
-  // --- 10 FEATURED PRODUCTS ---
-  const featuredFilenames = [
-    "featured_1_carbon_fiber_running_1778541531171.webp",
-    "featured_2_basketball_elite_1778541545796.webp",
-    "featured_3_mesh_trainer_1778541560320.webp",
-    "featured_4_marathon_shoe_1778541575255.webp",
-    "featured_5_designer_leather_1778541588720.webp",
-    "featured_6_skateboarding_shoe_1778541605531.webp",
-    "featured_7_cross_trainer_1778541620689.webp",
-    "featured_8_knit_sneaker_prism_1778541637121.webp",
-    "featured-9.webp", // Placeholder for next batch
-    "featured-10.webp" // Placeholder for next batch
-  ];
+  const getRandomImage = () => `/assets/sneakers/product/${IMAGES[Math.floor(Math.random() * IMAGES.length)]}`;
 
+  // --- 10 FEATURED PRODUCTS ---
   for (let i = 0; i < 10; i++) {
-    const filename = featuredFilenames[i];
     products.push({
       name: `Elyjen Carbon Pro X${i + 1} - Elite Series`,
       slug: `elyjen-carbon-pro-x${i + 1}-${Math.random().toString(36).substring(7)}`,
@@ -91,7 +109,7 @@ async function seed() {
       sku: `EJ-FEAT-${i + 1}-${Date.now()}`,
       stock: 50,
       categories: [catMap['running-performance'], catMap['luxury-lifestyle']],
-      images: [`/assets/sneakers/product/${filename}`],
+      images: [getRandomImage()],
       isFeatured: true,
       isNewArrival: false,
       isFlashSale: false,
@@ -118,7 +136,7 @@ async function seed() {
       sku: `EJ-FLASH-${i}-${Date.now()}`,
       stock: 30,
       categories: [catMap['athletic-trainers'], catMap['running-performance']],
-      images: [`/assets/sneakers/product/flash-${i}.webp`],
+      images: [getRandomImage()],
       isFeatured: false,
       isNewArrival: false,
       isFlashSale: true,
@@ -143,7 +161,7 @@ async function seed() {
       sku: `EJ-NEW-${i}-${Date.now()}`,
       stock: 100,
       categories: [catMap['casual-essentials'], catMap['luxury-lifestyle']],
-      images: [`/assets/sneakers/product/new-${i}.webp`],
+      images: [getRandomImage()],
       isFeatured: false,
       isNewArrival: true,
       isFlashSale: false,
@@ -170,7 +188,7 @@ async function seed() {
       sku: `EJ-STD-${i}-${Date.now()}`,
       stock: 200,
       categories: [catId],
-      images: [`/assets/sneakers/product/std-${i}.webp`],
+      images: [getRandomImage()],
       isFeatured: false,
       isNewArrival: false,
       isFlashSale: false,
@@ -187,7 +205,7 @@ async function seed() {
   console.log("Seeding products...");
   await productsCollection.insertMany(products);
 
-  console.log(`Successfully seeded ELYJEN database for domain: ${domain}`);
+  console.log(`Successfully seeded ELYJEN database with 50 products using real assets for domain: ${domain}`);
   await mongoose.disconnect();
 }
 
