@@ -106,7 +106,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[1000px] w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
+      <DialogContent className="sm:max-w-6xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 z-50 p-2 bg-white/80 hover:bg-white rounded-none shadow-md transition-all border border-gray-100"
@@ -116,24 +116,24 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
         <div className="flex flex-col md:flex-row h-full max-h-[90vh] overflow-y-auto md:overflow-hidden min-h-[500px]">
           {/* Image Section */}
-          <div className="w-full md:w-[60%] bg-gray-50 flex flex-col items-center justify-center p-0 relative border-r border-gray-100 min-h-[400px]">
-            <div className="relative w-full h-full flex items-center justify-center p-8">
+          <div className="w-full md:w-[58%] bg-neutral-50 flex flex-col items-center justify-center p-0 relative border-r border-neutral-100">
+            <div className="relative w-full h-[500px] flex items-center justify-center overflow-hidden">
               <img 
                 src={activeImage} 
                 alt={product.name} 
-                className="max-w-full max-h-[400px] object-contain mix-blend-multiply transition-all duration-500 hover:scale-105"
+                className="w-full h-full object-contain p-4 mix-blend-multiply transition-all duration-700 hover:scale-110"
               />
             </div>
             
             {/* Thumbnails */}
             {product.images?.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 w-full justify-center scrollbar-hide px-4">
+              <div className="flex gap-4 overflow-x-auto pb-6 w-full justify-center scrollbar-hide px-6">
                 {product.images.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImage(img)}
-                    className={`h-20 w-20 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all ${
-                      activeImage === img ? 'border-[#00a870]' : 'border-transparent opacity-60 hover:opacity-100'
+                    className={`h-24 w-24 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${
+                      activeImage === img ? 'border-[#00a870] shadow-lg' : 'border-neutral-200 opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="" className="h-full w-full object-cover" />
@@ -150,7 +150,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           </div>
 
           {/* Details Section */}
-          <div className="w-full md:w-[40%] p-8 flex flex-col font-jost overflow-y-auto bg-white">
+          <div className="w-full md:w-[42%] p-12 flex flex-col font-jost overflow-y-auto bg-white">
             <div className="mb-2 flex items-center gap-2">
                <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
@@ -184,26 +184,30 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                </div>
             </div>
 
-            {/* Attributes Grid */}
-            <div className="grid grid-cols-2 gap-y-3 mb-6 bg-gray-50 p-4 border border-gray-100">
-               {product.attributes?.map((attr: any, idx: number) => (
-                 <div key={idx} className="flex gap-2">
-                    <span className="text-[11px] font-bold text-gray-400 uppercase w-20">{attr.name}:</span>
-                    <span className="text-[11px] font-bold text-gray-800 uppercase">{attr.value}</span>
-                 </div>
-               ))}
-               {!product.attributes?.length && (
-                 <>
-                  <div className="flex gap-2">
-                    <span className="text-[11px] font-bold text-gray-400 uppercase w-20">ORIGIN:</span>
-                    <span className="text-[11px] font-bold text-gray-800 uppercase">Bangladesh</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="text-[11px] font-bold text-gray-400 uppercase w-20">TYPE:</span>
-                    <span className="text-[11px] font-bold text-gray-800 uppercase">100% Organic</span>
-                  </div>
-                 </>
-               )}
+            {/* Attributes Section */}
+            <div className="mb-8">
+               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4">Specifications</h4>
+               <div className="grid grid-cols-2 gap-4">
+                  {product.attributes?.length > 0 ? (
+                    product.attributes.map((attr: any, idx: number) => (
+                      <div key={idx} className="flex flex-col border-b border-neutral-100 pb-2">
+                         <span className="text-[9px] font-bold text-neutral-400 uppercase mb-1">{attr.name || 'Detail'}</span>
+                         <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">{attr.value}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="flex flex-col border-b border-neutral-100 pb-2">
+                         <span className="text-[9px] font-bold text-neutral-400 uppercase mb-1">Architecture</span>
+                         <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">Carbon Plate</span>
+                      </div>
+                      <div className="flex flex-col border-b border-neutral-100 pb-2">
+                         <span className="text-[9px] font-bold text-neutral-400 uppercase mb-1">Material</span>
+                         <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">PrimeKnit</span>
+                      </div>
+                    </>
+                  )}
+               </div>
             </div>
 
             {/* Variations Selection */}
