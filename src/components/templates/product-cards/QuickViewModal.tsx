@@ -106,10 +106,10 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-5xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl [&>button]:hidden">
+      <DialogContent className="sm:max-w-5xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl [&>button:not(.custom-close)]:hidden">
         <button 
           onClick={onClose}
-          className="absolute right-4 top-4 z-50 p-2 bg-red-500 hover:bg-red-600 text-white rounded-sm shadow-xl transition-all"
+          className="custom-close absolute right-4 top-4 z-[100] p-2 bg-red-500 hover:bg-red-600 text-white rounded-sm shadow-xl transition-all"
         >
           <X className="h-5 w-5" />
         </button>
