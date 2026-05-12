@@ -126,14 +126,14 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen">
       {/* Left Side: Image Banner */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="fixed inset-y-0 left-0 hidden w-1/2 bg-muted lg:block"
       >
         <Image
-          src="/assets/register_banner_v2.png"
+          src="/assets/register_banner_v2.jpg"
           alt="Register Banner"
           fill
           priority
@@ -141,16 +141,16 @@ export default function RegisterPage() {
           sizes="50vw"
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex flex-col justify-end p-12">
-           <motion.div
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ delay: 0.4, duration: 0.6 }}
-           >
-             <h2 className="text-4xl font-bold text-white mb-4 font-serif">Join Our Community</h2>
-             <p className="text-lg text-white/80 max-w-md">
-               Create an account today to enjoy a personalized shopping experience and exclusive member benefits.
-             </p>
-           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            <h2 className="text-4xl font-bold text-white mb-4 font-serif">Join Our Community</h2>
+            <p className="text-lg text-white/80 max-w-md">
+              Create an account today to enjoy a personalized shopping experience and exclusive member benefits.
+            </p>
+          </motion.div>
         </div>
       </motion.div>
 
@@ -160,7 +160,7 @@ export default function RegisterPage() {
           <Logo />
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -175,9 +175,9 @@ export default function RegisterPage() {
             </div>
 
             <div className="grid gap-6">
-              <Button 
-                variant="outline" 
-                className="w-full h-11 transition-all hover:bg-muted/50 hover:border-primary/50 group" 
+              <Button
+                variant="outline"
+                className="w-full h-11 transition-all hover:bg-muted/50 hover:border-primary/50 group"
                 onClick={loginWithGoogle}
                 disabled={isGoogleLoading || isLoading}
               >
@@ -276,12 +276,12 @@ export default function RegisterPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Division</FormLabel>
-                          <Select 
+                          <Select
                             onValueChange={(value) => {
                               field.onChange(value);
                               form.setValue('district', '');
                               form.setValue('thana', '');
-                            }} 
+                            }}
                             value={field.value}
                             disabled={isLoading}
                           >
@@ -308,11 +308,11 @@ export default function RegisterPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>District</FormLabel>
-                          <Select 
+                          <Select
                             onValueChange={(value) => {
                               field.onChange(value);
                               form.setValue('thana', '');
-                            }} 
+                            }}
                             value={field.value}
                             disabled={!selectedDivision || isLoading}
                           >
@@ -339,8 +339,8 @@ export default function RegisterPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Thana</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
+                          <Select
+                            onValueChange={field.onChange}
                             value={field.value}
                             disabled={!selectedDistrict || isLoading}
                           >
@@ -371,12 +371,12 @@ export default function RegisterPage() {
                         <FormLabel>Password</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input 
-                              placeholder="••••••••" 
-                              type={showPassword ? "text" : "password"} 
-                              {...field} 
-                              disabled={isLoading} 
-                              className="h-11 focus-visible:ring-primary/20 pr-10" 
+                            <Input
+                              placeholder="••••••••"
+                              type={showPassword ? "text" : "password"}
+                              {...field}
+                              disabled={isLoading}
+                              className="h-11 focus-visible:ring-primary/20 pr-10"
                             />
                             <TooltipProvider>
                               <Tooltip>
@@ -410,12 +410,12 @@ export default function RegisterPage() {
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input 
-                              placeholder="••••••••" 
-                              type={showConfirmPassword ? "text" : "password"} 
-                              {...field} 
-                              disabled={isLoading} 
-                              className="h-11 focus-visible:ring-primary/20 pr-10" 
+                            <Input
+                              placeholder="••••••••"
+                              type={showConfirmPassword ? "text" : "password"}
+                              {...field}
+                              disabled={isLoading}
+                              className="h-11 focus-visible:ring-primary/20 pr-10"
                             />
                             <TooltipProvider>
                               <Tooltip>
@@ -441,9 +441,9 @@ export default function RegisterPage() {
                     )}
                   />
 
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 text-base font-semibold transition-all hover:scale-[1.01] active:scale-[0.99] mt-6" 
+                  <Button
+                    type="submit"
+                    className="w-full h-11 text-base font-semibold transition-all hover:scale-[1.01] active:scale-[0.99] mt-6"
                     disabled={isLoading || isGoogleLoading}
                   >
                     {isLoading ? (

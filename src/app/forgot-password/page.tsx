@@ -62,28 +62,28 @@ export default function ForgotPasswordPage() {
   return (
     <div className="relative min-h-screen">
       {/* Left Side: Image Banner */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="fixed inset-y-0 left-0 hidden w-1/2 bg-muted lg:block"
       >
         <img
-          src="/assets/login_banner.jpg"
+          src="/assets/forgetpassrod.webp"
           alt="Forgot Password Banner"
           className="absolute inset-0 h-full w-full object-cover brightness-[0.8] contrast-[1.1]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-12">
-           <motion.div
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ delay: 0.4, duration: 0.6 }}
-           >
-             <h2 className="text-4xl font-bold text-white mb-4 font-serif">Secure Your Account</h2>
-             <p className="text-lg text-white/80 max-w-md">
-               Don't worry, it happens to the best of us. Let's get you back into your account.
-             </p>
-           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            <h2 className="text-4xl font-bold text-white mb-4 font-serif">Secure Your Account</h2>
+            <p className="text-lg text-white/80 max-w-md">
+              Don't worry, it happens to the best of us. Let's get you back into your account.
+            </p>
+          </motion.div>
         </div>
       </motion.div>
 
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
           <Logo />
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -116,10 +116,10 @@ export default function ForgotPasswordPage() {
                     <FormItem>
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="m@example.com" 
-                          type="email" 
-                          {...field} 
+                        <Input
+                          placeholder="m@example.com"
+                          type="email"
+                          {...field}
                           disabled={isLoading}
                           className="h-11 focus-visible:ring-primary/20"
                         />
@@ -128,11 +128,11 @@ export default function ForgotPasswordPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex flex-col gap-3">
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 text-base font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]" 
+                  <Button
+                    type="submit"
+                    className="w-full h-11 text-base font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -143,7 +143,7 @@ export default function ForgotPasswordPage() {
                       </span>
                     )}
                   </Button>
-                  
+
                   <Button variant="ghost" className="w-full h-11" asChild>
                     <Link href="/login">
                       <ArrowLeft className="mr-2 h-4 w-4" /> Back to login

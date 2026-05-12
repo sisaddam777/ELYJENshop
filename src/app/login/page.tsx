@@ -82,9 +82,9 @@ export default function LoginPage() {
     try {
       const host = window.location.host;
       const currentHost = window.location.hostname.replace(/^www\./, '');
-      const isHub = currentHost === 'elyjen.shop' || 
-                    currentHost.endsWith('.elyjen.shop') || 
-                    currentHost === 'localhost';
+      const isHub = currentHost === 'elyjen.shop' ||
+        currentHost.endsWith('.elyjen.shop') ||
+        currentHost === 'localhost';
 
       if (!isHub) {
         const isProd = process.env.NODE_ENV === 'production';
@@ -158,7 +158,7 @@ export default function LoginPage() {
         className="fixed inset-y-0 left-0 hidden w-1/2 bg-muted lg:block"
       >
         <Image
-          src="/assets/login_banner_v2.png"
+          src="/assets/login_banner_v2.jpg"
           alt="Login Banner"
           fill
           priority
