@@ -55,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const brandName = settings?.brandName || 'ELYJEN';
   const description = settings?.siteDescription || 'Your ultimate destination for quality products.';
-  const ogImage = banners?.[0]?.imageUrl || settings?.logo || '';
+  const ogImage = banners?.[0]?.image || settings?.logo || '';
   
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
   const baseUrl = `${protocol}://${hostname}`;

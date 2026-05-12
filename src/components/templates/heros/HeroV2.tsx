@@ -95,19 +95,19 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                   initial={{ scale: 1 }}
                   animate={{ scale: 1.1 }}
                   transition={{ duration: 8, ease: "linear" }}
-                  className="h-full w-full"
+                  className="h-full w-full relative z-0"
                 >
                   <Image
                     src={banner.image || '/placeholder-banner.jpg'}
                     alt={banner.title || 'Hero Banner'}
                     fill
                     className="object-cover"
-                    unoptimized={true}
-                    priority
+                    priority={index === 0}
+                    sizes="100vw"
                   />
                 </motion.div>
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-10" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-[5]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-[5]" />
               </div>
 
               {/* Text Content */}
