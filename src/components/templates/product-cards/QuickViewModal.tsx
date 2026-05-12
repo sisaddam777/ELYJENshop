@@ -176,7 +176,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
               <div className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-none ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
                 <span className="font-medium text-gray-600">
-                  {product.stock > 0 ? `In stock (${product.stock} units available)` : 'Out of stock'}
+                  {product.stock > 0 ? `In stock (${product.stock} units)` : 'Out of stock'}
                 </span>
                 <span className="text-gray-300 mx-1">|</span>
                 <span className="text-gray-500 uppercase">SKU: {product.sku || 'N/A'}</span>
@@ -221,8 +221,8 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                         key={i}
                         onClick={(e) => { e.preventDefault(); setSelectedColor(colorName); }}
                         className={`px-4 py-2 text-xs font-bold rounded-none border transition-all ${selectedColor === colorName
-                            ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
-                            : 'border-gray-200 hover:border-gray-900 text-gray-600'
+                          ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
+                          : 'border-gray-200 hover:border-gray-900 text-gray-600'
                           }`}
                       >
                         {colorName}
@@ -244,10 +244,10 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                           disabled={!isAvailable}
                           onClick={(e) => { e.preventDefault(); setSelectedSize(sizeName); }}
                           className={`min-w-[44px] px-2 py-2 text-xs font-bold rounded-none border transition-all ${selectedSize === sizeName
-                              ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
-                              : !isAvailable
-                                ? 'opacity-30 grayscale cursor-not-allowed bg-gray-100'
-                                : 'border-gray-200 hover:border-gray-900 text-gray-600'
+                            ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
+                            : !isAvailable
+                              ? 'opacity-30 grayscale cursor-not-allowed bg-gray-100'
+                              : 'border-gray-200 hover:border-gray-900 text-gray-600'
                             }`}
                         >
                           {sizeName}
