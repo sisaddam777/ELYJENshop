@@ -125,7 +125,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6">
                       <Link
                         href={banner.primaryBtnLink || banner.link || '/shop'}
-                        className="group flex items-center gap-3 px-6 py-3 sm:px-12 sm:py-5 bg-[#00a870] text-white font-black rounded-none hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest shadow-2xl"
+                        className="group flex items-center gap-3 px-6 py-3 sm:px-12 sm:py-5 bg-primary text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest shadow-2xl"
                       >
                         {banner.primaryBtnText || 'Shop Now'}
                         <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2" />
@@ -134,7 +134,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                       {banner.secondaryBtnText && (
                         <Link
                           href={banner.secondaryBtnLink || '/contact'}
-                          className="px-6 py-3 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black rounded-none hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest"
+                          className="px-6 py-3 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest"
                         >
                           {banner.secondaryBtnText}
                         </Link>

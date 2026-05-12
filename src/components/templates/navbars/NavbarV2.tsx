@@ -137,10 +137,12 @@ export default function NavbarV2() {
 
   return (
     <nav className={`
-      ${isHomePage ? 'fixed' : 'sticky top-0'} 
-      top-0 left-0 right-0 z-50 w-full transition-all duration-500 font-jost
-      ${isHomePage 
-        ? (isScrolled ? 'bg-background/80 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4') 
+      sticky top-0
+      left-0 right-0 z-50 w-full transition-all duration-500 font-jost
+      md:${isHomePage ? 'fixed' : 'sticky top-0'}
+      bg-background border-b shadow-sm py-2
+      md:${isHomePage 
+        ? (isScrolled ? 'bg-background/80 backdrop-blur-md shadow-md py-2' : 'bg-transparent border-none shadow-none py-4') 
         : 'bg-background border-b py-2 shadow-sm'}
     `}>
       <div className="container mx-auto px-4 md:px-8 flex items-center justify-between">
@@ -154,8 +156,8 @@ export default function NavbarV2() {
             triggerClassName={!isHomePage || isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}
           />
 
-          <Link href="/" className={`text-2xl md:text-3xl font-black tracking-tighter hover:scale-105 transition-all flex items-center gap-1 group ${!isHomePage || isScrolled ? 'text-foreground' : 'text-white'}`}>
-            ELYJEN<span className="text-primary group-hover:animate-ping">.</span>
+          <Link href="/" className={`text-2xl md:text-3xl font-black tracking-tighter hover:scale-105 transition-all flex items-center gap-1 group text-foreground md:${!isHomePage || isScrolled ? 'text-foreground' : 'text-white'}`}>
+            {settings?.brandName || 'Store'}<span className="text-primary group-hover:animate-ping">.</span>
           </Link>
         </div>
 

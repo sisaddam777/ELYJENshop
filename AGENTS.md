@@ -4,7 +4,7 @@
 This project follows strict architectural and design rules for a high-end, multi-tenant e-commerce ecosystem. All agents must adhere to these standards to maintain system integrity and the "Minimalist Sharp" boutique aesthetic across all tenants.
 
 ## 1. Visual Identity (Minimalist Sharp)
-- **Border Radius:** ALWAYS use `rounded-none`. No rounded corners allowed for buttons, inputs, or cards unless explicitly requested for a specific tenant-specific version.
+- **Border Radius:** ALWAYS use `rounded-none` for **Product Cards** only. Buttons, inputs, and other UI elements should use standard or full rounding (e.g., `rounded-full`) to maintain a premium, boutique aesthetic.
 - **Color Palette:** 
   - **Dynamic Theme:** ALWAYS use CSS variables (e.g., `var(--primary)`, `bg-primary`, `text-primary`). NEVER hardcode hex codes or specific color names in components.
   - **Single Source of Truth:** All theme variables are defined in `src/app/theme.css`. Refer to this file for available themes (e.g., `.theme-vintage`, `.theme-cyberpunk`, `.theme-ocean`).
