@@ -259,42 +259,50 @@ export default function NavbarV2() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-background/95 backdrop-blur-xl border-muted shadow-2xl">
-                  <DropdownMenuLabel className="px-3 py-3 mb-2 border-b border-muted">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-sm font-bold truncate">{session.user?.name}</p>
-                      <p className="text-[10px] opacity-60 truncate">{session.user?.email}</p>
-                      {profile && (
-                        <div className="mt-2 flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 rounded-full w-fit border border-primary/20">
-                          <Package className="h-3 w-3 text-primary" />
-                          <span className="text-[10px] font-black text-primary">৳{profile.walletBalance || 0} Tokens</span>
-                        </div>
-                      )}
-                    </div>
-                  </DropdownMenuLabel>
-                  
                   <DropdownMenuGroup>
+                    <DropdownMenuLabel className="px-3 py-3 mb-2 border-b border-muted">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-sm font-bold truncate">{session.user?.name}</p>
+                        <p className="text-[10px] opacity-60 truncate">{session.user?.email}</p>
+                        {profile && (
+                          <div className="mt-2 flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 rounded-full w-fit border border-primary/20">
+                            <Package className="h-3 w-3 text-primary" />
+                            <span className="text-[10px] font-black text-primary">৳{profile.walletBalance || 0} Tokens</span>
+                          </div>
+                        )}
+                      </div>
+                    </DropdownMenuLabel>
+                    
                     {/* Role Based Navigation */}
                     {(session.user as any)?.role?.includes('admin') && (
-                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-xl cursor-pointer py-2.5">
-                        <LayoutDashboard className="mr-2 h-4 w-4 text-primary" /> Admin Dashboard
+                      <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
+                        <Link href="/admin/dashboard">
+                          <LayoutDashboard className="mr-2 h-4 w-4 text-primary" /> Admin Dashboard
+                        </Link>
                       </DropdownMenuItem>
                     )}
 
-                    <DropdownMenuItem onClick={() => router.push('/dashboard')} className="rounded-xl cursor-pointer py-2.5">
-                      <User className="mr-2 h-4 w-4" /> My Profile
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
+                      <Link href="/dashboard">
+                        <User className="mr-2 h-4 w-4" /> My Profile
+                      </Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => router.push('/track-order')} className="rounded-xl cursor-pointer py-2.5">
-                      <Truck className="mr-2 h-4 w-4" /> Track Order
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
+                      <Link href="/track-order">
+                        <Truck className="mr-2 h-4 w-4" /> Track Order
+                      </Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/settings')} className="rounded-xl cursor-pointer py-2.5">
-                      <Settings className="mr-2 h-4 w-4" /> Account Settings
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
+                      <Link href="/dashboard/settings">
+                        <Settings className="mr-2 h-4 w-4" /> Account Settings
+                      </Link>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
 
                   <DropdownMenuSeparator className="bg-muted my-2" />
-                  <DropdownMenuItem onClick={() => signOut()} className="rounded-xl cursor-pointer text-destructive py-2.5">
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="rounded-xl cursor-pointer text-destructive py-2.5">
                     <LogOut className="mr-2 h-4 w-4" /> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

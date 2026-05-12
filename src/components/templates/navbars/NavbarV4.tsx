@@ -151,11 +151,11 @@ export default function NavbarV4() {
               <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-[#1a1c1c] text-white border-white/5 shadow-2xl">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="px-3 pt-3 pb-2 font-black text-[10px] uppercase tracking-[0.2em] opacity-40">System Access</DropdownMenuLabel>
-                </DropdownMenuGroup>
-                 <div className="px-3 pb-4 mb-2 border-b border-white/5">
+                  <div className="px-3 pb-4 mb-2 border-b border-white/5">
                     <p className="text-sm font-bold truncate">{session.user?.name}</p>
                     <p className="text-[10px] opacity-40 truncate">{session.user?.email}</p>
-                 </div>
+                  </div>
+                </DropdownMenuGroup>
                  
                  {/* Role Based Navigation */}
                  {(session.user as any)?.role === 'super_admin' && (

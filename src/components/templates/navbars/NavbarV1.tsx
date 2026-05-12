@@ -23,6 +23,7 @@ import {
 import { useSession, signOut } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ModeToggle } from '@/components/mode-toggle';
 import { useAppSelector } from '@/store/hooks';
 import { CartDrawer } from '@/components/layout/CartDrawer';
@@ -30,6 +31,12 @@ import { CategoryNav } from '@/components/layout/CategoryNav';
 import { AIChatbot } from '@/components/layout/AIChatbot';
 import { Logo } from '@/components/ui/logo';
 import { useSettings } from '@/components/SettingsProvider';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +47,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Swal from 'sweetalert2';
-import { MobileMenu } from '@/components/layout/MobileMenu';
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -51,6 +57,7 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -224,7 +231,56 @@ export default function Navbar() {
 
             {/* Mobile Menu Trigger */}
             <div className="flex md:hidden items-center">
-              <MobileMenu navItems={navItems} categories={categories} session={session} />
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle mobile menu</span>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px]">
+                  <nav className="flex flex-col gap-6 mt-12 px-2">
+                    <Logo onClick={() => setOpen(false)} />
+                    <div className="space-y-4 pt-6 border-t font-medium tracking-tight">
+                      {navItems.map((item, index) => {
+                        const isActive = pathname === item.href;
+                        return (
+                          <React.Fragment key={item.href}>
+                            <Link
+                              href={item.href}
+                              className={`block px-4 py-2 rounded-xl transition-all ${isActive
+                                ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20'
+                                : 'hover:text-primary font-medium'
+                                }`}
+                              onClick={() => setOpen(false)}
+                            >
+                              {item.label}
+                            </Link>
+                            {/* Insert Categories Accordion after Home (index 0) */}
+                            {index === 0 && (
+                              <Accordion type="single" collapsible>
+                                <AccordionItem value="cats" className="border-none">
+                                  <AccordionTrigger className="py-2 hover:no-underline uppercase text-[12px] font-bold tracking-[0.2em] text-left">Categories</AccordionTrigger>
+                                  <AccordionContent className="pt-2 pl-4 flex flex-col gap-3">
+                                    {mainCategories.map(cat => (
+                                      <Link
+                                        key={cat._id}
+                                        href={`/shop?category=${cat.slug}`}
+                                        onClick={() => setOpen(false)}
+                                        className="hover:text-primary text-[11px] font-bold uppercase tracking-[0.1em]"
+                                      >
+                                        {cat.name}
+                                      </Link>
+                                    ))}
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
 
             {/* Logo (Centered in desktop, Left-ish in mobile) */}
@@ -329,39 +385,51 @@ export default function Navbar() {
                       {/* Role Based Navigation */}
                       {(session.user as any)?.role === 'super_admin' && (
                         <>
-                          <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="cursor-pointer">
-                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/dashboard" className="cursor-pointer">
+                              <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push('/admin/system-design')} className="cursor-pointer">
-                            <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/system-design" className="cursor-pointer">
+                              <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                            </Link>
                           </DropdownMenuItem>
                         </>
                       )}
 
                       {(session.user as any)?.role === 'admin' && (
                         <>
-                          <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="cursor-pointer">
-                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/dashboard" className="cursor-pointer">
+                              <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push('/admin/orders')} className="cursor-pointer">
-                            <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/orders" className="cursor-pointer">
+                              <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                            </Link>
                           </DropdownMenuItem>
                         </>
                       )}
 
                       {(session.user as any)?.role === 'user' && (
                         <>
-                          <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer">
-                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                          <DropdownMenuItem asChild>
+                            <Link href="/dashboard" className="cursor-pointer">
+                              <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push('/track-order')} className="cursor-pointer">
-                            <Truck className="mr-2 h-4 w-4" /> Track Order
+                          <DropdownMenuItem asChild>
+                            <Link href="/track-order" className="cursor-pointer">
+                              <Truck className="mr-2 h-4 w-4" /> Track Order
+                            </Link>
                           </DropdownMenuItem>
                         </>
                       )}
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="text-destructive cursor-pointer">
+                    <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" /> Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -418,4 +486,3 @@ export default function Navbar() {
     </>
   );
 }
-

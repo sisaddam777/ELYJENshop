@@ -114,44 +114,51 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 mt-2">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span className="font-bold">{session.user.name}</span>
-                    <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <DropdownMenuGroup>
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="font-bold">{session.user.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">{session.user.email}</span>
+                      {profile && (
+                        <div className="mt-2 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
+                          <Package className="h-3 w-3 text-primary" />
+                          <span className="text-[10px] font-bold text-primary">৳{profile.walletBalance || 0} Tokens</span>
+                        </div>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {/* Role Based Navigation */}
                   {(session.user as any)?.role?.includes('admin') && (
-                    <DropdownMenuItem
-                      onClick={() => router.push('/admin/dashboard')}
-                      className="cursor-pointer"
-                    >
-                      <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/dashboard" className="cursor-pointer">
+                        <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                      </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem
-                    onClick={() => router.push('/dashboard')}
-                    className="cursor-pointer"
-                  >
-                    <User className="mr-2 h-4 w-4" /> My Profile
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" /> My Profile
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push('/track-order')}
-                    className="cursor-pointer"
-                  >
-                    <Truck className="mr-2 h-4 w-4" /> Track Order
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/track-order" className="cursor-pointer">
+                      <Truck className="mr-2 h-4 w-4" /> Track Order
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/settings')}
-                    className="cursor-pointer"
-                  >
-                    <Settings className="mr-2 h-4 w-4" /> Account Settings
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" /> Account Settings
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={() => signOut({ callbackUrl: window.location.origin })}
                   className="text-destructive cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" /> Sign Out

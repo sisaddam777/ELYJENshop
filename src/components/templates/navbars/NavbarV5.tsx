@@ -139,11 +139,11 @@ export default function NavbarV5() {
                 <DropdownMenuContent align="end" className="w-64 rounded-[2.5rem] p-4 bg-white/90 backdrop-blur-3xl border-none shadow-2xl">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="px-2 pt-2 pb-1 font-black text-[9px] uppercase tracking-widest opacity-40">Profile / Identity</DropdownMenuLabel>
-                  </DropdownMenuGroup>
-                   <div className="px-2 pb-4 mb-3 border-b border-black/5">
+                    <div className="px-2 pb-4 mb-3 border-b border-black/5">
                       <p className="text-sm font-black truncate">{session.user?.name}</p>
                       <p className="text-[10px] opacity-40 truncate">{session.user?.email}</p>
-                   </div>
+                    </div>
+                  </DropdownMenuGroup>
                    
                    {/* Role Based Navigation */}
                    {(session.user as any)?.role === 'super_admin' && (
