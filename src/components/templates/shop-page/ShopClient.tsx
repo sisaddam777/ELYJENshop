@@ -69,27 +69,31 @@ export default function ShopClient({ initialProducts, initialCategories, searchP
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const initialCategory = searchParams.get('category');
-  const initialSearch = searchParams.get('q');
-  const initialFilter = searchParams.get('filter');
-
   const [products] = useState<ShopProduct[]>(initialProducts);
   const [categories] = useState<ShopCategory[]>(initialCategories);
   const [view, setView] = useState<'grid' | 'list'>('grid');
 
   // Filters State
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialCategory ? [initialCategory] : []
+    searchParams.get('category') ? [searchParams.get('category')!] : []
   );
   const [priceRange, setPriceRange] = useState([0, 50000]);
   const [sortBy, setSortBy] = useState('newest');
-  const [searchTerm, setSearchTerm] = useState(initialSearch || '');
-  const [showOnlyNew, setShowOnlyNew] = useState(initialFilter === 'new');
-  const [showOnlySale, setShowOnlySale] = useState(initialFilter === 'sale');
-  const [showOnlyFeatured, setShowOnlyFeatured] = useState(initialFilter === 'featured');
-  const [showOnlyTrending, setShowOnlyTrending] = useState(initialFilter === 'trending');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || searchParams.get('q') || '');
+  const [showOnlyNew, setShowOnlyNew] = useState(searchParams.get('filter') === 'new');
+  const [showOnlySale, setShowOnlySale] = useState(searchParams.get('filter') === 'sale');
+  const [showOnlyFeatured, setShowOnlyFeatured] = useState(searchParams.get('filter') === 'featured');
+  const [showOnlyTrending, setShowOnlyTrending] = useState(searchParams.get('filter') === 'trending');
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
   const itemsPerPage = 20;
+
+  // Sync with URL params (e.g. from Navbar search)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || searchParams.get('q');
+    if (urlSearch !== null) {
+      setSearchTerm(urlSearch);
+    }
+  }, [searchParams]);
   const skipClampRef = useRef(false);
 
   // Sync state to URL without full reload
