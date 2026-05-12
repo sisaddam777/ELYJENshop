@@ -3,8 +3,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, LogOut, LayoutDashboard, Truck, Settings, Package } from 'lucide-react';
+import { Heart, ShoppingCart, User, LogOut, LayoutDashboard, Truck, Settings } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { MobileMenu } from '@/components/layout/MobileMenu';
@@ -32,6 +33,7 @@ interface MobileNavbarProps {
  * Always sticky top-0 with solid bg-background. No transparent/floating on mobile.
  */
 export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const { totalQuantity: cartCount } = useAppSelector((state) => state.cart);
   const { items: wishlistItems } = useAppSelector((state) => state.wishlist);
@@ -121,31 +123,35 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   {(session.user as any)?.role?.includes('admin') && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin/dashboard" className="cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
-                      </Link>
+                    <DropdownMenuItem
+                      onClick={() => router.push('/admin/dashboard')}
+                      className="cursor-pointer"
+                    >
+                      <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" /> My Profile
-                    </Link>
+                  <DropdownMenuItem
+                    onClick={() => router.push('/dashboard')}
+                    className="cursor-pointer"
+                  >
+                    <User className="mr-2 h-4 w-4" /> My Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/track-order" className="cursor-pointer">
-                      <Truck className="mr-2 h-4 w-4" /> Track Order
-                    </Link>
+                  <DropdownMenuItem
+                    onClick={() => router.push('/track-order')}
+                    className="cursor-pointer"
+                  >
+                    <Truck className="mr-2 h-4 w-4" /> Track Order
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" /> Account Settings
-                    </Link>
+                  <DropdownMenuItem
+                    onClick={() => router.push('/dashboard/settings')}
+                    className="cursor-pointer"
+                  >
+                    <Settings className="mr-2 h-4 w-4" /> Account Settings
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: window.location.origin })}
+                  onClick={() => signOut({ callbackUrl: '/' })}
                   className="text-destructive cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" /> Sign Out

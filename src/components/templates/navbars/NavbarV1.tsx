@@ -329,51 +329,39 @@ export default function Navbar() {
                       {/* Role Based Navigation */}
                       {(session.user as any)?.role === 'super_admin' && (
                         <>
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin/dashboard" className="cursor-pointer">
-                              <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
-                            </Link>
+                          <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin/system-design" className="cursor-pointer">
-                              <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
-                            </Link>
+                          <DropdownMenuItem onClick={() => router.push('/admin/system-design')} className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
                           </DropdownMenuItem>
                         </>
                       )}
 
                       {(session.user as any)?.role === 'admin' && (
                         <>
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin/dashboard" className="cursor-pointer">
-                              <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
-                            </Link>
+                          <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin/orders" className="cursor-pointer">
-                              <Truck className="mr-2 h-4 w-4" /> Manage Orders
-                            </Link>
+                          <DropdownMenuItem onClick={() => router.push('/admin/orders')} className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Manage Orders
                           </DropdownMenuItem>
                         </>
                       )}
 
                       {(session.user as any)?.role === 'user' && (
                         <>
-                          <DropdownMenuItem asChild>
-                            <Link href="/dashboard" className="cursor-pointer">
-                              <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
-                            </Link>
+                          <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href="/track-order" className="cursor-pointer">
-                              <Truck className="mr-2 h-4 w-4" /> Track Order
-                            </Link>
+                          <DropdownMenuItem onClick={() => router.push('/track-order')} className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Track Order
                           </DropdownMenuItem>
                         </>
                       )}
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
+                    <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="text-destructive cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" /> Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
