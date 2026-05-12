@@ -126,12 +126,12 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 mt-2">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>
+                  <DropdownMenuLabel className="font-serif">
                     <div className="flex flex-col">
-                      <span className="font-bold">{session.user.name}</span>
-                      <span className="text-xs text-muted-foreground truncate">{session.user.email}</span>
+                      <span>{session.user.name}</span>
+                      <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
                       {profile && (
-                        <div className="mt-2 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
+                        <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
                           <Package className="h-3 w-3 text-primary" />
                           <span className="text-[10px] font-bold text-primary">৳{profile.walletBalance || 0} Tokens</span>
                         </div>
@@ -141,37 +141,53 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
                   <DropdownMenuSeparator />
 
                   {/* Role Based Navigation */}
-                  {(session.user as any)?.role?.includes('admin') && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin/dashboard" className="cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
-                      </Link>
-                    </DropdownMenuItem>
+                  {(session.user as any)?.role === 'super_admin' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/dashboard" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/system-design" className="cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
 
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" /> My Profile
-                    </Link>
-                  </DropdownMenuItem>
+                  {(session.user as any)?.role === 'admin' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/dashboard" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/orders" className="cursor-pointer">
+                          <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
 
-                  <DropdownMenuItem asChild>
-                    <Link href="/track-order" className="cursor-pointer">
-                      <Truck className="mr-2 h-4 w-4" /> Track Order
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" /> Account Settings
-                    </Link>
-                  </DropdownMenuItem>
+                  {(session.user as any)?.role === 'user' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/track-order" className="cursor-pointer">
+                          <Truck className="mr-2 h-4 w-4" /> Track Order
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: window.location.origin })}
-                  className="text-destructive cursor-pointer"
-                >
+                <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>

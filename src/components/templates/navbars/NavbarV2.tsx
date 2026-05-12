@@ -258,51 +258,70 @@ export default function NavbarV2() {
                     </div>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-background/95 backdrop-blur-xl border-muted shadow-2xl">
+                <DropdownMenuContent align="end" className="w-56 mt-2">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="px-3 py-3 mb-2 border-b border-muted">
-                      <div className="flex flex-col gap-1">
-                        <p className="text-sm font-bold truncate">{session.user?.name}</p>
-                        <p className="text-[10px] opacity-60 truncate">{session.user?.email}</p>
+                    <DropdownMenuLabel className="font-serif">
+                      <div className="flex flex-col">
+                        <span>{session.user.name}</span>
+                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
                         {profile && (
-                          <div className="mt-2 flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 rounded-full w-fit border border-primary/20">
+                          <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
                             <Package className="h-3 w-3 text-primary" />
-                            <span className="text-[10px] font-black text-primary">৳{profile.walletBalance || 0} Tokens</span>
+                            <span className="text-[10px] font-bold text-primary">৳{profile.walletBalance || 0} Tokens</span>
                           </div>
                         )}
                       </div>
                     </DropdownMenuLabel>
-                    
+                    <DropdownMenuSeparator />
+
                     {/* Role Based Navigation */}
-                    {(session.user as any)?.role?.includes('admin') && (
-                      <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
-                        <Link href="/admin/dashboard">
-                          <LayoutDashboard className="mr-2 h-4 w-4 text-primary" /> Admin Dashboard
-                        </Link>
-                      </DropdownMenuItem>
+                    {(session.user as any)?.role === 'super_admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/system-design" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
 
-                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
-                      <Link href="/dashboard">
-                        <User className="mr-2 h-4 w-4" /> My Profile
-                      </Link>
-                    </DropdownMenuItem>
+                    {(session.user as any)?.role === 'admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/orders" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
 
-                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
-                      <Link href="/track-order">
-                        <Truck className="mr-2 h-4 w-4" /> Track Order
-                      </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
-                      <Link href="/dashboard/settings">
-                        <Settings className="mr-2 h-4 w-4" /> Account Settings
-                      </Link>
-                    </DropdownMenuItem>
+                    {(session.user as any)?.role === 'user' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/track-order" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Track Order
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuGroup>
-
-                  <DropdownMenuSeparator className="bg-muted my-2" />
-                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="rounded-xl cursor-pointer text-destructive py-2.5">
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" /> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

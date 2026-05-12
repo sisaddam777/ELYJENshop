@@ -28,6 +28,7 @@ export default function NavbarV3() {
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const cartItemsCount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const wishlistCount = useAppSelector((state) => state.wishlist.items.length);
 
@@ -37,6 +38,17 @@ export default function NavbarV3() {
       .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
       .catch(err => console.error('Failed to fetch categories', err));
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => setProfile(data))
+        .catch(err => console.error('Failed to fetch profile', err));
+    } else {
+      setProfile(null);
+    }
+  }, [session]);
 
 
   const NAV_LINKS = [
@@ -133,52 +145,71 @@ export default function NavbarV3() {
                     </span>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-60 rounded-xl p-2 bg-white border-neutral-100 shadow-2xl">
+                <DropdownMenuContent align="end" className="w-56 mt-2">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="px-3 pt-3 pb-1 font-black text-[9px] uppercase tracking-widest text-neutral-400">Authenticated Profile</DropdownMenuLabel>
-                    <div className="px-3 pb-3 mb-2 border-b">
-                      <p className="text-sm font-bold truncate">{session.user?.name}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{session.user?.email}</p>
-                    </div>
+                    <DropdownMenuLabel className="font-serif">
+                      <div className="flex flex-col">
+                        <span>{session.user.name}</span>
+                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
+                        {profile && (
+                          <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
+                            <Package className="h-3 w-3 text-primary" />
+                            <span className="text-[10px] font-bold text-primary">৳{profile.walletBalance || 0} Tokens</span>
+                          </div>
+                        )}
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    {/* Role Based Navigation */}
+                    {(session.user as any)?.role === 'super_admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/system-design" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {(session.user as any)?.role === 'admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/orders" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {(session.user as any)?.role === 'user' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/track-order" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Track Order
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuGroup>
-                  
-                  {/* Role Based Navigation */}
-                  {(session.user as any)?.role === 'super_admin' && (
-                    <>
-                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-lg cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/admin/system-design')} className="rounded-lg cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
-                  {(session.user as any)?.role === 'admin' && (
-                    <>
-                      <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-lg cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/admin/orders')} className="rounded-lg cursor-pointer">
-                        <Truck className="mr-2 h-4 w-4" /> Manage Orders
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
-                  {(session.user as any)?.role === 'user' && (
-                    <>
-                      <DropdownMenuItem onClick={() => router.push('/dashboard')} className="rounded-lg cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/track-order')} className="rounded-lg cursor-pointer">
-                        <Truck className="mr-2 h-4 w-4" /> Track Order
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="rounded-xl cursor-pointer text-red-500 hover:bg-red-500/10">
-                    <LogOut className="mr-2 h-4 w-4" /> End Session
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" /> Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -30,6 +30,7 @@ export default function NavbarV5() {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const cartItemsCount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const wishlistCount = useAppSelector((state) => state.wishlist.items.length);
 
@@ -39,6 +40,17 @@ export default function NavbarV5() {
       .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
       .catch(err => console.error('Failed to fetch categories', err));
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => setProfile(data))
+        .catch(err => console.error('Failed to fetch profile', err));
+    } else {
+      setProfile(null);
+    }
+  }, [session]);
 
 
   const NAV_LINKS = [
@@ -136,53 +148,72 @@ export default function NavbarV5() {
                     </span>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-[2.5rem] p-4 bg-white/90 backdrop-blur-3xl border-none shadow-2xl">
+                <DropdownMenuContent align="end" className="w-56 mt-2">
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel className="px-2 pt-2 pb-1 font-black text-[9px] uppercase tracking-widest opacity-40">Profile / Identity</DropdownMenuLabel>
-                    <div className="px-2 pb-4 mb-3 border-b border-black/5">
-                      <p className="text-sm font-black truncate">{session.user?.name}</p>
-                      <p className="text-[10px] opacity-40 truncate">{session.user?.email}</p>
-                    </div>
+                    <DropdownMenuLabel className="font-serif">
+                      <div className="flex flex-col text-foreground">
+                        <span>{session.user.name}</span>
+                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
+                        {profile && (
+                          <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
+                            <Package className="h-3 w-3 text-primary" />
+                            <span className="text-[10px] font-bold text-primary">৳{profile.walletBalance || 0} Tokens</span>
+                          </div>
+                        )}
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    {/* Role Based Navigation */}
+                    {(session.user as any)?.role === 'super_admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/system-design" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {(session.user as any)?.role === 'admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/orders" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {(session.user as any)?.role === 'user' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/track-order" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Track Order
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuGroup>
-                   
-                   {/* Role Based Navigation */}
-                   {(session.user as any)?.role === 'super_admin' && (
-                     <>
-                       <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-2xl cursor-pointer py-3">
-                         <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> Admin Dashboard
-                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => router.push('/admin/system-design')} className="rounded-2xl cursor-pointer py-3">
-                         <Settings className="mr-3 h-5 w-5" /> Infrastructure & Marketing
-                       </DropdownMenuItem>
-                     </>
-                   )}
-
-                   {(session.user as any)?.role === 'admin' && (
-                     <>
-                       <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-2xl cursor-pointer py-3">
-                         <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> Admin Dashboard
-                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => router.push('/admin/orders')} className="rounded-2xl cursor-pointer py-3">
-                         <Truck className="mr-3 h-5 w-5" /> Manage Orders
-                       </DropdownMenuItem>
-                     </>
-                   )}
-
-                   {(session.user as any)?.role === 'user' && (
-                     <>
-                       <DropdownMenuItem onClick={() => router.push('/dashboard')} className="rounded-2xl cursor-pointer py-3">
-                         <LayoutDashboard className="mr-3 h-5 w-5 text-primary" /> Dashboard
-                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => router.push('/track-order')} className="rounded-2xl cursor-pointer py-3">
-                         <Truck className="mr-3 h-5 w-5" /> Track Order
-                       </DropdownMenuItem>
-                     </>
-                   )}
-
-                   <DropdownMenuSeparator className="bg-black/5" />
-                   <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="rounded-2xl cursor-pointer py-3 text-red-500">
-                     <LogOut className="mr-3 h-5 w-5" /> End Experience
-                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (

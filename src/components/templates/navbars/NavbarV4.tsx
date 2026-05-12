@@ -31,6 +31,7 @@ export default function NavbarV4() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [profile, setProfile] = useState<any>(null);
   const cartItemsCount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const wishlistCount = useAppSelector((state) => state.wishlist.items.length);
   const totalAmount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + (item.price * item.quantity), 0));
@@ -41,6 +42,17 @@ export default function NavbarV4() {
       .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
       .catch(err => console.error('Failed to fetch categories', err));
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => setProfile(data))
+        .catch(err => console.error('Failed to fetch profile', err));
+    } else {
+      setProfile(null);
+    }
+  }, [session]);
 
 
   const handleSearch = (e: React.FormEvent) => {
@@ -148,54 +160,73 @@ export default function NavbarV4() {
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-[#1a1c1c] text-white border-white/5 shadow-2xl">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel className="px-3 pt-3 pb-2 font-black text-[10px] uppercase tracking-[0.2em] opacity-40">System Access</DropdownMenuLabel>
-                  <div className="px-3 pb-4 mb-2 border-b border-white/5">
-                    <p className="text-sm font-bold truncate">{session.user?.name}</p>
-                    <p className="text-[10px] opacity-40 truncate">{session.user?.email}</p>
-                  </div>
-                </DropdownMenuGroup>
-                 
-                 {/* Role Based Navigation */}
-                 {(session.user as any)?.role === 'super_admin' && (
-                   <>
-                     <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-xl cursor-pointer hover:bg-primary/20 text-primary">
-                       <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Console
-                     </DropdownMenuItem>
-                     <DropdownMenuItem onClick={() => router.push('/admin/system-design')} className="rounded-xl cursor-pointer hover:bg-white/5">
-                       <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
-                     </DropdownMenuItem>
-                   </>
-                 )}
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="font-serif">
+                      <div className="flex flex-col text-foreground">
+                        <span>{session.user.name}</span>
+                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
+                        {profile && (
+                          <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
+                            <Package className="h-3 w-3 text-primary" />
+                            <span className="text-[10px] font-bold text-primary">৳{profile.walletBalance || 0} Tokens</span>
+                          </div>
+                        )}
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
 
-                 {(session.user as any)?.role === 'admin' && (
-                   <>
-                     <DropdownMenuItem onClick={() => router.push('/admin/dashboard')} className="rounded-xl cursor-pointer hover:bg-primary/20 text-primary">
-                       <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Console
-                     </DropdownMenuItem>
-                     <DropdownMenuItem onClick={() => router.push('/admin/orders')} className="rounded-xl cursor-pointer hover:bg-white/5">
-                       <Truck className="mr-2 h-4 w-4" /> Manage Orders
-                     </DropdownMenuItem>
-                   </>
-                 )}
+                    {/* Role Based Navigation */}
+                    {(session.user as any)?.role === 'super_admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/system-design" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" /> Infrastructure & Marketing
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
 
-                 {(session.user as any)?.role === 'user' && (
-                   <>
-                     <DropdownMenuItem onClick={() => router.push('/dashboard')} className="rounded-xl cursor-pointer hover:bg-primary/20 text-primary">
-                       <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
-                     </DropdownMenuItem>
-                     <DropdownMenuItem onClick={() => router.push('/track-order')} className="rounded-xl cursor-pointer hover:bg-white/5">
-                       <Truck className="mr-2 h-4 w-4" /> Track Order
-                     </DropdownMenuItem>
-                   </>
-                 )}
+                    {(session.user as any)?.role === 'admin' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin/orders" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Manage Orders
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
 
-                 <DropdownMenuSeparator className="bg-white/5" />
-                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="rounded-xl cursor-pointer text-red-500 hover:bg-red-500/10">
-                   <LogOut className="mr-2 h-4 w-4" /> Terminate Session
-                 </DropdownMenuItem>
-              </DropdownMenuContent>
+                    {(session.user as any)?.role === 'user' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/track-order" className="cursor-pointer">
+                            <Truck className="mr-2 h-4 w-4" /> Track Order
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })} className="text-destructive cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Link href="/login" className="flex items-center gap-3 group hover:scale-110 transition-all">
