@@ -57,10 +57,14 @@ export async function GET(request: Request) {
                     process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || 
                     (settings?.domain ? `https://${settings.domain}/` : null);
 
-    if (!clientEmail || !privateKey || propertyId === 'unknown' || !siteUrl) {
-      console.error('Analytics Configuration Missing for:', domain, { propertyId, siteUrl });
-      return NextResponse.json({ message: 'Analytics is not configured for this shop.' }, { status: 400 });
-    }
+    console.log('Main Analytics Config Check:', {
+      hasEmail: !!clientEmail,
+      emailPrefix: clientEmail?.substring(0, 5),
+      hasPrivateKey: !!privateKey,
+      keyPrefix: privateKey?.substring(0, 20),
+      propertyId,
+      siteUrl
+    });
 
     const analyticsClient = new BetaAnalyticsDataClient({
       credentials: { client_email: clientEmail, private_key: privateKey },
@@ -256,15 +260,15 @@ export async function GET(request: Request) {
     });
 
   } catch (error: any) {
-    const errorString = error.message || JSON.stringify(error);
+    const errorMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
     console.error('Main Analytics API Error Details:', {
       domain,
       propertyId,
-      error: errorString,
-      code: error.code,
-      details: error.details
+      error: errorMsg,
+      code: error?.code,
+      details: error?.details
     });
-    return NextResponse.json({ message: `Internal Server Error: ${errorString}` }, { status: 500 });
+    return NextResponse.json({ message: `Internal Server Error: ${errorMsg}` }, { status: 500 });
   }
 }
 

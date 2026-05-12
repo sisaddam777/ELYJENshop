@@ -36,9 +36,13 @@ export async function GET() {
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/"/g, '');
     propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
 
-    if (!clientEmail || !privateKey || propertyId === 'unknown') {
-      return NextResponse.json({ message: 'Google Analytics credentials not configured' }, { status: 500 });
-    }
+    console.log('Realtime Analytics Config Check:', {
+      hasEmail: !!clientEmail,
+      emailPrefix: clientEmail?.substring(0, 5),
+      hasPrivateKey: !!privateKey,
+      keyPrefix: privateKey?.substring(0, 20),
+      propertyId
+    });
 
     const analyticsClient = new BetaAnalyticsDataClient({
       credentials: { client_email: clientEmail, private_key: privateKey },
@@ -54,17 +58,17 @@ export async function GET() {
     return NextResponse.json({ activeUsersNow });
 
   } catch (error: any) {
-    const errorString = error.message || JSON.stringify(error);
+    const errorMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
     console.error('Realtime Analytics API Error Details:', {
       domain,
       propertyId,
-      error: errorString,
-      code: error.code,
-      details: error.details
+      error: errorMsg,
+      code: error?.code,
+      details: error?.details
     });
     return NextResponse.json({ 
       activeUsersNow: 0, 
-      message: `Failed to fetch realtime data: ${errorString}` 
+      message: `Failed to fetch realtime data: ${errorMsg}` 
     }, { status: 500 });
   }
 }
