@@ -28,6 +28,7 @@ import { CartDrawer } from '@/components/layout/CartDrawer';
 import { ModeToggle } from '@/components/mode-toggle';
 import { AIChatbot } from '@/components/layout/AIChatbot';
 import { useSettings } from '@/components/SettingsProvider';
+import { MobileNavbar } from '@/components/layout/MobileNavbar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -136,15 +137,19 @@ export default function NavbarV2() {
   const isHomePage = pathname === '/';
 
   return (
-    <nav className={`
-      sticky top-0
-      left-0 right-0 z-50 w-full transition-all duration-500 font-jost
-      md:${isHomePage ? 'fixed' : 'sticky top-0'}
-      bg-background border-b shadow-sm py-2
-      md:${isHomePage 
-        ? (isScrolled ? 'bg-background/80 backdrop-blur-md shadow-md py-2' : 'bg-transparent border-none shadow-none py-4') 
-        : 'bg-background border-b py-2 shadow-sm'}
-    `}>
+    <>
+      {/* ── Mobile Top Bar (V1 Standard) — lg:hidden ──────────────── */}
+      <MobileNavbar navItems={navItems} categories={categories} />
+
+      {/* ── Desktop Navbar ─────────────────────────────────────────── */}
+      <nav className={`
+        hidden lg:block
+        sticky top-0 left-0 right-0 z-50 w-full transition-all duration-500 font-jost
+        bg-background border-b shadow-sm py-2
+        ${isHomePage ? 'lg:fixed' : ''}
+        ${isHomePage && !isScrolled ? 'lg:bg-transparent lg:border-none lg:shadow-none lg:py-4' : ''}
+        ${isHomePage && isScrolled ? 'lg:bg-background/80 lg:backdrop-blur-md lg:shadow-md lg:py-2' : ''}
+      `}>
       <div className="container mx-auto px-4 md:px-8 flex items-center justify-between">
         
         {/* Left: Logo & Mobile Menu */}
@@ -305,6 +310,7 @@ export default function NavbarV2() {
         </div>
       </div>
 
-    </nav>
+      </nav>
+    </>
   );
 }

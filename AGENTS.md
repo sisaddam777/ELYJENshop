@@ -13,7 +13,7 @@ This project follows strict architectural and design rules for a high-end, multi
 ## 2. Navigation Standards
 - **Home Page:** Fixed/Transparent at the top, transitioning to solid/blurred on scroll.
 - **Other Pages (Shop, Checkout, etc.):** MUST be `sticky top-0` or `relative` with a solid background. Never overlap content on functional pages.
-- **Mobile Navigation:** Force `sticky` with a solid background. No floating/transparent navbars on mobile to ensure accessibility.
+- **Mobile Navigation:** Force `sticky` with a solid background. All UI versions (V1, V2, V3, etc.) MUST use a uniform mobile navigation layout based on the V1 standard. No floating or transparent navbars on mobile to ensure accessibility and professional consistency.
 
 ## 3. Hero & Banner Structure
 - **Text Stability:** Use a fixed-height container with `flex-col justify-end` for hero text. Content must expand upwards so that action buttons remain at a consistent vertical position regardless of text length.

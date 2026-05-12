@@ -20,6 +20,7 @@ import {
   DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { MobileMenu } from '@/components/layout/MobileMenu';
+import { MobileNavbar } from '@/components/layout/MobileNavbar';
 import { useEffect } from 'react';
 
 export default function NavbarV3() {
@@ -45,7 +46,12 @@ export default function NavbarV3() {
   ];
 
   return (
-    <header className="w-full bg-white border-b border-neutral-100 sticky top-0 z-50 animate-in fade-in duration-1000">
+    <>
+      {/* ── Mobile Top Bar (V1 Standard) — lg:hidden ──────────────── */}
+      <MobileNavbar navItems={NAV_LINKS} categories={categories} />
+
+      {/* ── Desktop Header ─────────────────────────────────────────── */}
+      <header className="hidden lg:block w-full bg-white border-b border-neutral-100 sticky top-0 z-50 animate-in fade-in duration-1000">
       <div className="container mx-auto px-4 lg:px-12">
         {/* Top Minimal Bar */}
         <div className="py-2.5 text-center text-[9px] font-black tracking-[0.4em] uppercase text-neutral-400 border-b border-neutral-50/50">
@@ -200,7 +206,8 @@ export default function NavbarV3() {
         </div>
       </div>
 
-    </header>
+      </header>
+    </>
   );
 }
 
