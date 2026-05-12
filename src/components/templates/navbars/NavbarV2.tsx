@@ -39,6 +39,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Swal from 'sweetalert2';
 
+import { CategoryNav } from '@/components/layout/CategoryNav';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
@@ -58,6 +66,7 @@ export default function NavbarV2() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
 
   const cartCount = useAppSelector((state) => state.cart.totalQuantity);
   const totalAmount = useAppSelector((state) => state.cart.totalAmount);
@@ -67,6 +76,14 @@ export default function NavbarV2() {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Fetch Categories for Mobile
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
+      .catch(err => console.error('Failed to fetch categories', err));
   }, []);
 
   // Fetch Profile for Wallet Balance
@@ -158,16 +175,23 @@ export default function NavbarV2() {
         {/* Right: Actions */}
         <div className="flex items-center gap-2 md:gap-4">
           <ul className="hidden lg:flex items-center gap-6 mr-4">
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <Link 
-                  href={item.href} 
-                  className={`text-xs font-bold uppercase tracking-widest relative group transition-colors ${pathname === item.href ? 'text-primary' : 'text-foreground/70 hover:text-primary'}`}
-                >
-                  {item.label}
-                  <span className={`absolute -bottom-1 left-0 h-[2px] bg-primary transition-all duration-300 ${pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
-                </Link>
-              </li>
+            {navItems.map((item, index) => (
+              <React.Fragment key={item.label}>
+                <li>
+                  <Link 
+                    href={item.href} 
+                    className={`text-xs font-bold uppercase tracking-widest relative group transition-colors ${pathname === item.href ? 'text-primary' : 'text-foreground/70 hover:text-primary'}`}
+                  >
+                    {item.label}
+                    <span className={`absolute -bottom-1 left-0 h-[2px] bg-primary transition-all duration-300 ${pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                  </Link>
+                </li>
+                {index === 0 && (
+                  <li>
+                    <CategoryNav />
+                  </li>
+                )}
+              </React.Fragment>
             ))}
           </ul>
 
@@ -211,12 +235,10 @@ export default function NavbarV2() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 group cursor-pointer outline-none">
                     <div className="h-9 w-9 rounded-full border-2 border-primary/50 overflow-hidden group-hover:scale-110 transition-transform">
-                      <Image 
+                      <img 
                         src={session.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || '')}`} 
                         alt={session.user?.name || 'User'} 
-                        width={36}
-                        height={36}
-                        className="object-cover" 
+                        className="h-full w-full object-cover" 
                       />
                     </div>
                   </button>
@@ -284,16 +306,40 @@ export default function NavbarV2() {
               <X className="h-10 w-10" />
             </button>
           </div>
-          <div className="flex flex-col items-center justify-center h-full -mt-20 gap-10">
-             {navItems.map((link) => (
-                <Link 
-                  key={link.label} 
-                  href={link.href}
-                  className={`text-5xl font-black transition-all duration-500 uppercase tracking-tighter ${pathname === link.href ? 'text-primary scale-110' : 'text-white hover:text-primary'}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
+          <div className="flex flex-col items-center justify-center h-full -mt-20 gap-8 overflow-y-auto pb-10">
+             {navItems.map((link, index) => (
+                <React.Fragment key={link.label}>
+                  <Link 
+                    href={link.href}
+                    className={`text-5xl font-black transition-all duration-500 uppercase tracking-tighter ${pathname === link.href ? 'text-primary scale-110' : 'text-white hover:text-primary'}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                  {index === 0 && (
+                    <div className="w-full max-w-xs">
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="categories" className="border-none">
+                          <AccordionTrigger className="text-2xl font-bold text-white/70 hover:text-primary hover:no-underline uppercase">
+                            Categories
+                          </AccordionTrigger>
+                          <AccordionContent className="flex flex-col gap-4 pt-4 items-center">
+                            {categories.map((cat: any) => (
+                              <Link
+                                key={cat._id}
+                                href={`/shop?category=${cat.slug}`}
+                                className="text-xl font-bold text-white/50 hover:text-primary uppercase transition-colors"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                {cat.name}
+                              </Link>
+                            ))}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </div>
+                  )}
+                </React.Fragment>
              ))}
              {!session && (
                <Link href="/login" className="mt-10" onClick={() => setMobileMenuOpen(false)}>

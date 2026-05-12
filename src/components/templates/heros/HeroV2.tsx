@@ -25,6 +25,7 @@ export default function HeroV2({ banners }: HeroV2Props) {
           alt={title}
           fill
           priority
+          unoptimized={true}
           className="object-cover opacity-60 transition-transform duration-[10s] hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
