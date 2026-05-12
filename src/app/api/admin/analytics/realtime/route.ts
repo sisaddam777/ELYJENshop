@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
 
 export async function GET() {
+  console.log('Realtime Analytics API Called');
   let domain = 'unknown';
   let propertyId = 'unknown';
 
@@ -58,17 +59,29 @@ export async function GET() {
     return NextResponse.json({ activeUsersNow });
 
   } catch (error: any) {
-    const errorMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-    console.error('Realtime Analytics API Error Details:', {
-      domain,
-      propertyId,
-      error: errorMsg,
-      code: error?.code,
-      details: error?.details
-    });
+    console.error('Realtime Analytics API Error:', error);
+    let errorMsg = 'Unknown Error';
+    
+    if (error?.message) {
+      errorMsg = error.message;
+    } else if (typeof error === 'string') {
+      errorMsg = error;
+    } else {
+      try {
+        errorMsg = JSON.stringify(error);
+      } catch (e) {
+        errorMsg = 'Circular or non-stringifiable error object';
+      }
+    }
+
     return NextResponse.json({ 
       activeUsersNow: 0, 
-      message: `Failed to fetch realtime data: ${errorMsg}` 
+      message: `Failed to fetch realtime data: ${errorMsg}`,
+      debug: {
+        code: error?.code,
+        status: error?.status,
+        details: error?.details
+      }
     }, { status: 500 });
   }
 }

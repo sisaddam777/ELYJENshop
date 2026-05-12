@@ -7,6 +7,7 @@ import { getCachedSettings } from '@/lib/data-fetching';
 import { getTenantDomain } from '@/lib/tenant';
 
 export async function GET(request: Request) {
+  console.log('Main Analytics API Called');
   let domain = 'unknown';
   let propertyId = 'unknown';
 
@@ -260,15 +261,29 @@ export async function GET(request: Request) {
     });
 
   } catch (error: any) {
-    const errorMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-    console.error('Main Analytics API Error Details:', {
-      domain,
-      propertyId,
-      error: errorMsg,
-      code: error?.code,
-      details: error?.details
-    });
-    return NextResponse.json({ message: `Internal Server Error: ${errorMsg}` }, { status: 500 });
+    console.error('Main Analytics API Error:', error);
+    let errorMsg = 'Unknown Error';
+    
+    if (error?.message) {
+      errorMsg = error.message;
+    } else if (typeof error === 'string') {
+      errorMsg = error;
+    } else {
+      try {
+        errorMsg = JSON.stringify(error);
+      } catch (e) {
+        errorMsg = 'Circular or non-stringifiable error object';
+      }
+    }
+
+    return NextResponse.json({ 
+      message: `Internal Server Error: ${errorMsg}`,
+      debug: {
+        code: error?.code,
+        status: error?.status,
+        details: error?.details
+      }
+    }, { status: 500 });
   }
 }
 
