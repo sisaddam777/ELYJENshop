@@ -29,6 +29,7 @@ interface ProductCardProps {
     images: string[];
     isFeatured?: boolean;
     isNewArrival?: boolean;
+    isTrending?: boolean;
     stock: number;
     categories?: any[];
     variants?: any[];
@@ -90,11 +91,28 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
           />
         </Link>
 
-        {/* Sale Ribbon Badge */}
-        {discount > 0 && (
+        {/* Sale / Flash Ribbon Badge (Top Right) */}
+        {(discount > 0 || isFlashSale) && (
           <div className="absolute top-0 right-0 overflow-hidden w-24 h-24 z-10 pointer-events-none">
-            <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black py-1 w-32 text-center rotate-45 translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest">
-              Sale
+            <div className={`absolute top-0 right-0 text-white text-[10px] font-black py-1 w-32 text-center rotate-45 translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest ${
+              isFlashSale ? 'bg-orange-500 animate-pulse' : 'bg-primary'
+            }`}>
+              {isFlashSale ? 'Flash' : `${discount}% OFF`}
+            </div>
+          </div>
+        )}
+
+        {/* Status Ribbon Badge (Top Left) */}
+        {(product.isNewArrival || product.isTrending || product.isFeatured) && (
+          <div className="absolute top-0 left-0 overflow-hidden w-24 h-24 z-10 pointer-events-none">
+            <div className={`absolute top-0 left-0 text-white text-[10px] font-black py-1 w-32 text-center -rotate-45 -translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest ${
+              product.isNewArrival ? 'bg-emerald-500' :
+              product.isTrending ? 'bg-rose-500' :
+              'bg-amber-500'
+            }`}>
+              {product.isNewArrival ? 'New' :
+               product.isTrending ? 'Trending' :
+               'Featured'}
             </div>
           </div>
         )}
