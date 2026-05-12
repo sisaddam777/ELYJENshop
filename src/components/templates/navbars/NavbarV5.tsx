@@ -45,9 +45,10 @@ export default function NavbarV5() {
   ];
 
   return (
-    <nav className="fixed top-8 left-0 right-0 z-50 px-6 animate-in slide-in-from-top-10 duration-1000">
+  return (
+    <nav className="sticky md:fixed top-0 md:top-8 left-0 right-0 z-50 px-0 md:px-6 animate-in slide-in-from-top-10 duration-1000 bg-background md:bg-transparent border-b md:border-none shadow-sm md:shadow-none">
       <div className="container mx-auto max-w-6xl">
-        <div className="bg-white/40 dark:bg-black/40 backdrop-blur-3xl rounded-[3rem] border border-white/20 px-10 py-5 flex items-center justify-between shadow-2xl shadow-black/10">
+        <div className="bg-background md:bg-white/40 md:dark:bg-black/40 md:backdrop-blur-3xl rounded-none md:rounded-[3rem] border-none md:border md:border-white/20 px-4 md:px-10 py-3 md:py-5 flex items-center justify-between shadow-none md:shadow-2xl md:shadow-black/10">
           
           {/* Logo - Artistic Shape */}
           <Link href="/" className="group flex items-center gap-4">

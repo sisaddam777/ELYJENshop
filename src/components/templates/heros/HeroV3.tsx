@@ -97,7 +97,7 @@ export default function HeroV3({ banners, onPlay }: HeroV3Props) {
       <button 
         onClick={handleScroll}
         aria-label="Scroll to content"
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 text-white/30 hover:text-primary transition-all group"
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-4 text-white/30 hover:text-primary transition-all group"
       >
          <span className="text-[9px] font-black uppercase tracking-[0.5em] vertical-rl h-16 w-[1px] bg-white/20 relative overflow-hidden">
             <span className="absolute top-0 left-0 w-full h-1/2 bg-primary animate-scroll-indicator" />

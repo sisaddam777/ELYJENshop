@@ -111,30 +111,30 @@ export default function HeroV2({ banners }: HeroSliderProps) {
               </div>
 
               {/* Text Content */}
-              <div className="container relative z-20 mx-auto px-4 sm:px-12 md:px-20 lg:px-32">
-                <div className="max-w-[95%] sm:max-w-2xl text-center sm:text-left">
+              <div className="container relative z-20 mx-auto px-4 sm:px-12 md:px-20 lg:px-32 h-full flex items-center">
+                <div className="max-w-[95%] sm:max-w-4xl w-full flex flex-col justify-end h-[70%] pb-20 sm:pb-32 text-center sm:text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                   >
-                    <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-4 sm:mb-8 drop-shadow-2xl uppercase">
+                    <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-white leading-[1] tracking-tighter mb-8 sm:mb-12 drop-shadow-2xl uppercase">
                       {banner.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-5 mt-2 sm:mt-0">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6">
                       <Link
                         href={banner.primaryBtnLink || banner.link || '/shop'}
-                        className="group flex items-center gap-1.5 px-5 py-1.5 sm:px-10 sm:py-3.5 bg-primary text-white font-bold rounded-full hover:bg-white hover:text-black transition-all text-[10px] sm:text-sm shadow-xl"
+                        className="group flex items-center gap-3 px-6 py-3 sm:px-12 sm:py-5 bg-[#00a870] text-white font-black rounded-none hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest shadow-2xl"
                       >
                         {banner.primaryBtnText || 'Shop Now'}
-                        <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-1" />
+                        <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2" />
                       </Link>
 
                       {banner.secondaryBtnText && (
                         <Link
                           href={banner.secondaryBtnLink || '/contact'}
-                          className="px-5 py-1.5 sm:px-10 sm:py-3.5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold rounded-full hover:bg-white hover:text-black transition-all text-[10px] sm:text-sm"
+                          className="px-6 py-3 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black rounded-none hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest"
                         >
                           {banner.secondaryBtnText}
                         </Link>
@@ -153,7 +153,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
-        className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1 sm:gap-2 text-white/50"
+        className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 hidden sm:flex flex-col items-center gap-1 sm:gap-2 text-white/50"
       >
         <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.3em]">Explore</span>
         <motion.div
