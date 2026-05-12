@@ -58,13 +58,14 @@ export async function GET(request: Request) {
                     process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || 
                     (settings?.domain ? `https://${settings.domain}/` : null);
 
-    console.log('Main Analytics Config Check:', {
+    console.log('Main Analytics Execution State:', {
+      domain,
+      hasSettings: !!settings,
       hasEmail: !!clientEmail,
-      emailPrefix: clientEmail?.substring(0, 5),
-      hasPrivateKey: !!privateKey,
-      keyPrefix: privateKey?.substring(0, 20),
       propertyId,
-      siteUrl
+      siteUrl,
+      userRole: (session.user as any).role,
+      userDomain: (session.user as any).domain
     });
 
     const analyticsClient = new BetaAnalyticsDataClient({
@@ -262,27 +263,26 @@ export async function GET(request: Request) {
 
   } catch (error: any) {
     console.error('Main Analytics API Error:', error);
-    let errorMsg = 'Unknown Error';
     
-    if (error?.message) {
-      errorMsg = error.message;
-    } else if (typeof error === 'string') {
-      errorMsg = error;
-    } else {
-      try {
-        errorMsg = JSON.stringify(error);
-      } catch (e) {
-        errorMsg = 'Circular or non-stringifiable error object';
-      }
+    // Robust error message extraction
+    let errorMsg = 'Unknown Error';
+    try {
+      errorMsg = error?.message || error?.statusText || (typeof error === 'string' ? error : JSON.stringify(error));
+    } catch (e) {
+      errorMsg = String(error);
+    }
+
+    // Extract all keys from error for debugging
+    const errorDebug: any = {};
+    if (error) {
+      Object.getOwnPropertyNames(error).forEach(key => {
+        errorDebug[key] = error[key];
+      });
     }
 
     return NextResponse.json({ 
       message: `Internal Server Error: ${errorMsg}`,
-      debug: {
-        code: error?.code,
-        status: error?.status,
-        details: error?.details
-      }
+      debug: errorDebug
     }, { status: 500 });
   }
 }
