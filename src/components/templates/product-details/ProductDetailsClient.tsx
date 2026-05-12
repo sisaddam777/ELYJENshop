@@ -119,27 +119,27 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   // Fetch review eligibility separately to avoid unnecessary re-triggers
   useEffect(() => {
     if (!session?.user || !product?._id) {
-        setEligibility(null);
-        return;
+      setEligibility(null);
+      return;
     }
 
     const controller = new AbortController();
     setEligibility(null); // Reset to avoid stale UI
 
     async function checkEligibility() {
-        try {
-            const res = await fetch(`/api/reviews/check-eligibility?productId=${product._id}`, {
-                signal: controller.signal
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setEligibility(data);
-            }
-        } catch (error: any) {
-            if (error.name !== 'AbortError') {
-                console.error('Eligibility Check Error:', error);
-            }
+      try {
+        const res = await fetch(`/api/reviews/check-eligibility?productId=${product._id}`, {
+          signal: controller.signal
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setEligibility(data);
         }
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Eligibility Check Error:', error);
+        }
+      }
     }
 
     checkEligibility();
@@ -149,18 +149,18 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   // Handle scroll to review form when tab changes and scroll is requested
   useEffect(() => {
     if (activeTab === 'reviews' && shouldScrollToReviewForm) {
-        const element = document.getElementById('review-form');
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setShouldScrollToReviewForm(false);
-        } else {
-            // If element not yet in DOM, retry briefly
-            const timer = setTimeout(() => {
-                document.getElementById('review-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setShouldScrollToReviewForm(false);
-            }, 100);
-            return () => clearTimeout(timer);
-        }
+      const element = document.getElementById('review-form');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setShouldScrollToReviewForm(false);
+      } else {
+        // If element not yet in DOM, retry briefly
+        const timer = setTimeout(() => {
+          document.getElementById('review-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setShouldScrollToReviewForm(false);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
     }
   }, [activeTab, shouldScrollToReviewForm]);
 
@@ -434,12 +434,12 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             <Separator orientation="vertical" className="h-4" />
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <span className="font-bold text-foreground">{product.numReviews || 0}</span>
-              <span>Verified Reviews</span>
+              <span>Reviews</span>
             </div>
             {eligibility?.eligible && (
               <>
                 <Separator orientation="vertical" className="h-4" />
-                <button 
+                <button
                   onClick={() => {
                     setActiveTab('reviews');
                     setShouldScrollToReviewForm(true);
@@ -466,7 +466,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
           <div className="flex items-center gap-2 mt-1">
             <p className={`text-xs font-bold ${displayStock > 0 ? 'text-green-600' : 'text-destructive'}`}>
-              {displayStock > 0 ? `In stock (${displayStock} units available)` : 'Out of stock'}
+              {displayStock > 0 ? `In stock (${displayStock} units)` : 'Out of stock'}
             </p>
             {displaySku && (
               <span className="text-xs text-muted-foreground">| SKU: {displaySku}</span>

@@ -100,14 +100,14 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
     onClose();
   };
 
-  const discountPercentage = product.price && product.salePrice 
-    ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
+  const discountPercentage = product.price && product.salePrice
+    ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-5xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
-        <button 
+        <button
           onClick={onClose}
           className="absolute right-4 top-4 z-50 p-2 bg-white/80 hover:bg-white rounded-none shadow-md transition-all border border-gray-100"
         >
@@ -118,13 +118,13 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           {/* Left: Sticky Image Section */}
           <div className="w-full md:w-[50%] bg-[#f8f8f8] relative md:sticky md:top-0 h-fit md:h-full flex flex-col items-center justify-center border-r border-neutral-100">
             <div className="relative w-full aspect-square flex items-center justify-center p-0">
-              <img 
-                src={activeImage} 
-                alt={product.name} 
+              <img
+                src={activeImage}
+                alt={product.name}
                 className="w-full h-full object-contain mix-blend-multiply transition-all duration-700"
               />
             </div>
-            
+
             {/* Thumbnails at the bottom of sticky image */}
             {product.images?.length > 1 && (
               <div className="flex gap-2 overflow-x-auto py-4 w-full justify-center scrollbar-hide px-4 absolute bottom-0 bg-white/20 backdrop-blur-sm">
@@ -132,9 +132,8 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                   <button
                     key={idx}
                     onClick={() => setActiveImage(img)}
-                    className={`h-16 w-16 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${
-                      activeImage === img ? 'border-[#00a870]' : 'border-white opacity-60 hover:opacity-100'
-                    }`}
+                    className={`h-16 w-16 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${activeImage === img ? 'border-[#00a870]' : 'border-white opacity-60 hover:opacity-100'
+                      }`}
                   >
                     <img src={img} alt="" className="h-full w-full object-cover" />
                   </button>
@@ -152,16 +151,16 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           {/* Right: Scrollable Details Section */}
           <div className="w-full md:w-[50%] p-10 flex flex-col font-jost overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-200">
             <div className="mb-2 flex items-center gap-2">
-               <div className="flex text-yellow-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`h-4 w-4 fill-current ${i < (product.ratings || 5) ? 'text-yellow-400' : 'text-gray-300'}`} />
-                  ))}
-               </div>
-               <span className="text-xs text-gray-500">({product.numReviews || 0} Verified Reviews)</span>
+              <div className="flex text-yellow-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className={`h-4 w-4 fill-current ${i < (product.ratings || 5) ? 'text-yellow-400' : 'text-gray-300'}`} />
+                ))}
+              </div>
+              <span className="text-xs text-gray-500">({product.numReviews || 0} Reviews)</span>
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">{product.name}</h2>
-            
+
             <div className="flex items-baseline gap-3 mb-4 pb-4 border-b border-gray-100">
               <span className="text-3xl font-bold text-[#00a870]">
                 ৳{Math.round(activeVariant?.salePrice ?? activeVariant?.price ?? product.salePrice ?? product.price)}
@@ -174,37 +173,41 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
             </div>
 
             <div className="space-y-1 mb-6 text-sm">
-               <div className="flex items-center gap-2">
-                  <span className={`h-2 w-2 rounded-none ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                  <span className="font-medium text-gray-600">
-                    {product.stock > 0 ? `In stock (${product.stock} units available)` : 'Out of stock'}
-                  </span>
-                  <span className="text-gray-300 mx-1">|</span>
-                  <span className="text-gray-500 uppercase">SKU: {product.sku || 'N/A'}</span>
-               </div>
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-none ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                <span className="font-medium text-gray-600">
+                  {product.stock > 0 ? `In stock (${product.stock} units available)` : 'Out of stock'}
+                </span>
+                <span className="text-gray-300 mx-1">|</span>
+                <span className="text-gray-500 uppercase">SKU: {product.sku || 'N/A'}</span>
+              </div>
             </div>
 
             {/* Attributes Section (Vertical) */}
             <div className="mb-8 space-y-4 border-t border-gray-100 pt-6">
-               {product.attributes?.length > 0 ? (
-                 product.attributes.map((attr: any, idx: number) => (
-                   <div key={idx} className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">{attr.name || 'Detail'}:</span>
+              {product.attributes?.length > 0 ? (
+                product.attributes.map((attr: any, idx: number) => {
+                  const label = attr.key || attr.name || 'Feature';
+
+                  return (
+                    <div key={idx} className="flex items-center gap-4">
+                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">{label}:</span>
                       <span className="text-sm font-bold text-neutral-800">{attr.value}</span>
-                   </div>
-                 ))
-               ) : (
-                 <>
-                   <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">Technology:</span>
-                      <span className="text-sm font-bold text-neutral-800">Carbon Plate</span>
-                   </div>
-                   <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">Material:</span>
-                      <span className="text-sm font-bold text-neutral-800">PrimeKnit</span>
-                   </div>
-                 </>
-               )}
+                    </div>
+                  );
+                })
+              ) : (
+                <>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">Technology:</span>
+                    <span className="text-sm font-bold text-neutral-800">Carbon Plate</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">Material:</span>
+                    <span className="text-sm font-bold text-neutral-800">PrimeKnit</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Variations Selection */}
@@ -217,11 +220,10 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                       <button
                         key={i}
                         onClick={(e) => { e.preventDefault(); setSelectedColor(colorName); }}
-                        className={`px-4 py-2 text-xs font-bold rounded-none border transition-all ${
-                          selectedColor === colorName
+                        className={`px-4 py-2 text-xs font-bold rounded-none border transition-all ${selectedColor === colorName
                             ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
                             : 'border-gray-200 hover:border-gray-900 text-gray-600'
-                        }`}
+                          }`}
                       >
                         {colorName}
                       </button>
@@ -241,13 +243,12 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                           key={i}
                           disabled={!isAvailable}
                           onClick={(e) => { e.preventDefault(); setSelectedSize(sizeName); }}
-                          className={`min-w-[44px] px-2 py-2 text-xs font-bold rounded-none border transition-all ${
-                            selectedSize === sizeName
+                          className={`min-w-[44px] px-2 py-2 text-xs font-bold rounded-none border transition-all ${selectedSize === sizeName
                               ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
-                              : !isAvailable 
+                              : !isAvailable
                                 ? 'opacity-30 grayscale cursor-not-allowed bg-gray-100'
                                 : 'border-gray-200 hover:border-gray-900 text-gray-600'
-                          }`}
+                            }`}
                         >
                           {sizeName}
                         </button>
@@ -257,18 +258,18 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                 </div>
               )}
             </div>
-            
+
             {/* Actions */}
             <div className="pt-6 border-t border-gray-100 mt-6 flex gap-3">
               <div className="flex items-center border border-gray-200 bg-gray-50 rounded-none overflow-hidden">
-                <button 
+                <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-4 py-2 hover:bg-gray-200 transition-colors"
                 >
                   <Minus className="h-3 w-3" />
                 </button>
                 <span className="w-10 text-center font-bold text-sm">{quantity}</span>
-                <button 
+                <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="px-4 py-2 hover:bg-gray-200 transition-colors"
                 >
@@ -276,12 +277,12 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                 </button>
               </div>
 
-              <Button 
-                className="flex-grow h-12 bg-[#00a870] hover:bg-[#008f5d] text-white font-bold uppercase tracking-widest text-xs rounded-none shadow-lg shadow-[#00a870]/20" 
+              <Button
+                className="flex-grow h-12 bg-[#00a870] hover:bg-[#008f5d] text-white font-bold uppercase tracking-widest text-xs rounded-none shadow-lg shadow-[#00a870]/20"
                 onClick={handleAddToCart}
                 disabled={(activeVariant?.stock ?? product.stock) === 0}
               >
-                <ShoppingCart className="mr-2 h-4 w-4" /> 
+                <ShoppingCart className="mr-2 h-4 w-4" />
                 {(activeVariant?.stock ?? product.stock) === 0 ? 'Out of Stock' : 'Add to Cart'}
               </Button>
 
