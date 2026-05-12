@@ -51,6 +51,7 @@ export async function GET() {
 
     const analyticsClient = new BetaAnalyticsDataClient({
       credentials: { client_email: clientEmail, private_key: privateKey },
+      transport: 'rest', // Force REST transport instead of gRPC
     });
 
     const [realtimeResponse] = await analyticsClient.runRealtimeReport({

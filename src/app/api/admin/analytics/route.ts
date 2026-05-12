@@ -70,6 +70,7 @@ export async function GET(request: Request) {
 
     const analyticsClient = new BetaAnalyticsDataClient({
       credentials: { client_email: clientEmail, private_key: privateKey },
+      transport: 'rest', // Force REST transport
     });
 
     const authClient = new google.auth.JWT({
