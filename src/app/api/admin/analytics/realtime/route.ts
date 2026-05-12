@@ -3,6 +3,9 @@ import { auth } from '@/auth';
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
 
 export async function GET() {
+  let domain = 'unknown';
+  let propertyId = 'unknown';
+
   try {
     const session = await auth();
     if (!session || !(['admin', 'super_admin'].includes((session?.user as any)?.role))) {
@@ -10,8 +13,8 @@ export async function GET() {
     }
 
     const { getTenantDomain } = await import('@/lib/tenant');
-    const domain = await getTenantDomain();
-    if (!domain) {
+    domain = await getTenantDomain() || 'unknown';
+    if (!domain || domain === 'unknown') {
       return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
     }
 
@@ -31,9 +34,9 @@ export async function GET() {
 
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    const propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID;
+    propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
 
-    if (!clientEmail || !privateKey || !propertyId) {
+    if (!clientEmail || !privateKey || propertyId === 'unknown') {
       return NextResponse.json({ message: 'Google Analytics credentials not configured' }, { status: 500 });
     }
 

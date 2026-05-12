@@ -7,6 +7,9 @@ import { getCachedSettings } from '@/lib/data-fetching';
 import { getTenantDomain } from '@/lib/tenant';
 
 export async function GET(request: Request) {
+  let domain = 'unknown';
+  let propertyId = 'unknown';
+
   try {
     const session = await auth();
     if (!session || !(['admin', 'super_admin'].includes((session?.user as any)?.role))) {
@@ -23,9 +26,9 @@ export async function GET(request: Request) {
     if (range === '90d') startDate = '90daysAgo';
 
     // Fetch store-specific settings based on hostname
-    const domain = await getTenantDomain();
+    domain = await getTenantDomain() || 'unknown';
 
-    if (!domain) {
+    if (!domain || domain === 'unknown') {
       return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
     }
 
@@ -47,14 +50,14 @@ export async function GET(request: Request) {
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
     // Prioritize store-specific IDs from database, fallback to global envs
-    const propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID;
+    propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
     
     // siteUrl is critical for Search Console. Prioritize store-specific settings.
     const siteUrl = settings?.googleSearchConsoleId || 
                     process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || 
                     (settings?.domain ? `https://${settings.domain}/` : null);
 
-    if (!clientEmail || !privateKey || !propertyId || !siteUrl) {
+    if (!clientEmail || !privateKey || propertyId === 'unknown' || !siteUrl) {
       console.error('Analytics Configuration Missing for:', domain, { propertyId, siteUrl });
       return NextResponse.json({ message: 'Analytics is not configured for this shop.' }, { status: 400 });
     }
