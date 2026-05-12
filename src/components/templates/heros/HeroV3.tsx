@@ -31,7 +31,7 @@ export default function HeroV3({ banners, onPlay }: HeroV3Props) {
   return (
     <section 
       ref={sectionRef}
-      className="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-black"
+      className="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-transparent"
     >
       {/* Immersive Parallax Background */}
       <div className="absolute inset-0 z-0">
@@ -40,10 +40,10 @@ export default function HeroV3({ banners, onPlay }: HeroV3Props) {
             alt="Hero Background" 
             fill 
             priority
-            className="object-cover scale-110 opacity-60 transition-transform duration-[10s] hover:scale-100"
+            className="object-cover scale-110 opacity-100 transition-transform duration-[10s] hover:scale-100"
          />
-         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
-         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+         <div className="absolute inset-0 bg-black/40 z-[5]" />
+         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 z-[5]" />
       </div>
 
       {/* Cinematic Center Content */}

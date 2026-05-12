@@ -101,7 +101,7 @@ export default function HeroV1({ banners }: HeroSliderProps) {
   }
 
   return (
-    <section className="relative w-full h-[210px] sm:h-[480px] md:h-[550px] lg:h-[650px] overflow-hidden bg-black group/slider text-white">
+    <section className="relative w-full h-[210px] sm:h-[480px] md:h-[550px] lg:h-[650px] overflow-hidden bg-transparent group/slider text-white">
       {/* Embla Viewport */}
       <div className="h-full w-full overflow-hidden" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -122,13 +122,13 @@ export default function HeroV1({ banners }: HeroSliderProps) {
                     fill
                     className={`object-cover object-top transition-transform duration-[8000ms] ease-linear ${isActive ? 'scale-110' : 'scale-100'}`}
                     priority={index === 0}
-                    unoptimized={true}
                     sizes="100vw"
                   />
                 </div>
 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
+                {/* Gradient Overlay - Lighter */}
+                <div className="absolute inset-0 bg-black/20 z-[5]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent z-[5]" />
 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-end pb-10 sm:pb-20 lg:pb-32 z-20 px-4 sm:px-12 md:px-20 lg:px-32">

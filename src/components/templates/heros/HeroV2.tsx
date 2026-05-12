@@ -62,7 +62,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-screen overflow-hidden bg-black font-jost">
+    <section className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-screen overflow-hidden bg-transparent font-jost">
       {/* Logic Layer (Hidden Embla) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -106,8 +106,9 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                     sizes="100vw"
                   />
                 </motion.div>
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-[5]" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-[5]" />
+                {/* Lighter overlays to show image better */}
+                <div className="absolute inset-0 bg-black/30 z-[5]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[5]" />
               </div>
 
               {/* Text Content */}
