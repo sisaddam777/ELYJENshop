@@ -96,7 +96,10 @@ async function seed() {
 
   const products = [];
 
-  const getRandomImage = () => `/assets/sneakers/product/${IMAGES[Math.floor(Math.random() * IMAGES.length)]}`;
+  const getRandomImages = (count = 3) => {
+    const shuffled = [...IMAGES].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count).map(img => `/assets/sneakers/product/${img}`);
+  };
 
   // --- 10 FEATURED PRODUCTS ---
   for (let i = 0; i < 10; i++) {
@@ -109,7 +112,7 @@ async function seed() {
       sku: `EJ-FEAT-${i + 1}-${Date.now()}`,
       stock: 50,
       categories: [catMap['running-performance'], catMap['luxury-lifestyle']],
-      images: [getRandomImage()],
+      images: getRandomImages(Math.floor(Math.random() * 3) + 2), // 2-4 images
       isFeatured: true,
       isNewArrival: false,
       isFlashSale: false,
@@ -136,7 +139,7 @@ async function seed() {
       sku: `EJ-FLASH-${i}-${Date.now()}`,
       stock: 30,
       categories: [catMap['athletic-trainers'], catMap['running-performance']],
-      images: [getRandomImage()],
+      images: getRandomImages(Math.floor(Math.random() * 3) + 2), // 2-4 images
       isFeatured: false,
       isNewArrival: false,
       isFlashSale: true,
@@ -161,7 +164,7 @@ async function seed() {
       sku: `EJ-NEW-${i}-${Date.now()}`,
       stock: 100,
       categories: [catMap['casual-essentials'], catMap['luxury-lifestyle']],
-      images: [getRandomImage()],
+      images: getRandomImages(Math.floor(Math.random() * 3) + 2), // 2-4 images
       isFeatured: false,
       isNewArrival: true,
       isFlashSale: false,
@@ -188,7 +191,7 @@ async function seed() {
       sku: `EJ-STD-${i}-${Date.now()}`,
       stock: 200,
       categories: [catId],
-      images: [getRandomImage()],
+      images: getRandomImages(Math.floor(Math.random() * 3) + 2), // 2-4 images
       isFeatured: false,
       isNewArrival: false,
       isFlashSale: false,
