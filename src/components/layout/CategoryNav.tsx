@@ -12,7 +12,7 @@ interface Category {
   parentCategory?: any;
 }
 
-export function CategoryNav() {
+export function CategoryNav({ isScrolled = true }: { isScrolled?: boolean }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isHovered, setIsHovered] = useState(false);
   const [activeParent, setActiveParent] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function CategoryNav() {
         setActiveParent(null);
       }}
     >
-      <button className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.2em] text-foreground/70 hover:text-primary transition-colors h-full px-1 group">
+      <button className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors h-full px-1 group ${isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'}`}>
         Categories
         <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isHovered ? 'rotate-180' : ''}`} />
       </button>
@@ -58,13 +58,13 @@ export function CategoryNav() {
       <AnimatePresence>
         {isHovered && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute top-[calc(100%-1px)] left-0 min-w-[220px] bg-background/98 backdrop-blur shadow-xl border rounded-b-xl overflow-visible p-2 z-[100]"
+            className="absolute top-[calc(100%-1px)] left-0 min-w-[240px] bg-black/40 dark:bg-black/60 backdrop-blur-2xl shadow-2xl border border-white/10 overflow-visible p-1 z-[100]"
           >
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col">
               {mainCategories.map((mainCat) => {
                 const subs = getSubCategories(mainCat._id);
                 const hasSubs = subs.length > 0;
@@ -77,37 +77,37 @@ export function CategoryNav() {
                   >
                     <Link
                       href={`/shop?category=${mainCat.slug}`}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
+                      className={`flex items-center justify-between px-4 py-3 text-[10px] font-bold uppercase tracking-widest transition-all ${
                         activeParent === mainCat._id 
-                          ? 'bg-primary/10 text-primary' 
-                          : 'text-foreground/70 hover:bg-muted'
+                          ? 'bg-primary text-white' 
+                          : 'text-white/70 hover:bg-white/5'
                       }`}
                     >
                       <span className="flex items-center gap-2">
                         {mainCat.name}
                       </span>
-                      {hasSubs && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                      {hasSubs && <ChevronRight className="h-4 w-4 opacity-50" />}
                     </Link>
 
                     {/* Subcategories Flyout */}
                     <AnimatePresence>
                       {activeParent === mainCat._id && hasSubs && (
                         <motion.div
-                          initial={{ opacity: 0, x: 10 }}
+                          initial={{ opacity: 0, x: 5 }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 10 }}
+                          exit={{ opacity: 0, x: 5 }}
                           transition={{ duration: 0.15, ease: "easeOut" }}
-                          className="absolute left-full top-[-8px] min-w-[200px] bg-background/98 backdrop-blur shadow-2xl border rounded-xl p-2 ml-1"
+                          className="absolute left-full top-0 min-w-[220px] bg-black/60 backdrop-blur-3xl shadow-2xl border border-white/10 p-1 ml-[1px]"
                         >
-                          <div className="text-xs font-black text-primary/70 uppercase tracking-widest px-3 py-2 mb-1 border-b border-primary/10 bg-primary/5 rounded-t-lg">
+                          <div className="text-[9px] font-black text-white/40 uppercase tracking-widest px-4 py-2 mb-1 border-b border-white/5">
                             {mainCat.name}
                           </div>
-                          <div className="flex flex-col gap-0.5">
+                          <div className="flex flex-col">
                             {subs.map((sub) => (
                               <Link
                                 key={sub._id}
                                 href={`/shop?category=${sub.slug}`}
-                                className="px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide text-foreground/70 hover:bg-primary/5 hover:text-primary transition-all whitespace-nowrap"
+                                className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:bg-white/5 hover:text-white transition-all whitespace-nowrap"
                               >
                                 {sub.name}
                               </Link>
@@ -120,9 +120,9 @@ export function CategoryNav() {
                 );
               })}
               {mainCategories.length === 0 && (
-                <div className="px-3 py-6 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
-                    <Package className="h-5 w-5 opacity-40" />
-                    No categories found
+                <div className="px-4 py-8 text-center text-[10px] font-bold uppercase tracking-widest text-white/30 flex flex-col items-center gap-2">
+                    <Package className="h-5 w-5 opacity-20" />
+                    Empty Archive
                 </div>
               )}
             </div>

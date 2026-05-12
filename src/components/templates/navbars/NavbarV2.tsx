@@ -188,7 +188,7 @@ export default function NavbarV2() {
                 </li>
                 {index === 0 && (
                   <li>
-                    <CategoryNav />
+                    <CategoryNav isScrolled={isScrolled} />
                   </li>
                 )}
               </React.Fragment>

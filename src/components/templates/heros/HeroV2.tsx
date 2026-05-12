@@ -62,7 +62,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[210px] sm:h-[450px] md:h-[600px] lg:h-[calc(100vh-80px)] overflow-hidden bg-black font-jost">
+    <section className="relative w-full h-[210px] sm:h-[450px] md:h-[600px] lg:h-screen overflow-hidden bg-black font-jost">
       {/* Logic Layer (Hidden Embla) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -74,28 +74,27 @@ export default function HeroV2({ banners }: HeroSliderProps) {
       <div 
         className="relative h-full w-full cursor-pointer"
         onClick={(e) => {
-          // Only trigger if clicking the background, not buttons or links
           const target = e.target as HTMLElement;
           if (target.closest('button') || target.closest('a')) return;
           scrollNext();
         }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           {slides.map((banner, index) => index === activeIndex && (
             <motion.div 
               key={banner._id || index}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              className="absolute inset-0 flex items-center"
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0 flex items-center overflow-hidden"
             >
-              {/* Background with Zoom Effect */}
+              {/* Background with Optimized Smooth Zoom */}
               <div className="absolute inset-0 overflow-hidden">
                 <motion.div
                   initial={{ scale: 1 }}
-                  animate={{ scale: 1.15 }}
-                  transition={{ duration: 7, ease: "linear" }}
+                  animate={{ scale: 1.1 }}
+                  transition={{ duration: 8, ease: "linear" }}
                   className="h-full w-full"
                 >
                   <Image
@@ -117,9 +116,9 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
                   >
-                    <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-4 sm:mb-8 drop-shadow-2xl">
+                    <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-4 sm:mb-8 drop-shadow-2xl uppercase">
                       {banner.title}
                     </h1>
 
