@@ -106,7 +106,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
+      <DialogContent className="max-w-5xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 z-50 p-2 bg-white/80 hover:bg-white rounded-none shadow-md transition-all border border-gray-100"
@@ -114,25 +114,25 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           <X className="h-5 w-5 text-gray-800" />
         </button>
 
-        <div className="flex flex-col md:flex-row h-full max-h-[90vh] overflow-y-auto md:overflow-hidden">
+        <div className="flex flex-col md:flex-row h-full max-h-[90vh] overflow-y-auto md:overflow-hidden min-h-[500px]">
           {/* Image Section */}
-          <div className="w-full md:w-1/2 bg-gray-50 flex flex-col items-center justify-center p-6 relative">
-            <div className="relative aspect-square w-full mb-4">
+          <div className="w-full md:w-[55%] bg-gray-50 flex flex-col items-center justify-center p-8 relative border-r border-gray-100">
+            <div className="relative aspect-square w-full mb-6">
               <img 
                 src={activeImage} 
                 alt={product.name} 
-                className="w-full h-full object-contain mix-blend-multiply transition-all duration-500"
+                className="w-full h-full object-contain mix-blend-multiply transition-all duration-500 scale-110"
               />
             </div>
             
             {/* Thumbnails */}
             {product.images?.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 w-full justify-center scrollbar-hide">
+              <div className="flex gap-3 overflow-x-auto pb-2 w-full justify-center scrollbar-hide px-4">
                 {product.images.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImage(img)}
-                    className={`h-16 w-16 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all ${
+                    className={`h-20 w-20 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all ${
                       activeImage === img ? 'border-[#00a870]' : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
@@ -150,7 +150,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           </div>
 
           {/* Details Section */}
-          <div className="w-full md:w-1/2 p-8 flex flex-col font-jost">
+          <div className="w-full md:w-[45%] p-10 flex flex-col font-jost overflow-y-auto">
             <div className="mb-2 flex items-center gap-2">
                <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
