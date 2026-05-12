@@ -62,7 +62,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[210px] sm:h-[500px] md:h-[600px] lg:h-[750px] overflow-hidden bg-black font-jost">
+    <section className="relative w-full h-[210px] sm:h-[450px] md:h-[600px] lg:h-[calc(100vh-80px)] overflow-hidden bg-black font-jost">
       {/* Logic Layer (Hidden Embla) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -119,7 +119,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                   >
-                    <h1 className="text-xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight mb-4 sm:mb-8 drop-shadow-2xl">
+                    <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-4 sm:mb-8 drop-shadow-2xl">
                       {banner.title}
                     </h1>
 
@@ -165,33 +165,19 @@ export default function HeroV2({ banners }: HeroSliderProps) {
         </motion.div>
       </motion.div>
 
-      {/* Bottom Right Pagination Dots */}
-      <div className="absolute bottom-4 right-4 sm:bottom-12 sm:right-12 z-30 flex items-center gap-2 sm:gap-4">
+      {/* Simple Pagination Dots (Right Side) */}
+      <div className="absolute bottom-6 right-6 sm:bottom-12 sm:right-12 z-30 flex items-center gap-2 sm:gap-3">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => scrollTo(i)}
-            className="group relative flex items-center justify-center w-5 h-5 sm:w-8 sm:h-8"
+            className={`transition-all duration-300 rounded-full ${
+              i === activeIndex 
+              ? "w-8 sm:w-10 bg-primary h-1 sm:h-1.5" 
+              : "w-1.5 sm:w-2 bg-white/30 h-1.5 sm:h-2"
+            }`}
             aria-label={`Go to slide ${i + 1}`}
-          >
-            <div className={`transition-all duration-500 rounded-full ${i === activeIndex ? 'w-2 h-2 sm:w-3 sm:h-3 bg-primary' : 'w-1 sm:w-1.5 bg-white/30 group-hover:bg-white/50'}`} />
-            {i === activeIndex && (
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <motion.circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-primary/30"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: AUTOPLAY_DELAY / 1000, ease: "linear" }}
-                />
-              </svg>
-            )}
-          </button>
+          />
         ))}
       </div>
 
