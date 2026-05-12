@@ -21,16 +21,17 @@ interface MobileMenuProps {
   navItems: { href: string; label: string }[];
   categories: any[];
   session: any;
+  triggerClassName?: string;
 }
 
-export function MobileMenu({ navItems, categories, session }: MobileMenuProps) {
+export function MobileMenu({ navItems, categories, session, triggerClassName }: MobileMenuProps) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="lg:hidden p-2 text-foreground hover:text-primary transition-colors outline-none">
+        <button className={`lg:hidden p-2 transition-colors outline-none ${triggerClassName || 'text-foreground hover:text-primary'}`}>
           <Menu className="h-6 w-6" />
         </button>
       </SheetTrigger>

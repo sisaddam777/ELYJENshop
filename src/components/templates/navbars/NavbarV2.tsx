@@ -139,9 +139,14 @@ export default function NavbarV2() {
         
         {/* Left: Logo & Mobile Menu */}
         <div className="flex items-center gap-2">
-          <MobileMenu navItems={navItems} categories={categories} session={session} />
+          <MobileMenu 
+            navItems={navItems} 
+            categories={categories} 
+            session={session} 
+            triggerClassName={isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}
+          />
 
-          <Link href="/" className="text-2xl md:text-3xl font-black text-foreground tracking-tighter hover:scale-105 transition-transform flex items-center gap-1 group">
+          <Link href="/" className={`text-2xl md:text-3xl font-black tracking-tighter hover:scale-105 transition-all flex items-center gap-1 group ${isScrolled ? 'text-foreground' : 'text-white'}`}>
             ELYJEN<span className="text-primary group-hover:animate-ping">.</span>
           </Link>
         </div>
@@ -154,9 +159,9 @@ export default function NavbarV2() {
               placeholder={isListening ? 'Listening...' : 'Search sneakers...'} 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-muted/50 border border-transparent focus:border-primary/50 focus:bg-background px-10 py-2.5 rounded-full text-sm transition-all outline-none"
+              className={`w-full border border-transparent focus:border-primary/50 px-10 py-2.5 rounded-full text-sm transition-all outline-none ${isScrolled ? 'bg-muted/50 focus:bg-background text-foreground' : 'bg-white/10 focus:bg-white/20 text-white placeholder:text-white/60'}`}
             />
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${isScrolled ? 'text-muted-foreground group-focus-within:text-primary' : 'text-white/70 group-focus-within:text-white'}`} />
             <button
               type="button"
               onClick={handleVoiceSearch}
@@ -175,7 +180,7 @@ export default function NavbarV2() {
                 <li>
                   <Link 
                     href={item.href} 
-                    className={`text-xs font-bold uppercase tracking-widest relative group transition-colors ${pathname === item.href ? 'text-primary' : 'text-foreground/70 hover:text-primary'}`}
+                    className={`text-xs font-bold uppercase tracking-widest relative group transition-colors ${pathname === item.href ? 'text-primary' : (isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white')}`}
                   >
                     {item.label}
                     <span className={`absolute -bottom-1 left-0 h-[2px] bg-primary transition-all duration-300 ${pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
@@ -197,8 +202,8 @@ export default function NavbarV2() {
             </div>
 
             <Link href="/dashboard/wishlist">
-              <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full relative group">
-                <Heart className={`h-5 w-5 transition-all ${wishlistCount > 0 ? 'fill-primary text-primary' : 'group-hover:text-primary'}`} />
+              <Button variant="ghost" size="icon" className={`rounded-full relative group ${isScrolled ? 'text-foreground hover:bg-muted' : 'text-white hover:bg-white/10'}`}>
+                <Heart className={`h-5 w-5 transition-all ${wishlistCount > 0 ? 'fill-primary text-primary' : (isScrolled ? 'group-hover:text-primary' : 'group-hover:text-white')}`} />
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center border-2 border-background animate-in zoom-in">
                     {wishlistCount}
@@ -209,8 +214,8 @@ export default function NavbarV2() {
 
             <CartDrawer>
               <div className="relative group cursor-pointer">
-                <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full relative pointer-events-none">
-                  <ShoppingCart className="h-5 w-5 group-hover:text-primary transition-all" />
+                <Button variant="ghost" size="icon" className={`rounded-full relative pointer-events-none ${isScrolled ? 'text-foreground hover:bg-muted' : 'text-white hover:bg-white/10'}`}>
+                  <ShoppingCart className={`h-5 w-5 transition-all ${cartCount > 0 ? 'text-primary' : (isScrolled ? 'group-hover:text-primary' : 'group-hover:text-white')}`} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center border-2 border-background animate-in zoom-in">
                       {cartCount}
