@@ -106,7 +106,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
+      <DialogContent className="sm:max-w-[1000px] w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 z-50 p-2 bg-white/80 hover:bg-white rounded-none shadow-md transition-all border border-gray-100"
@@ -116,12 +116,12 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
         <div className="flex flex-col md:flex-row h-full max-h-[90vh] overflow-y-auto md:overflow-hidden min-h-[500px]">
           {/* Image Section */}
-          <div className="w-full md:w-[55%] bg-gray-50 flex flex-col items-center justify-center p-8 relative border-r border-gray-100">
-            <div className="relative aspect-square w-full mb-6">
+          <div className="w-full md:w-[60%] bg-gray-50 flex flex-col items-center justify-center p-0 relative border-r border-gray-100 min-h-[400px]">
+            <div className="relative w-full h-full flex items-center justify-center p-8">
               <img 
                 src={activeImage} 
                 alt={product.name} 
-                className="w-full h-full object-contain mix-blend-multiply transition-all duration-500 scale-110"
+                className="max-w-full max-h-[400px] object-contain mix-blend-multiply transition-all duration-500 hover:scale-105"
               />
             </div>
             
@@ -150,7 +150,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           </div>
 
           {/* Details Section */}
-          <div className="w-full md:w-[45%] p-10 flex flex-col font-jost overflow-y-auto">
+          <div className="w-full md:w-[40%] p-8 flex flex-col font-jost overflow-y-auto bg-white">
             <div className="mb-2 flex items-center gap-2">
                <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
