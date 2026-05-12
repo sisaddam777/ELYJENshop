@@ -80,69 +80,111 @@ export async function GET(request: Request) {
 
     const searchconsole = google.searchconsole({ version: 'v1', auth: authClient });
 
-    // --- FETCH DATA PARALLEL ---
-    const [gaResponse, pagesResponse, scResponse, queriesResponse, realtimeResponse] = await Promise.all([
-      // 1. Main GA4 Report (Date, Device, Country, Source, New/Returning)
-      analyticsClient.runReport({
-        property: `properties/${propertyId}`,
-        dateRanges: [{ startDate, endDate: 'today' }],
-        dimensions: [
-          { name: 'date' },
-          { name: 'deviceCategory' },
-          { name: 'country' },
-          { name: 'sessionDefaultChannelGroup' },
-          { name: 'newVsReturning' }
-        ],
-        metrics: [
-          { name: 'activeUsers' },
-          { name: 'sessions' },
-          { name: 'averageSessionDuration' }
-        ],
-        orderBys: [{ dimension: { dimensionName: 'date' } }]
-      }),
-      // 2. Top Pages Report
-      analyticsClient.runReport({
-        property: `properties/${propertyId}`,
-        dateRanges: [{ startDate, endDate: 'today' }],
-        dimensions: [{ name: 'pageTitle' }, { name: 'pagePath' }],
-        metrics: [{ name: 'screenPageViews' }],
-        orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
-        limit: 8
-      }),
-      // 3. Search Console Trends
-      searchconsole.searchanalytics.query({
-        siteUrl,
-        requestBody: {
-          startDate: formatDate(rangeDays),
-          endDate: formatDate(0),
-          dimensions: ['date'],
-          rowLimit: 100
-        }
-      }),
-      // 4. Search Console Queries
-      searchconsole.searchanalytics.query({
-        siteUrl,
-        requestBody: {
-          startDate: formatDate(rangeDays),
-          endDate: formatDate(0),
-          dimensions: ['query'],
-          rowLimit: 8
-        }
-      }),
-      // 5. GA4 REALTIME Report
-      analyticsClient.runRealtimeReport({
-        property: `properties/${propertyId}`,
-        metrics: [{ name: 'activeUsers' }]
-      })
+    // --- FETCH DATA PARALLEL (WITH RESILIENCE) ---
+    
+    const fetchGA4 = async () => {
+      try {
+        const [response] = await analyticsClient.runReport({
+          property: `properties/${propertyId}`,
+          dateRanges: [{ startDate, endDate: 'today' }],
+          dimensions: [
+            { name: 'date' },
+            { name: 'deviceCategory' },
+            { name: 'country' },
+            { name: 'sessionDefaultChannelGroup' },
+            { name: 'newVsReturning' }
+          ],
+          metrics: [
+            { name: 'activeUsers' },
+            { name: 'sessions' },
+            { name: 'averageSessionDuration' }
+          ],
+          orderBys: [{ dimension: { dimensionName: 'date' } }]
+        });
+        return response;
+      } catch (err: any) {
+        console.error('GA4 Main Report Error:', err.message);
+        return null;
+      }
+    };
+
+    const fetchPages = async () => {
+      try {
+        const [response] = await analyticsClient.runReport({
+          property: `properties/${propertyId}`,
+          dateRanges: [{ startDate, endDate: 'today' }],
+          dimensions: [{ name: 'pageTitle' }, { name: 'pagePath' }],
+          metrics: [{ name: 'screenPageViews' }],
+          orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+          limit: 8
+        });
+        return response;
+      } catch (err: any) {
+        console.error('GA4 Pages Report Error:', err.message);
+        return null;
+      }
+    };
+
+    const fetchSearchTrends = async () => {
+      if (!siteUrl) return null;
+      try {
+        const response = await searchconsole.searchanalytics.query({
+          siteUrl,
+          requestBody: {
+            startDate: formatDate(rangeDays),
+            endDate: formatDate(0),
+            dimensions: ['date'],
+            rowLimit: 100
+          }
+        });
+        return response.data;
+      } catch (err: any) {
+        console.error('Search Console Trends Error:', err.message);
+        return null;
+      }
+    };
+
+    const fetchSearchQueries = async () => {
+      if (!siteUrl) return null;
+      try {
+        const response = await searchconsole.searchanalytics.query({
+          siteUrl,
+          requestBody: {
+            startDate: formatDate(rangeDays),
+            endDate: formatDate(0),
+            dimensions: ['query'],
+            rowLimit: 8
+          }
+        });
+        return response.data;
+      } catch (err: any) {
+        console.error('Search Console Queries Error:', err.message);
+        return null;
+      }
+    };
+
+    const fetchRealtime = async () => {
+      try {
+        const [response] = await analyticsClient.runRealtimeReport({
+          property: `properties/${propertyId}`,
+          metrics: [{ name: 'activeUsers' }]
+        });
+        return response;
+      } catch (err: any) {
+        console.error('GA4 Realtime Error:', err.message);
+        return null;
+      }
+    };
+
+    const [gaData, pagesData, scData, queriesData, realtimeData] = await Promise.all([
+      fetchGA4(),
+      fetchPages(),
+      fetchSearchTrends(),
+      fetchSearchQueries(),
+      fetchRealtime()
     ]);
 
-    const gaData = gaResponse[0];
-    const pagesData = pagesResponse[0];
-    const scData = scResponse.data;
-    const queriesData = queriesResponse.data;
-    const realtimeData = realtimeResponse[0];
-
-    const activeUsersNow = parseInt(realtimeData.rows?.[0]?.metricValues?.[0]?.value || '0');
+    const activeUsersNow = parseInt(realtimeData?.rows?.[0]?.metricValues?.[0]?.value || '0', 10);
 
     // Maps for aggregation
     const visitorTrendsMap = new Map();
@@ -153,7 +195,7 @@ export async function GET(request: Request) {
     let totalDurationSeconds = 0;
     let totalSessionsCount = 0;
 
-    gaData.rows?.forEach(row => {
+    gaData?.rows?.forEach(row => {
       const date = row.dimensionValues?.[0].value;
       const device = row.dimensionValues?.[1].value?.toLowerCase();
       const country = row.dimensionValues?.[2].value;
@@ -215,34 +257,34 @@ export async function GET(request: Request) {
       }));
 
     const totalVisitors = Array.from(visitorTrendsMap.values()).reduce((acc, curr) => acc + curr.visitors, 0);
-    const totalClicks = scData.rows?.reduce((acc, row) => acc + (row.clicks || 0), 0) || 0;
+    const totalClicks = scData?.rows?.reduce((acc: number, row: any) => acc + (row.clicks || 0), 0) || 0;
     const averageSessionDuration = totalSessionsCount > 0 ? totalDurationSeconds / totalSessionsCount : 0;
-    const avgPosition = (scData.rows?.reduce((acc, row) => acc + (row.position || 0), 0) || 0) / (scData.rows?.length || 1);
+    const avgPosition = (scData?.rows?.reduce((acc: number, row: any) => acc + (row.position || 0), 0) || 0) / (scData?.rows?.length || 1);
 
     return NextResponse.json({
       stats: {
         visitors: totalVisitors,
-        visitorsChange: 0, // TODO: Implement previous-period comparison
+        visitorsChange: 0,
         clicks: totalClicks,
-        clicksChange: 0, // TODO: Implement previous-period comparison
+        clicksChange: 0,
         avgDuration: formatDuration(averageSessionDuration),
-        durationChange: 0, // TODO: Implement previous-period comparison
+        durationChange: 0,
         avgPosition: avgPosition,
-        positionChange: 0, // TODO: Implement previous-period comparison
+        positionChange: 0,
         activeUsersNow
       },
       visitorTrends: Array.from(visitorTrendsMap.values()),
-      searchTrends: scData.rows?.map(row => ({
+      searchTrends: scData?.rows?.map((row: any) => ({
         date: row.keys?.[0],
         clicks: row.clicks,
         impressions: row.impressions
       })) || [],
-      topPages: pagesData.rows?.map(row => ({
+      topPages: pagesData?.rows?.map((row: any) => ({
         title: row.dimensionValues?.[0].value || 'Unknown Page',
         url: row.dimensionValues?.[1].value || '/',
         views: parseInt(row.metricValues?.[0].value || '0')
       })) || [],
-      topQueries: queriesData.rows?.map(row => ({
+      topQueries: queriesData?.rows?.map((row: any) => ({
         term: row.keys?.[0],
         clicks: row.clicks,
         position: row.position,
