@@ -21,9 +21,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MobileMenu } from '@/components/layout/MobileMenu';
 import { useEffect } from 'react';
+import { useSettings } from '@/components/SettingsProvider';
 
 export default function NavbarV5() {
   const router = useRouter();
+  const settings = useSettings();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -45,7 +47,6 @@ export default function NavbarV5() {
   ];
 
   return (
-  return (
     <nav className="sticky md:fixed top-0 md:top-8 left-0 right-0 z-50 px-0 md:px-6 animate-in slide-in-from-top-10 duration-1000 bg-background md:bg-transparent border-b md:border-none shadow-sm md:shadow-none">
       <div className="container mx-auto max-w-6xl">
         <div className="bg-background md:bg-white/40 md:dark:bg-black/40 md:backdrop-blur-3xl rounded-none md:rounded-[3rem] border-none md:border md:border-white/20 px-4 md:px-10 py-3 md:py-5 flex items-center justify-between shadow-none md:shadow-2xl md:shadow-black/10">
@@ -55,7 +56,7 @@ export default function NavbarV5() {
              <div className="h-12 w-12 bg-primary rounded-[1.5rem_0.5rem_1.5rem_0.5rem] rotate-45 group-hover:rotate-0 transition-all duration-700 flex items-center justify-center">
                 <span className="text-white font-black text-2xl -rotate-45 group-hover:rotate-0 transition-all">B</span>
              </div>
-             <span className="text-2xl font-black tracking-tighter hidden md:block">ELYJEN.</span>
+             <span className="text-2xl font-black tracking-tighter hidden md:block">{settings?.brandName || 'Store'}.</span>
           </Link>
 
           {/* Centered Artistic Nav */}
