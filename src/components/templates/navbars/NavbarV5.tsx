@@ -19,13 +19,23 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
+import { MobileMenu } from '@/components/layout/MobileMenu';
+import { useEffect } from 'react';
 
 export default function NavbarV5() {
   const router = useRouter();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const cartItemsCount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const wishlistCount = useAppSelector((state) => state.wishlist.items.length);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
+      .catch(err => console.error('Failed to fetch categories', err));
+  }, []);
 
 
   const NAV_LINKS = [
@@ -175,64 +185,14 @@ export default function NavbarV5() {
                  >
                    Join Atelier
                  </button>
-                 <button 
-                   onClick={() => setMobileMenuOpen(true)}
-                   className="lg:hidden h-12 w-12 rounded-2xl bg-black/5 flex items-center justify-center hover:text-primary transition-colors"
-                   aria-label="Open Menu"
-                 >
-                   <Menu className="h-6 w-6" />
-                 </button>
+                <div className="lg:hidden">
+                  <MobileMenu navItems={NAV_LINKS} categories={categories} session={session} />
+                </div>
                </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu - Artistic Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-white/60 backdrop-blur-3xl lg:hidden animate-in fade-in duration-700">
-           <div className="flex flex-col items-center justify-center h-full gap-16">
-              {NAV_LINKS.map((link) => (
-                <Link 
-                  key={link.label} 
-                  href={link.href}
-                  className="text-6xl font-black tracking-tighter hover:text-primary transition-all duration-500 uppercase italic"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="flex gap-12 pt-10">
-                 <button 
-                  onClick={() => { 
-                    if (status !== 'authenticated') {
-                      toast.error('Please login to view your wishlist');
-                      return;
-                    }
-                    router.push('/dashboard/wishlist'); 
-                    setMobileMenuOpen(false); 
-                  }} 
-                  className="flex flex-col items-center gap-3"
-                >
-                    <Heart className="h-8 w-8" />
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Gallery</span>
-                 </button>
-                 {!session && (
-                   <button onClick={() => { router.push('/account'); setMobileMenuOpen(false); }} className="flex flex-col items-center gap-3">
-                      <User className="h-8 w-8" />
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Identity</span>
-                   </button>
-                 )}
-              </div>
-           </div>
-           <button 
-             className="absolute top-12 right-12 h-16 w-16 bg-black text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-2xl"
-             onClick={() => setMobileMenuOpen(false)}
-           >
-              <X className="h-8 w-8" />
-           </button>
-        </div>
-      )}
     </nav>
   );
 }

@@ -46,6 +46,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { MobileMenu } from '@/components/layout/MobileMenu';
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -61,7 +62,6 @@ export default function NavbarV2() {
   const settings = useSettings();
   
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -138,13 +138,8 @@ export default function NavbarV2() {
       <div className="container mx-auto px-4 md:px-8 flex items-center justify-between">
         
         {/* Left: Logo & Mobile Menu */}
-        <div className="flex items-center gap-4">
-          <button 
-            className="lg:hidden p-2 text-foreground hover:text-primary transition-colors" 
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+        <div className="flex items-center gap-2">
+          <MobileMenu navItems={navItems} categories={categories} session={session} />
 
           <Link href="/" className="text-2xl md:text-3xl font-black text-foreground tracking-tighter hover:scale-105 transition-transform flex items-center gap-1 group">
             ELYJEN<span className="text-primary group-hover:animate-ping">.</span>
@@ -295,62 +290,6 @@ export default function NavbarV2() {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-3xl lg:hidden animate-in fade-in zoom-in duration-500">
-          <div className="flex justify-end p-8">
-            <button 
-              className="text-white hover:text-primary transition-colors" 
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <X className="h-10 w-10" />
-            </button>
-          </div>
-          <div className="flex flex-col items-center justify-center h-full -mt-20 gap-8 overflow-y-auto pb-10">
-             {navItems.map((link, index) => (
-                <React.Fragment key={link.label}>
-                  <Link 
-                    href={link.href}
-                    className={`text-5xl font-black transition-all duration-500 uppercase tracking-tighter ${pathname === link.href ? 'text-primary scale-110' : 'text-white hover:text-primary'}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                  {index === 0 && (
-                    <div className="w-full max-w-xs">
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="categories" className="border-none">
-                          <AccordionTrigger className="text-2xl font-bold text-white/70 hover:text-primary hover:no-underline uppercase">
-                            Categories
-                          </AccordionTrigger>
-                          <AccordionContent className="flex flex-col gap-4 pt-4 items-center">
-                            {categories.map((cat: any) => (
-                              <Link
-                                key={cat._id}
-                                href={`/shop?category=${cat.slug}`}
-                                className="text-xl font-bold text-white/50 hover:text-primary uppercase transition-colors"
-                                onClick={() => setMobileMenuOpen(false)}
-                              >
-                                {cat.name}
-                              </Link>
-                            ))}
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-                  )}
-                </React.Fragment>
-             ))}
-             {!session && (
-               <Link href="/login" className="mt-10" onClick={() => setMobileMenuOpen(false)}>
-                 <Button className="rounded-full bg-primary text-white w-56 h-16 font-black text-xl uppercase tracking-widest">
-                    Access
-                 </Button>
-               </Link>
-             )}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }

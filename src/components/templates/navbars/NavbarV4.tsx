@@ -21,15 +21,25 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
+import { MobileMenu } from '@/components/layout/MobileMenu';
+import { useEffect } from 'react';
 
 export default function NavbarV4() {
   const router = useRouter();
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const cartItemsCount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const wishlistCount = useAppSelector((state) => state.wishlist.items.length);
   const totalAmount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + (item.price * item.quantity), 0));
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
+      .catch(err => console.error('Failed to fetch categories', err));
+  }, []);
 
 
   const handleSearch = (e: React.FormEvent) => {
@@ -66,10 +76,10 @@ export default function NavbarV4() {
 
       {/* Main Header Architecture */}
       <div className="container mx-auto px-4 py-5 flex items-center gap-6 lg:gap-12">
-        {/* Mobile Menu Icon */}
-        <button className="lg:hidden text-white p-1 hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(true)}>
-          <Menu className="h-7 w-7" />
-        </button>
+        {/* Mobile Menu Trigger */}
+        <div className="lg:hidden">
+          <MobileMenu navItems={NAV_LINKS} categories={categories} session={session} />
+        </div>
 
         {/* Branding */}
         <Link href="/" className="text-2xl md:text-3xl font-black text-white shrink-0 tracking-tighter flex items-center gap-1">
@@ -228,42 +238,6 @@ export default function NavbarV4() {
         </div>
       </div>
 
-      {/* Mobile Drawer Infrastructure */}
-      {mobileMenuOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] lg:hidden animate-in fade-in duration-500" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed top-0 left-0 bottom-0 w-[320px] bg-[#0f1111] z-[101] lg:hidden animate-in slide-in-from-left duration-500 shadow-[20px_0_100px_rgba(0,0,0,0.8)] border-r border-white/5">
-            <div className="bg-[#1a1c1c] p-8 flex items-center justify-between border-b border-white/5">
-               <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary"><User className="h-6 w-6" /></div>
-                  <span className="font-black text-lg uppercase tracking-tighter">Identity Console</span>
-               </div>
-               <button onClick={() => setMobileMenuOpen(false)} className="hover:text-primary transition-colors"><X className="h-7 w-7" /></button>
-            </div>
-            
-            <div className="p-6 space-y-10">
-               <form onSubmit={handleSearch} className="relative">
-                  <Input 
-                    className="w-full h-14 bg-white/5 border-white/10 rounded-xl focus-visible:border-primary text-white font-bold" 
-                    placeholder="Search parameters..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <Button type="submit" size="icon" className="absolute right-2 top-2 bottom-2 h-auto px-4 bg-primary rounded-lg"><Search className="h-4 w-4" /></Button>
-               </form>
-
-               <div className="space-y-6">
-                  <h3 className="text-[10px] font-black text-neutral-600 uppercase tracking-[0.4em]">Main Modules</h3>
-                  <div className="flex flex-col gap-6">
-                    {NAV_LINKS.map(link => (
-                      <Link key={link.label} href={link.href} className="text-3xl font-black text-white hover:text-primary transition-all uppercase tracking-tighter" onClick={() => setMobileMenuOpen(false)}>{link.label}</Link>
-                    ))}
-                  </div>
-               </div>
-            </div>
-          </div>
-        </>
-      )}
     </nav>
   );
 }

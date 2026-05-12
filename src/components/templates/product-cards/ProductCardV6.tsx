@@ -73,7 +73,7 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
   return (
     <div className="group relative flex flex-col font-jost animate-in fade-in duration-700">
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-muted rounded-xl">
+      <div className="relative aspect-square overflow-hidden bg-muted rounded-sm">
         <Link href={`/product/${product.slug}`} className="block h-full w-full">
           <Image
             src={product.images?.[0] || '/placeholder.png'}
@@ -124,21 +124,21 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
       </div>
 
       {/* Product Info */}
-      <div className="mt-6 text-center space-y-2">
+      <div className="mt-4 text-center space-y-1">
         <Link 
           href={`/product/${product.slug}`}
-          className="text-lg font-bold text-foreground hover:text-primary transition-colors block leading-tight px-4"
+          className="text-base font-semibold text-foreground hover:text-primary transition-colors block leading-tight px-4"
         >
           {product.name}
         </Link>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-2">
           {product.salePrice ? (
             <>
-              <span className="text-primary font-black text-xl">৳{Math.round(product.salePrice)}</span>
-              <span className="text-muted-foreground line-through text-sm font-medium">৳{Math.round(product.price)}</span>
+              <span className="text-red-500 font-semibold text-[15px]">৳{Math.round(product.salePrice)}</span>
+              <span className="text-muted-foreground line-through text-[13px] font-normal">৳{Math.round(product.price)}</span>
             </>
           ) : (
-            <span className="text-foreground font-black text-xl">৳{Math.round(product.price)}</span>
+            <span className="text-foreground font-semibold text-[15px]">৳{Math.round(product.price)}</span>
           )}
         </div>
       </div>

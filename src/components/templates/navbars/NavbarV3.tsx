@@ -19,13 +19,23 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
+import { MobileMenu } from '@/components/layout/MobileMenu';
+import { useEffect } from 'react';
 
 export default function NavbarV3() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const cartItemsCount = useAppSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const wishlistCount = useAppSelector((state) => state.wishlist.items.length);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data.filter((c: any) => c.isActive && !c.parentCategory)))
+      .catch(err => console.error('Failed to fetch categories', err));
+  }, []);
 
 
   const NAV_LINKS = [
@@ -60,16 +70,7 @@ export default function NavbarV3() {
 
           {/* Mobile Menu Trigger */}
           <div className="lg:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="rounded-full"
-              aria-label="Toggle mobile menu"
-              aria-expanded={isMobileMenuOpen}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            <MobileMenu navItems={NAV_LINKS} categories={categories} session={session} />
           </div>
 
           {/* Center: Logo */}
@@ -199,57 +200,6 @@ export default function NavbarV3() {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-white pt-32 lg:hidden animate-in fade-in slide-in-from-top duration-700">
-          <div className="flex flex-col items-center gap-10">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-4xl font-serif italic tracking-tighter hover:text-primary transition-all"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="w-16 h-[1px] bg-neutral-200" />
-            <div className="flex gap-12">
-              <button onClick={() => { router.push('/shop'); setIsMobileMenuOpen(false); }} className="flex flex-col items-center gap-2">
-                <Search className="h-6 w-6" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Find</span>
-              </button>
-              <button 
-                onClick={() => { 
-                  if (status !== 'authenticated') {
-                    toast.error('Please login to view your wishlist');
-                    return;
-                  }
-                  router.push('/dashboard/wishlist'); 
-                  setIsMobileMenuOpen(false); 
-                }} 
-                className="flex flex-col items-center gap-2"
-              >
-                <Heart className="h-6 w-6" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Saved</span>
-              </button>
-              {!session && (
-                <button onClick={() => { router.push('/login'); setIsMobileMenuOpen(false); }} className="flex flex-col items-center gap-2">
-                  <User className="h-6 w-6" />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400">Entry</span>
-                </button>
-              )}
-            </div>
-          </div>
-          <button
-            className="absolute top-10 right-10 p-2 hover:bg-neutral-50 rounded-full transition-colors"
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-label="Close menu"
-          >
-            <X className="h-8 w-8" />
-          </button>
-        </div>
-      )}
     </header>
   );
 }
