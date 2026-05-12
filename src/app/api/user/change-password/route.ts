@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
 
     const { currentPassword, newPassword } = await req.json();
 
-    if (!currentPassword || !newPassword) {
+    if (!newPassword) {
       return NextResponse.json(
-        { message: 'Please provide both current and new passwords.' },
+        { message: 'Please provide a new password.' },
         { status: 400 }
       );
     }
@@ -41,22 +41,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'User not found.' }, { status: 404 });
     }
     
-    // Check if user registered via Google and doesn't have a password yet
-    if (!user.password && user.googleId) {
-        return NextResponse.json({ 
-            message: 'Your account uses Google Login. You cannot change a password here.' 
-        }, { status: 400 });
-    }
-
-    // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password as string);
-
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { message: 'Incorrect current password.' },
-        { status: 400 }
-      );
-    }
+    // If user has a current password, we could verify it, 
+    // but the user requested to allow changing with just new/confirm if logged in.
+    // For Google users who don't have a password yet, this allows them to set one.
 
     // Set new password, User schema pre-save hook will hash it
     user.password = newPassword;

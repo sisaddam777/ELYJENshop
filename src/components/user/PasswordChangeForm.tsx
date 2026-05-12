@@ -20,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(1, { message: 'Current password is required' }),
   newPassword: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
   confirmNewPassword: z.string()
 }).refine((data) => data.newPassword === data.confirmNewPassword, {
@@ -34,7 +33,6 @@ export function PasswordChangeForm() {
   const form = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      currentPassword: '',
       newPassword: '',
       confirmNewPassword: '',
     },
@@ -49,7 +47,6 @@ export function PasswordChangeForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          currentPassword: values.currentPassword,
           newPassword: values.newPassword,
         }),
       });
@@ -70,37 +67,30 @@ export function PasswordChangeForm() {
   }
 
   return (
-    <Card className="max-w-md w-full">
-      <CardHeader>
-        <CardTitle>Change Password</CardTitle>
+    <Card className="max-w-md w-full border-none shadow-none bg-transparent">
+      <CardHeader className="px-0 pt-0">
+        <CardTitle className="text-2xl font-black">Change Password</CardTitle>
         <CardDescription>
           Ensure your account is using a long, random password to stay secure.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="currentPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current Password</FormLabel>
-                  <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} disabled={isLoading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
+                  <FormLabel className="font-bold">New Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} disabled={isLoading} />
+                    <Input 
+                      placeholder="••••••••" 
+                      type="password" 
+                      {...field} 
+                      disabled={isLoading} 
+                      className="h-12 bg-white/50 focus:bg-white transition-all rounded-xl"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,15 +101,25 @@ export function PasswordChangeForm() {
               name="confirmNewPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormLabel className="font-bold">Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} disabled={isLoading} />
+                    <Input 
+                      placeholder="••••••••" 
+                      type="password" 
+                      {...field} 
+                      disabled={isLoading} 
+                      className="h-12 bg-white/50 focus:bg-white transition-all rounded-xl"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Password
             </Button>
