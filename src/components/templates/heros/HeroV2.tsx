@@ -164,8 +164,8 @@ export default function HeroV2({ banners }: HeroSliderProps) {
         </motion.div>
       </motion.div>
 
-      {/* Simple Pagination Dots (Right Side) */}
-      <div className="absolute bottom-6 right-6 sm:bottom-12 sm:right-12 z-30 flex items-center gap-2 sm:gap-3">
+      {/* Pagination Dots — mobile: right side vertical center | desktop: bottom right */}
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-12 sm:right-12 z-30 flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
         {slides.map((_, i) => (
           <button
             key={i}
