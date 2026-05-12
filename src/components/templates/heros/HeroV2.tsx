@@ -87,7 +87,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 flex items-center overflow-hidden"
+              className="absolute inset-0 flex items-end overflow-hidden"
             >
               {/* Background with Optimized Smooth Zoom */}
               <div className="absolute inset-0 overflow-hidden">
@@ -111,14 +111,14 @@ export default function HeroV2({ banners }: HeroSliderProps) {
               </div>
 
               {/* Text Content */}
-              <div className="container relative z-20 mx-auto px-6 sm:px-12 md:px-20 lg:px-32 h-full flex items-center">
-                <div className="max-w-[100%] sm:max-w-4xl w-full flex flex-col justify-center sm:justify-end h-full sm:h-[70%] pt-4 sm:pt-0 pb-6 sm:pb-32 text-center sm:text-left">
+              <div className="container relative z-20 mx-auto px-6 sm:px-12 md:px-20 lg:px-32 h-full flex items-end">
+                <div className="max-w-[100%] sm:max-w-3xl w-full flex flex-col pb-10 sm:pb-16 lg:pb-24 text-center sm:text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                   >
-                    <h1 className="text-2xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter mb-4 sm:mb-12 drop-shadow-2xl uppercase">
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tighter mb-4 sm:mb-8 drop-shadow-2xl uppercase">
                       {banner.title}
                     </h1>
 
