@@ -161,7 +161,7 @@ export default function NavbarV2() {
             triggerClassName={!isHomePage || isScrolled ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}
           />
 
-          <Link href="/" className={`text-2xl md:text-3xl font-black tracking-tighter hover:scale-105 transition-all flex items-center gap-1 group text-foreground md:${!isHomePage || isScrolled ? 'text-foreground' : 'text-white'}`}>
+          <Link href="/" className={`text-2xl md:text-3xl font-black tracking-tighter hover:scale-105 transition-all flex items-center gap-1 group ${!isHomePage || isScrolled ? 'text-foreground' : 'text-white'}`}>
             {settings?.brandName || 'Store'}<span className="text-primary group-hover:animate-ping">.</span>
           </Link>
         </div>
