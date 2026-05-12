@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, LogOut, LayoutDashboard, Truck, Settings } from 'lucide-react';
+import { Heart, ShoppingCart, User, LogOut, LayoutDashboard, Truck, Settings, Package } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
@@ -37,6 +36,18 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
   const { data: session, status } = useSession();
   const { totalQuantity: cartCount } = useAppSelector((state) => state.cart);
   const { items: wishlistItems } = useAppSelector((state) => state.wishlist);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => setProfile(data))
+        .catch(err => console.error('Failed to fetch profile', err));
+    } else {
+      setProfile(null);
+    }
+  }, [status]);
 
   return (
     <header className="lg:hidden sticky top-0 z-50 w-full bg-background border-b shadow-sm">
