@@ -172,8 +172,8 @@ export default function HeroV2({ banners }: HeroSliderProps) {
             onClick={() => scrollTo(i)}
             className={`transition-all duration-300 rounded-full ${
               i === activeIndex 
-              ? "w-8 sm:w-10 bg-primary h-1 sm:h-1.5" 
-              : "w-1.5 sm:w-2 bg-white/30 h-1.5 sm:h-2"
+              ? "h-8 w-1 sm:w-10 sm:h-1.5 bg-primary" 
+              : "h-1.5 w-1.5 sm:w-2 sm:h-2 bg-white/30"
             }`}
             aria-label={`Go to slide ${i + 1}`}
           />
