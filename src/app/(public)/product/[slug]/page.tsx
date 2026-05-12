@@ -101,37 +101,8 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
     related = [];
   }
 
-  const productSchema = await generateProductSchema(product);
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', item: '/' },
-    { name: 'Shop', item: '/shop' },
-    { name: product.name, item: `/product/${product.slug}` }
-  ]);
-
   return (
     <div className="container px-4 md:px-0 mx-auto py-10">
-      {productSchema && (
-        <Script
-          id="product-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: sanitizeForScript(productSchema) }}
-        />
-      )}
-      {breadcrumbSchema && (
-        <Script
-          id="breadcrumb-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: sanitizeForScript(breadcrumbSchema) }}
-        />
-      )}
-
-      <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-        <ChevronRight className="h-3 w-3" />
-        <Link href="/shop" className="hover:text-primary transition-colors">Shop</Link>
-        <ChevronRight className="h-3 w-3" />
-        <span className="text-foreground font-medium truncate">{product.name}</span>
-      </div>
 
       <div className="p-0 md:p-4">
         {/* Track View */}

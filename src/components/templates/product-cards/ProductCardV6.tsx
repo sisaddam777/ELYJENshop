@@ -91,26 +91,19 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
           />
         </Link>
 
-        {/* Sale / Flash Ribbon Badge (Top Right) */}
-        {(discount > 0 || isFlashSale) && (
-          <div className="absolute top-0 right-0 overflow-hidden w-24 h-24 z-10 pointer-events-none">
-            <div className={`absolute top-0 right-0 text-white text-[10px] font-black py-1 w-32 text-center rotate-45 translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest ${
-              isFlashSale ? 'bg-orange-500 animate-pulse' : 'bg-primary'
-            }`}>
-              {isFlashSale ? 'Flash' : `${discount}% OFF`}
-            </div>
-          </div>
-        )}
-
-        {/* Status Ribbon Badge (Top Left) */}
-        {(product.isNewArrival || product.isTrending || product.isFeatured) && (
+        {/* Unified Ribbon Badge (Top Left) */}
+        {(isFlashSale || discount > 0 || product.isNewArrival || product.isTrending || product.isFeatured) && (
           <div className="absolute top-0 left-0 overflow-hidden w-24 h-24 z-10 pointer-events-none">
             <div className={`absolute top-0 left-0 text-white text-[10px] font-black py-1 w-32 text-center -rotate-45 -translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest ${
+              isFlashSale ? 'bg-orange-500 animate-pulse' :
+              discount > 0 ? 'bg-primary' :
               product.isNewArrival ? 'bg-emerald-500' :
-              product.isTrending ? 'bg-rose-500' :
+              product.isTrending ? 'bg-rose-500 animate-pulse' :
               'bg-amber-500'
             }`}>
-              {product.isNewArrival ? 'New' :
+              {isFlashSale ? 'Flash' :
+               discount > 0 ? `${discount}% OFF` :
+               product.isNewArrival ? 'New' :
                product.isTrending ? 'Trending' :
                'Featured'}
             </div>
