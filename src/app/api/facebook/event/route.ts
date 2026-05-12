@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCachedSettings } from '@/lib/data-fetching';
 import { headers } from 'next/headers';
 
+async function hashData(data: string): Promise<string> {
+    if (!data) return '';
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(data.trim().toLowerCase());
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export async function POST(request: NextRequest) {
     try {
         const headersList = await headers();
@@ -17,8 +26,13 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { eventName = 'PageView', eventUrl, userAgent } = body;
-
+        const { 
+            eventName = 'PageView', 
+            eventUrl, 
+            userAgent, 
+            customData = {}, 
+            userData = {} 
+        } = body;
 
         // Get real client IP
         const ipAddress =
@@ -33,6 +47,32 @@ export async function POST(request: NextRequest) {
         const fbp = request.cookies.get('_fbp')?.value;
         const fbc = request.cookies.get('_fbc')?.value;
 
+        // --- Hashing & Normalization ---
+        const hashedEmail = userData.em ? await hashData(userData.em) : undefined;
+        
+        // Process phone: ensure digits only and has country code (BD: 88)
+        let phone = userData.ph ? userData.ph.replace(/\D/g, '') : '';
+        if (phone && !phone.startsWith('88')) {
+            phone = '88' + phone;
+        }
+        const hashedPhone = phone ? await hashData(phone) : undefined;
+        
+        // Hash name if provided
+        const hashedFirstName = userData.fn ? await hashData(userData.fn) : undefined;
+        const hashedLastName = userData.ln ? await hashData(userData.ln) : undefined;
+
+        // Prepare user data for best match quality
+        const fbUserData: any = {
+            client_ip_address: ipAddress,
+            client_user_agent: userAgent,
+            fbp,
+            fbc,
+            ...(hashedEmail && { em: [hashedEmail] }),
+            ...(hashedPhone && { ph: [hashedPhone] }),
+            ...(hashedFirstName && { fn: [hashedFirstName] }),
+            ...(hashedLastName && { ln: [hashedLastName] }),
+        };
+
         const payload: any = {
             data: [
                 {
@@ -41,16 +81,18 @@ export async function POST(request: NextRequest) {
                     event_id: eventId,
                     event_source_url: eventUrl,
                     action_source: 'website',
-                    user_data: {
-                        client_ip_address: ipAddress,
-                        client_user_agent: userAgent,
-                        fbp,
-                        fbc,
+                    user_data: fbUserData,
+                    custom_data: {
+                        ...customData,
                     },
                 },
             ],
         };
 
+        // Add test_event_code if present (useful for testing in Events Manager)
+        if (settings?.facebookTestEventCode || process.env.FACEBOOK_TEST_EVENT_CODE) {
+            payload.test_event_code = settings?.facebookTestEventCode || process.env.FACEBOOK_TEST_EVENT_CODE;
+        }
 
         const fbResponse = await fetch(
             `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`,

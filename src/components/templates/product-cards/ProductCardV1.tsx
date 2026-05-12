@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { QuickViewModal } from './QuickViewModal';
+import { fbEvent } from '@/lib/fpixel';
 import {
   Tooltip,
   TooltipContent,
@@ -78,8 +79,21 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
       price: (displaySalePrice !== undefined && displaySalePrice !== null) ? displaySalePrice : displayPrice,
       basePrice: displayPrice,
       quantity: 1,
-      image: product.images?.[0]
+      color: undefined,
+      size: undefined
     }));
+
+    // Track AddToCart
+    fbEvent('AddToCart', {
+      content_name: product.name,
+      content_category: product.categories?.[0]?.name || 'Uncategorized',
+      content_ids: [product._id],
+      content_type: 'product',
+      value: displaySalePrice ?? displayPrice,
+      currency: 'BDT',
+      quantity: 1
+    });
+
     toast.success(`${product.name} added to cart`);
   };
 
@@ -109,6 +123,18 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
 
       if (!res.ok) {
         throw new Error('Failed to update wishlist server-side');
+      }
+
+      if (willBeInWishlist) {
+        // Track AddToWishlist
+        fbEvent('AddToWishlist', {
+          content_name: product.name,
+          content_category: product.categories?.[0]?.name || 'Uncategorized',
+          content_ids: [product._id],
+          content_type: 'product',
+          value: product.salePrice ?? product.price,
+          currency: 'BDT'
+        });
       }
     } catch (err) {
       console.error('API toggle error:', err);

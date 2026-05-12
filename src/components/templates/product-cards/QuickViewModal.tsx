@@ -10,6 +10,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useAppDispatch } from '@/store/hooks';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toast } from 'sonner';
+import { fbEvent } from '@/lib/fpixel';
 import { Badge } from '@/components/ui/badge';
 
 interface QuickViewModalProps {
@@ -66,6 +67,16 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       setSelectedSize(initialSize);
       setQuantity(1);
       setActiveImage(product.images?.[0] || '/placeholder.jpg');
+
+      // Track ViewContent for Quick View
+      fbEvent('ViewContent', {
+        content_name: product.name,
+        content_category: product.categories?.[0]?.name || 'Uncategorized',
+        content_ids: [product._id],
+        content_type: 'product',
+        value: product.salePrice || product.price,
+        currency: 'BDT'
+      });
     }
   }, [isOpen, uniqueColors, product.variants, product.images]);
 
@@ -81,10 +92,11 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
     }
   }, [activeVariant]);
 
+  const displayPrice = activeVariant?.price || product.price;
+  const displaySalePrice = activeVariant?.salePrice || product.salePrice;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    const displayPrice = activeVariant?.price || product.price;
-    const displaySalePrice = activeVariant?.salePrice || product.salePrice;
 
     dispatch(addToCart({
       productId: product._id,
@@ -96,6 +108,18 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       color: selectedColor || undefined,
       size: selectedSize || undefined
     }));
+
+    // Track AddToCart
+    fbEvent('AddToCart', {
+      content_name: product.name,
+      content_category: product.categories?.[0]?.name || 'Uncategorized',
+      content_ids: [product._id],
+      content_type: 'product',
+      value: (displaySalePrice ?? displayPrice) * quantity,
+      currency: 'BDT',
+      quantity: quantity
+    });
+
     toast.success(`${product.name} added to cart`);
     onClose();
   };
@@ -286,7 +310,20 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                 {(activeVariant?.stock ?? product.stock) === 0 ? 'Out of Stock' : 'Add to Cart'}
               </Button>
 
-              <button className="h-12 w-12 flex items-center justify-center border border-gray-200 rounded-none hover:bg-gray-50 hover:border-gray-900 transition-all">
+              <button 
+                onClick={() => {
+                  fbEvent('AddToWishlist', {
+                    content_name: product.name,
+                    content_category: product.categories?.[0]?.name || 'Uncategorized',
+                    content_ids: [product._id],
+                    content_type: 'product',
+                    value: displaySalePrice ?? displayPrice,
+                    currency: 'BDT'
+                  });
+                  toast.success('Added to wishlist');
+                }}
+                className="h-12 w-12 flex items-center justify-center border border-gray-200 rounded-none hover:bg-gray-50 hover:border-gray-900 transition-all"
+              >
                 <Heart className="h-5 w-5 text-gray-400" />
               </button>
             </div>
