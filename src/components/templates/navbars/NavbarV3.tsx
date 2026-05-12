@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Search, User, Heart, Menu, X, LogOut, LayoutDashboard, Settings, Truck } from 'lucide-react';
+import { ShoppingBag, Search, User, Heart, Menu, X, LogOut, LayoutDashboard, Settings, Truck, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/store/hooks';
 import { useSession, signOut } from 'next-auth/react';
@@ -148,9 +148,9 @@ export default function NavbarV3() {
                 <DropdownMenuContent align="end" className="w-56 mt-2">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="font-serif">
-                      <div className="flex flex-col">
-                        <span>{session.user.name}</span>
-                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
+                      <div className="flex flex-col text-foreground">
+                        <span>{session.user?.name}</span>
+                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user?.email}</span>
                         {profile && (
                           <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
                             <Package className="h-3 w-3 text-primary" />

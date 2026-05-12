@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingCart, User, Menu, X, Heart, LayoutDashboard, Settings, LogOut, MapPin, Phone, HelpCircle, Truck } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, LayoutDashboard, Settings, LogOut, MapPin, Phone, HelpCircle, Truck, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/store/hooks';
@@ -164,8 +164,8 @@ export default function NavbarV4() {
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="font-serif">
                       <div className="flex flex-col text-foreground">
-                        <span>{session.user.name}</span>
-                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
+                        <span>{session.user?.name}</span>
+                        <span className="text-xs font-normal text-muted-foreground truncate">{session.user?.email}</span>
                         {profile && (
                           <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
                             <Package className="h-3 w-3 text-primary" />

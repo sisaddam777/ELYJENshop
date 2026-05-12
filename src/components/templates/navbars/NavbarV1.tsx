@@ -370,8 +370,8 @@ export default function Navbar() {
                     <DropdownMenuGroup>
                       <DropdownMenuLabel className="font-serif">
                         <div className="flex flex-col">
-                          <span>{session.user.name}</span>
-                          <span className="text-xs font-normal text-muted-foreground truncate">{session.user.email}</span>
+                          <span>{session.user?.name}</span>
+                          <span className="text-xs font-normal text-muted-foreground truncate">{session.user?.email}</span>
                           {profile && (
                             <div className="mt-1.5 flex items-center gap-1.5 bg-primary/10 px-2 py-0.5 rounded-full w-fit border border-primary/20">
                               <Package className="h-3 w-3 text-primary" />
