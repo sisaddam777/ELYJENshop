@@ -102,9 +102,9 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="container px-4 md:px-0 mx-auto py-10">
+    <div className="container px-4 md:px-0 mx-auto pt-2 pb-10">
 
-      <div className="p-0 md:p-4">
+      <div className="w-full">
         {/* Track View */}
         <ViewTracker id={product._id.toString()} type="product" />
         {/* Dynamic Product Detail Template Selector */}
