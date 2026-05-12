@@ -106,7 +106,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-6xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
+      <DialogContent className="sm:max-w-5xl w-[95vw] p-0 overflow-hidden bg-white border-none rounded-none shadow-2xl">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 z-50 p-2 bg-white/80 hover:bg-white rounded-none shadow-md transition-all border border-gray-100"
@@ -114,26 +114,26 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           <X className="h-5 w-5 text-gray-800" />
         </button>
 
-        <div className="flex flex-col md:flex-row h-full max-h-[90vh] overflow-y-auto md:overflow-hidden min-h-[500px]">
-          {/* Image Section */}
-          <div className="w-full md:w-[58%] bg-neutral-50 flex flex-col items-center justify-center p-0 relative border-r border-neutral-100">
-            <div className="relative w-full h-[500px] flex items-center justify-center overflow-hidden">
+        <div className="flex flex-col md:flex-row h-full max-h-[90vh] overflow-hidden">
+          {/* Left: Sticky Image Section */}
+          <div className="w-full md:w-[50%] bg-[#f8f8f8] relative md:sticky md:top-0 h-fit md:h-full flex flex-col items-center justify-center border-r border-neutral-100">
+            <div className="relative w-full aspect-square flex items-center justify-center p-0">
               <img 
                 src={activeImage} 
                 alt={product.name} 
-                className="w-full h-full object-contain p-4 mix-blend-multiply transition-all duration-700 hover:scale-110"
+                className="w-full h-full object-contain mix-blend-multiply transition-all duration-700"
               />
             </div>
             
-            {/* Thumbnails */}
+            {/* Thumbnails at the bottom of sticky image */}
             {product.images?.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-6 w-full justify-center scrollbar-hide px-6">
+              <div className="flex gap-2 overflow-x-auto py-4 w-full justify-center scrollbar-hide px-4 absolute bottom-0 bg-white/20 backdrop-blur-sm">
                 {product.images.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImage(img)}
-                    className={`h-24 w-24 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${
-                      activeImage === img ? 'border-[#00a870] shadow-lg' : 'border-neutral-200 opacity-60 hover:opacity-100'
+                    className={`h-16 w-16 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${
+                      activeImage === img ? 'border-[#00a870]' : 'border-white opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="" className="h-full w-full object-cover" />
@@ -149,8 +149,8 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
             )}
           </div>
 
-          {/* Details Section */}
-          <div className="w-full md:w-[42%] p-12 flex flex-col font-jost overflow-y-auto bg-white">
+          {/* Right: Scrollable Details Section */}
+          <div className="w-full md:w-[50%] p-10 flex flex-col font-jost overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-200">
             <div className="mb-2 flex items-center gap-2">
                <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
@@ -184,30 +184,27 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                </div>
             </div>
 
-            {/* Attributes Section */}
-            <div className="mb-8">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-4">Specifications</h4>
-               <div className="grid grid-cols-2 gap-4">
-                  {product.attributes?.length > 0 ? (
-                    product.attributes.map((attr: any, idx: number) => (
-                      <div key={idx} className="flex flex-col border-b border-neutral-100 pb-2">
-                         <span className="text-[9px] font-bold text-neutral-400 uppercase mb-1">{attr.name || 'Detail'}</span>
-                         <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">{attr.value}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="flex flex-col border-b border-neutral-100 pb-2">
-                         <span className="text-[9px] font-bold text-neutral-400 uppercase mb-1">Architecture</span>
-                         <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">Carbon Plate</span>
-                      </div>
-                      <div className="flex flex-col border-b border-neutral-100 pb-2">
-                         <span className="text-[9px] font-bold text-neutral-400 uppercase mb-1">Material</span>
-                         <span className="text-xs font-bold text-neutral-800 uppercase tracking-tight">PrimeKnit</span>
-                      </div>
-                    </>
-                  )}
-               </div>
+            {/* Attributes Section (Vertical) */}
+            <div className="mb-8 space-y-4 border-t border-gray-100 pt-6">
+               {product.attributes?.length > 0 ? (
+                 product.attributes.map((attr: any, idx: number) => (
+                   <div key={idx} className="flex items-center gap-4">
+                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">{attr.name || 'Detail'}:</span>
+                      <span className="text-sm font-bold text-neutral-800">{attr.value}</span>
+                   </div>
+                 ))
+               ) : (
+                 <>
+                   <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">Technology:</span>
+                      <span className="text-sm font-bold text-neutral-800">Carbon Plate</span>
+                   </div>
+                   <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-black text-neutral-400 uppercase w-24 tracking-widest">Material:</span>
+                      <span className="text-sm font-bold text-neutral-800">PrimeKnit</span>
+                   </div>
+                 </>
+               )}
             </div>
 
             {/* Variations Selection */}
