@@ -13,6 +13,7 @@ declare global {
       data?: Record<string, unknown>,
       options?: { eventID: string }
     ) => void;
+    _fbq?: any;
   }
 }
 
