@@ -11,7 +11,13 @@ import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { QuickAddModal } from './QuickAddModal';
+import { QuickViewModal } from './QuickViewModal';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProductCardProps {
   product: {
@@ -39,12 +45,12 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
   const isInWishlist = wishlist.includes(product._id);
   const hasVariants = product.variants && product.variants.length > 0;
 
-  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasVariants) {
-      setShowVariantModal(true);
+      setShowQuickViewModal(true);
     } else {
       dispatch(addToCart({
         productId: product._id,
@@ -73,7 +79,7 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
   return (
     <div className="group relative flex flex-col font-jost animate-in fade-in duration-700">
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-muted rounded-sm">
+      <div className="relative aspect-square overflow-hidden bg-muted rounded-none">
         <Link href={`/product/${product.slug}`} className="block h-full w-full">
           <Image
             src={product.images?.[0] || '/placeholder.png'}
@@ -94,32 +100,56 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
         )}
 
         {/* Hover Actions - Centered circles */}
-        <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/5 backdrop-blur-[2px]">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-12 w-12 rounded-full bg-white text-black hover:bg-primary hover:text-white shadow-xl transition-all hover:scale-110"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="h-5 w-5" />
-          </Button>
-          <Link href={`/product/${product.slug}`}>
-            <Button
-              size="icon"
-              variant="secondary"
-              className="h-12 w-12 rounded-full bg-white text-black hover:bg-primary hover:text-white shadow-xl transition-all hover:scale-110"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          </Link>
-          <Button
-            size="icon"
-            variant="secondary"
-            className={`h-12 w-12 rounded-full bg-white shadow-xl transition-all hover:scale-110 ${isInWishlist ? 'text-primary' : 'text-black hover:bg-primary hover:text-white'}`}
-            onClick={handleWishlist}
-          >
-            <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-current' : ''}`} />
-          </Button>
+        <div className="absolute inset-0 hidden md:flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/5 backdrop-blur-[2px]">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-12 w-12 rounded-full bg-white text-black hover:bg-primary hover:text-white shadow-xl transition-all hover:scale-110"
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add to cart</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-12 w-12 rounded-full bg-white text-black hover:bg-primary hover:text-white shadow-xl transition-all hover:scale-110"
+                  onClick={(e) => { e.preventDefault(); setShowQuickViewModal(true); }}
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Quick View</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className={`h-12 w-12 rounded-full bg-white shadow-xl transition-all hover:scale-110 ${isInWishlist ? 'text-primary' : 'text-black hover:bg-primary hover:text-white'}`}
+                  onClick={handleWishlist}
+                >
+                  <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-current' : ''}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
@@ -134,22 +164,20 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
         <div className="flex items-center justify-center gap-2">
           {product.salePrice ? (
             <>
-              <span className="text-red-500 font-semibold text-[15px]">৳{Math.round(product.salePrice)}</span>
+              <span className="text-[#00a870] font-semibold text-[15px]">৳{Math.round(product.salePrice)}</span>
               <span className="text-muted-foreground line-through text-[13px] font-normal">৳{Math.round(product.price)}</span>
             </>
           ) : (
-            <span className="text-foreground font-semibold text-[15px]">৳{Math.round(product.price)}</span>
+            <span className="text-[#00a870] font-semibold text-[15px]">৳{Math.round(product.price)}</span>
           )}
         </div>
       </div>
 
-      {hasVariants && (
-        <QuickAddModal
-          product={product}
-          isOpen={showVariantModal}
-          onClose={() => setShowVariantModal(false)}
-        />
-      )}
+      <QuickViewModal
+        product={product}
+        isOpen={showQuickViewModal}
+        onClose={() => setShowQuickViewModal(false)}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Heart, Eye, MoreVertical, Edit, Trash2, Settings, PlusCircle, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, PlusCircle, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -20,7 +20,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { QuickAddModal } from './QuickAddModal';
+import { QuickViewModal } from './QuickViewModal';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Swal from 'sweetalert2';
 
 interface ProductCardProps {
@@ -51,12 +57,12 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
   const isAdmin = (session?.user as any)?.role === 'admin';
   const hasVariants = product.variants && product.variants.length > 0;
 
-  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
 
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasVariants) {
-      setShowVariantModal(true);
+      setShowQuickViewModal(true);
     } else {
       executeAddToCart();
     }
@@ -114,8 +120,7 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
 
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
-    // TODO: Implement Quick View functionality
-    toast.info('Quick View coming soon!');
+    setShowQuickViewModal(true);
   };
 
   const handleDeleteProduct = async (e: React.MouseEvent) => {
@@ -150,10 +155,10 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
 
   return (
     <div
-      className="group relative flex flex-col overflow-hidden rounded-lg border bg-background transition-all hover:shadow-xl"
+      className="group relative flex flex-col overflow-hidden rounded-none border bg-background transition-all hover:shadow-xl"
       data-aos="fade-up"
     >
-      <Link href={`/product/${product.slug}`} className="relative aspect-square overflow-hidden bg-muted">
+      <Link href={`/product/${product.slug}`} className="relative aspect-square overflow-hidden bg-muted rounded-none">
         {product.images?.length > 0 ? (
           <div className="relative h-full w-full">
             {/* Primary Image */}
@@ -201,26 +206,41 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
         </div>
 
         {/* Hover Actions */}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-black/5">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-9 w-9 rounded-full shadow-lg hover:scale-110 transition-transform"
-            onClick={handleFavorite}
-            disabled={status === 'loading'}
-            aria-label={isInWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
-          >
-            <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-destructive text-destructive' : ''}`} />
-          </Button>
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-9 w-9 rounded-full shadow-lg hover:scale-110 transition-transform"
-            onClick={handleQuickView}
-            aria-label={`View ${product.name} details`}
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
+        <div className="absolute inset-0 hidden md:flex items-center justify-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-black/5">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-10 w-10 rounded-full shadow-lg hover:scale-110 transition-transform bg-white text-gray-900 hover:bg-white"
+                  onClick={handleFavorite}
+                  disabled={status === 'loading'}
+                >
+                  <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-12 w-12 rounded-full shadow-lg hover:scale-110 transition-transform bg-[#00a870] text-white hover:bg-[#008f5d] border-none"
+                  onClick={handleQuickView}
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Quick View</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </Link>
 
@@ -286,35 +306,41 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
                 <span className="text-xs line-through text-muted-foreground leading-none mb-1">
                   ৳{product.price ? Math.round(product.price) : '0'}
                 </span>
-                <span className="font-bold text-lg text-primary leading-none">
+                <span className="font-bold text-lg text-[#00a870] leading-none">
                   ৳{Math.round(product.salePrice)}
                 </span>
               </>
             ) : (
-              <span className="font-bold text-lg text-foreground leading-none">
+              <span className="font-bold text-lg text-[#00a870] leading-none">
                 ৳{product.price ? Math.round(product.price) : '0'}
               </span>
             )}
           </div>
-          <Button
-            size="sm"
-            className="h-8 w-8 rounded-full p-0 flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
-            disabled={product.stock === 0}
-            onClick={handleAddToCartClick}
-            aria-label={`Add ${product.name} to cart`}
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  className="h-9 w-9 rounded-full p-0 flex items-center justify-center transition-all hover:scale-110 cursor-pointer bg-white border border-gray-100 text-gray-900 hover:bg-gray-50"
+                  disabled={product.stock === 0}
+                  onClick={handleAddToCartClick}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add to cart</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
-      {hasVariants && (
-        <QuickAddModal
-          product={product}
-          isOpen={showVariantModal}
-          onClose={() => setShowVariantModal(false)}
-        />
-      )}
+      <QuickViewModal
+        product={product}
+        isOpen={showQuickViewModal}
+        onClose={() => setShowQuickViewModal(false)}
+      />
     </div>
   );
 }

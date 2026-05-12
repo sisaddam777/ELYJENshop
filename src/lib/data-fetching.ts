@@ -172,7 +172,7 @@ export const getCachedBanners = (domain: string) => {
       return serialize(banners);
     },
     ['banners-list', domain],
-    { revalidate: 31536000, tags: [CACHE_TAGS.banners] }
+    { revalidate: 60, tags: [CACHE_TAGS.banners] }
   )();
 };
 

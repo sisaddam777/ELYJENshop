@@ -6,14 +6,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, Eye, MoreVertical, Edit, Trash2, Settings, ArrowUpRight, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, ArrowUpRight, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
-import { QuickAddModal } from './QuickAddModal';
 import Swal from 'sweetalert2';
 import {
   DropdownMenu,
@@ -22,6 +21,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { QuickViewModal } from './QuickViewModal';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProductCardProps {
   product: {
@@ -51,7 +57,7 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
   const isAdmin = (session?.user as any)?.role === 'admin';
   const hasVariants = product.variants && product.variants.length > 0;
 
-  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const discount = (product.price > 0 && product.salePrice && product.salePrice < product.price) 
@@ -61,7 +67,7 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasVariants) {
-      setShowVariantModal(true);
+      setShowQuickViewModal(true);
     } else {
       executeAddToCart();
     }
@@ -112,7 +118,7 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
 
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.info('Coming soon!');
+    setShowQuickViewModal(true);
   };
 
   const handleDeleteProduct = async (e: React.MouseEvent) => {
@@ -149,7 +155,7 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
       data-aos="fade-up"
     >
       {/* Ethereal Floating Image Container */}
-      <div className="relative aspect-[3/4] rounded-[3rem] overflow-hidden transition-all duration-700 group-hover:shadow-[0_40px_80px_-20px_rgba(var(--primary-rgb),0.25)] group-hover:-translate-y-4">
+      <div className="relative aspect-[3/4] rounded-none overflow-hidden transition-all duration-700 group-hover:shadow-[0_40px_80px_-20px_rgba(var(--primary-rgb),0.25)] group-hover:-translate-y-4">
         <Link href={`/product/${product.slug}`} className="block h-full w-full">
           <Image
             src={product.images?.[0] || '/placeholder.png'}
@@ -169,23 +175,56 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
         </div>
 
         {/* Action Float Menu */}
-        <div className={`absolute bottom-8 right-8 flex flex-col gap-3 transition-all duration-500 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-           <Button
-             size="icon"
-             className="h-12 w-12 rounded-full shadow-2xl bg-primary text-white hover:bg-primary-foreground hover:text-primary transition-all duration-500"
-             onClick={handleAddToCartClick}
-             disabled={product.stock === 0}
-           >
-             <ShoppingCart className="h-5 w-5" />
-           </Button>
-           <Button
-             size="icon"
-             variant="secondary"
-             className="h-10 w-10 rounded-full shadow-2xl bg-white/90 dark:bg-neutral-900/90 hover:bg-primary hover:text-white transition-all duration-500"
-             onClick={handleFavorite}
-           >
-             <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
-           </Button>
+        <div className={`absolute bottom-8 right-8 hidden md:flex flex-col gap-3 transition-all duration-500 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+           <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  className="h-12 w-12 rounded-full shadow-2xl bg-primary text-white hover:bg-primary-foreground hover:text-primary transition-all duration-500"
+                  onClick={handleAddToCartClick}
+                  disabled={product.stock === 0}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Add to cart</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-10 w-10 rounded-full shadow-2xl bg-white/90 dark:bg-neutral-900/90 hover:bg-primary hover:text-white transition-all duration-500"
+                  onClick={handleFavorite}
+                >
+                  <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>{isInWishlist ? 'Remove from favorites' : 'Add to favorites'}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-10 w-10 rounded-full shadow-2xl bg-white/90 dark:bg-neutral-900/90 hover:bg-primary hover:text-white transition-all duration-500"
+                  onClick={handleQuickView}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Quick View</p>
+              </TooltipContent>
+            </Tooltip>
+           </TooltipProvider>
         </div>
 
         {/* Admin Quick Access */}
@@ -247,7 +286,7 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
         </div>
 
         <div className="flex items-center gap-4">
-           <span className="text-2xl font-black text-primary">
+           <span className="text-2xl font-black text-[#00a870]">
              ৳{Math.round(product.salePrice ?? product.price)}
            </span>
             {product.salePrice != null && product.salePrice < product.price && (
@@ -258,13 +297,11 @@ export default function ProductCardV5({ product, isFlashSale }: ProductCardProps
         </div>
       </div>
 
-      {hasVariants && (
-        <QuickAddModal
-          product={product}
-          isOpen={showVariantModal}
-          onClose={() => setShowVariantModal(false)}
-        />
-      )}
+      <QuickViewModal
+        product={product}
+        isOpen={showQuickViewModal}
+        onClose={() => setShowQuickViewModal(false)}
+      />
     </div>
   );
 }

@@ -6,14 +6,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, Eye, MoreVertical, Edit, Trash2, Settings, Layers, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, Layers, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
-import { QuickAddModal } from './QuickAddModal';
 import Swal from 'sweetalert2';
 import {
   DropdownMenu,
@@ -22,6 +21,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { QuickViewModal } from './QuickViewModal';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProductCardProps {
   product: {
@@ -51,7 +57,7 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
   const isAdmin = (session?.user as any)?.role === 'admin';
   const hasVariants = product.variants && product.variants.length > 0;
 
-  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false);
 
   const discount = (product.price > 0 && product.salePrice && product.salePrice < product.price) 
     ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
@@ -60,7 +66,7 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasVariants) {
-      setShowVariantModal(true);
+      setShowQuickViewModal(true);
     } else {
       executeAddToCart();
     }
@@ -111,7 +117,7 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
 
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.info('Quick View coming soon!');
+    setShowQuickViewModal(true);
   };
 
   const handleDeleteProduct = async (e: React.MouseEvent) => {
@@ -171,31 +177,53 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
         </div>
 
         {/* Action Sidebar */}
-        <div className="absolute top-0 right-0 h-full flex flex-col border-l border-neutral-100 dark:border-neutral-800 translate-x-full group-hover:translate-x-0 transition-transform duration-300 bg-background/80 backdrop-blur-md">
-           <button 
-             onClick={handleFavorite}
-             className="flex-1 px-3 hover:text-primary transition-colors border-b border-neutral-100 dark:border-neutral-800"
-             aria-label="Toggle Wishlist"
-           >
-             <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
-           </button>
-           <button 
-             onClick={handleQuickView}
-             className="flex-1 px-3 hover:text-primary transition-colors border-b border-neutral-100 dark:border-neutral-800"
-             aria-label="Quick View"
-           >
-             <Eye className="h-5 w-5" />
-           </button>
-           <button 
-             className="flex-1 px-3 hover:text-primary transition-colors"
-             aria-label="Compare"
-             onClick={(e) => {
-               e.preventDefault();
-               toast.info('Comparison feature coming soon');
-             }}
-           >
-             <Layers className="h-5 w-5" />
-           </button>
+        <div className="absolute top-0 right-0 h-full hidden md:flex flex-col border-l border-neutral-100 dark:border-neutral-800 translate-x-full group-hover:translate-x-0 transition-transform duration-300 bg-background/80 backdrop-blur-md">
+           <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  onClick={handleFavorite}
+                  className="flex-1 px-3 hover:text-primary transition-colors border-b border-neutral-100 dark:border-neutral-800"
+                >
+                  <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-primary text-primary' : ''}`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>{isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  onClick={handleQuickView}
+                  className="flex-1 px-3 hover:text-primary transition-colors border-b border-neutral-100 dark:border-neutral-800"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Quick View</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  className="flex-1 px-3 hover:text-primary transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast.info('Comparison feature coming soon');
+                  }}
+                >
+                  <Layers className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Compare</p>
+              </TooltipContent>
+            </Tooltip>
+           </TooltipProvider>
         </div>
 
         {/* Admin Overlay */}
@@ -203,11 +231,11 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
           <div className="absolute bottom-2 right-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="outline" className="h-8 w-8 rounded-none border-neutral-800 bg-black/50 text-white hover:bg-primary">
+                <Button size="icon" variant="outline" className="h-8 w-8 border-neutral-800 bg-black/50 text-white hover:bg-primary">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-none border-neutral-800">
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => router.push(`/admin/products/${product.slug}`)}>
                   Edit
                 </DropdownMenuItem>
@@ -255,7 +283,7 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
           <div className="flex flex-col">
              <span className="text-xs font-mono text-muted-foreground uppercase mb-1">Price_</span>
              <div className="flex items-center gap-2">
-                <span className="text-xl font-black font-mono">
+                <span className="text-xl font-black font-mono text-[#00a870]">
                   ৳{Math.round(product.salePrice ?? product.price)}
                 </span>
                 {product.salePrice != null && product.salePrice < product.price && (
@@ -265,25 +293,31 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
                 )}
              </div>
           </div>
-          <Button 
-            size="icon"
-            className="rounded-none h-10 w-10 bg-primary hover:bg-primary-foreground hover:text-primary border border-primary transition-all"
-            onClick={handleAddToCartClick}
-            disabled={product.stock === 0}
-            aria-label="Add to cart"
-          >
-            <ShoppingCart className="h-5 w-5" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="icon"
+                  className="rounded-none h-10 w-10 bg-primary hover:bg-primary-foreground hover:text-primary border border-primary transition-all"
+                  onClick={handleAddToCartClick}
+                  disabled={product.stock === 0}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add to cart</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
-      {hasVariants && (
-        <QuickAddModal
-          product={product}
-          isOpen={showVariantModal}
-          onClose={() => setShowVariantModal(false)}
-        />
-      )}
+      <QuickViewModal
+        product={product}
+        isOpen={showQuickViewModal}
+        onClose={() => setShowQuickViewModal(false)}
+      />
     </div>
   );
 }
