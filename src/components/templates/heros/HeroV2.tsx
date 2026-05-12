@@ -62,7 +62,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[210px] sm:h-[450px] md:h-[600px] lg:h-screen overflow-hidden bg-black font-jost">
+    <section className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-screen overflow-hidden bg-black font-jost">
       {/* Logic Layer (Hidden Embla) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -111,30 +111,30 @@ export default function HeroV2({ banners }: HeroSliderProps) {
               </div>
 
               {/* Text Content */}
-              <div className="container relative z-20 mx-auto px-4 sm:px-12 md:px-20 lg:px-32 h-full flex items-center">
-                <div className="max-w-[95%] sm:max-w-4xl w-full flex flex-col justify-end h-[70%] pb-20 sm:pb-32 text-center sm:text-left">
+              <div className="container relative z-20 mx-auto px-6 sm:px-12 md:px-20 lg:px-32 h-full flex items-center">
+                <div className="max-w-[100%] sm:max-w-4xl w-full flex flex-col justify-center sm:justify-end h-full sm:h-[70%] pt-4 sm:pt-0 pb-6 sm:pb-32 text-center sm:text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                   >
-                    <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-white leading-[1] tracking-tighter mb-8 sm:mb-12 drop-shadow-2xl uppercase">
+                    <h1 className="text-2xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter mb-4 sm:mb-12 drop-shadow-2xl uppercase">
                       {banner.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6">
+                    <div className="flex flex-row items-center justify-center sm:justify-start gap-3 sm:gap-6 flex-wrap">
                       <Link
                         href={banner.primaryBtnLink || banner.link || '/shop'}
-                        className="group flex items-center gap-3 px-6 py-3 sm:px-12 sm:py-5 bg-primary text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest shadow-2xl"
+                        className="group inline-flex items-center gap-2 px-5 py-2.5 sm:px-12 sm:py-5 bg-primary text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-[11px] sm:text-base uppercase tracking-widest shadow-2xl"
                       >
                         {banner.primaryBtnText || 'Shop Now'}
-                        <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2" />
+                        <ArrowRight className="h-3.5 w-3.5 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2" />
                       </Link>
 
                       {banner.secondaryBtnText && (
                         <Link
                           href={banner.secondaryBtnLink || '/contact'}
-                          className="px-6 py-3 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-xs sm:text-base uppercase tracking-widest"
+                          className="inline-flex items-center px-5 py-2.5 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/30 text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-[11px] sm:text-base uppercase tracking-widest"
                         >
                           {banner.secondaryBtnText}
                         </Link>
