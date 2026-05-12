@@ -75,7 +75,7 @@ export default function HeroV5({ banners }: HeroV5Props) {
          </div>
 
          {/* Navigation Seed */}
-         <div className="flex flex-col items-center pt-10">
+         <div className="hidden sm:flex flex-col items-center pt-10">
             <button 
               className="flex flex-col items-center gap-6 group transition-all duration-700 hover:scale-110"
               onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
