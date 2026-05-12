@@ -33,8 +33,8 @@ export default function HeroV1({ banners }: HeroSliderProps) {
 
   // Initialize Embla Carousel
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { 
-      loop: true, 
+    {
+      loop: true,
       duration: 30, // Smooth transition
     },
     [Autoplay({ delay: AUTOPLAY_DELAY, stopOnInteraction: false })]
@@ -126,9 +126,8 @@ export default function HeroV1({ banners }: HeroSliderProps) {
                   />
                 </div>
 
-                {/* Gradient Overlay - Lighter */}
-                <div className="absolute inset-0 bg-black/20 z-[5]" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent z-[5]" />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-end pb-10 sm:pb-20 lg:pb-32 z-20 px-4 sm:px-12 md:px-20 lg:px-32">
@@ -222,11 +221,10 @@ export default function HeroV1({ banners }: HeroSliderProps) {
                 <button
                   key={index}
                   onClick={() => scrollTo(index)}
-                  className={`transition-all duration-300 cursor-pointer rounded-full ${
-                    index === activeIndex 
-                    ? "w-4 sm:w-10 bg-primary h-1 sm:h-2" 
-                    : "w-1 sm:w-2 bg-white/30 h-1 sm:h-2"
-                  }`}
+                  className={`transition-all duration-300 cursor-pointer rounded-full ${index === activeIndex
+                      ? "w-4 sm:w-10 bg-primary h-1 sm:h-2"
+                      : "w-1 sm:w-2 bg-white/30 h-1 sm:h-2"
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}

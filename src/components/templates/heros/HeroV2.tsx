@@ -32,8 +32,8 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   const slides = banners && banners.length > 0 ? banners : [];
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { 
-      loop: true, 
+    {
+      loop: true,
       duration: 0,
       watchDrag: false
     },
@@ -71,7 +71,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
       </div>
 
       {/* Visual Layer (Cross-Fade + Zoom) */}
-      <div 
+      <div
         className="relative h-full w-full cursor-pointer"
         onClick={(e) => {
           const target = e.target as HTMLElement;
@@ -81,7 +81,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
       >
         <AnimatePresence initial={false}>
           {slides.map((banner, index) => index === activeIndex && (
-            <motion.div 
+            <motion.div
               key={banner._id || index}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -106,9 +106,8 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                     sizes="100vw"
                   />
                 </motion.div>
-                {/* Lighter overlays to show image better */}
-                <div className="absolute inset-0 bg-black/30 z-[5]" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[5]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-10" />
               </div>
 
               {/* Text Content */}
@@ -150,7 +149,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
       </div>
 
       {/* Center Animated Scroll Button */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
@@ -171,11 +170,10 @@ export default function HeroV2({ banners }: HeroSliderProps) {
           <button
             key={i}
             onClick={() => scrollTo(i)}
-            className={`transition-all duration-300 rounded-full ${
-              i === activeIndex 
-              ? "h-8 w-1 sm:w-10 sm:h-1.5 bg-primary" 
-              : "h-1.5 w-1.5 sm:w-2 sm:h-2 bg-white/30"
-            }`}
+            className={`transition-all duration-300 rounded-full ${i === activeIndex
+                ? "h-8 w-1 sm:w-10 sm:h-1.5 bg-primary"
+                : "h-1.5 w-1.5 sm:w-2 sm:h-2 bg-white/30"
+              }`}
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}
