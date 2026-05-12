@@ -33,7 +33,7 @@ export async function GET() {
     const settings = await getCachedSettings(domain);
 
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/"/g, '');
     propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
 
     if (!clientEmail || !privateKey || propertyId === 'unknown') {
@@ -54,14 +54,18 @@ export async function GET() {
     return NextResponse.json({ activeUsersNow });
 
   } catch (error: any) {
+    const errorString = error.message || JSON.stringify(error);
     console.error('Realtime Analytics API Error Details:', {
       domain,
       propertyId,
-      error: error.message,
+      error: errorString,
       code: error.code,
       details: error.details
     });
-    return NextResponse.json({ activeUsersNow: 0, message: `Failed to fetch realtime data: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ 
+      activeUsersNow: 0, 
+      message: `Failed to fetch realtime data: ${errorString}` 
+    }, { status: 500 });
   }
 }
 

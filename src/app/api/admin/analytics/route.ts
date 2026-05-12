@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     const settings = await getCachedSettings(domain);
 
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/"/g, '');
 
     // Prioritize store-specific IDs from database, fallback to global envs
     propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
@@ -256,14 +256,15 @@ export async function GET(request: Request) {
     });
 
   } catch (error: any) {
+    const errorString = error.message || JSON.stringify(error);
     console.error('Main Analytics API Error Details:', {
       domain,
       propertyId,
-      error: error.message,
+      error: errorString,
       code: error.code,
       details: error.details
     });
-    return NextResponse.json({ message: `Internal Server Error: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ message: `Internal Server Error: ${errorString}` }, { status: 500 });
   }
 }
 
