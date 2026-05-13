@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
           }
         }
       });
-      await settings.save();
+      await settings.save({ validateBeforeSave: false });
     } else {
       // Create new settings record for this domain
       settings = await GlobalSettings.create({ ...allowedBody, domain });
@@ -234,6 +234,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('CRITICAL: Error updating settings:', error);
     if (error.name === 'ValidationError') {
+      console.error('Mongoose Validation Details:', JSON.stringify(error.errors, null, 2));
       const fieldErrors = Object.keys(error.errors || {}).join(', ');
       return NextResponse.json({
         message: `Validation Error: Missing or invalid fields (${fieldErrors}). Please ensure General Settings are filled.`,

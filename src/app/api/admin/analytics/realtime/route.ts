@@ -45,6 +45,11 @@ export async function GET() {
        return NextResponse.json({ message: 'Valid numeric Property ID is not configured. Please add GA4 Property ID in System Design.' }, { status: 400 });
     }
 
+    if (!clientEmail || !privateKey) {
+      console.error('Realtime Analytics Error: Google Cloud Credentials (Email or Private Key) are missing');
+      return NextResponse.json({ message: 'Google Cloud Credentials are missing. Please configure GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY.' }, { status: 400 });
+    }
+
     console.log('Realtime API Execution State:', {
       domain,
       hasSettings: !!settings,

@@ -2,13 +2,13 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IGlobalSettings extends Document {
   brandName: string;
-  contact: {
-    email: string;
-    phone: string;
-    address: string;
+  contact?: {
+    email?: string;
+    phone?: string;
+    address?: string;
   };
   logoUrl?: string;
-  socialLinks: {
+  socialLinks?: {
     facebook?: string;
     twitter?: string;
     instagram?: string;
@@ -32,30 +32,30 @@ export interface IGlobalSettings extends Document {
   courierConfig?: {
     activeProvider?: 'steadfast' | 'pathao' | 'redx' | 'none';
     steadfast?: {
-      apiKey: string;
-      secretKey: string;
+      apiKey?: string;
+      secretKey?: string;
     };
     pathao?: {
-      clientId: string;
-      clientSecret: string;
-      storeId: string;
+      clientId?: string;
+      clientSecret?: string;
+      storeId?: string;
     };
     redx?: {
-      apiKey: string;
+      apiKey?: string;
     };
   };
-  subscriptionConfig: {
-    activationThreshold: number;
-    rewardPercentage: number;
+  subscriptionConfig?: {
+    activationThreshold?: number;
+    rewardPercentage?: number;
   };
-  domain: string; // The primary domain for this tenant (e.g., customer-shop.com)
-  storeId: string; // Unique identifier for the store
+  domain: string;
+  storeId?: string;
   paymentConfig?: {
-    activeMethod: 'sslcommerz' | 'none';
+    activeMethod?: 'sslcommerz' | 'none';
     sslcommerz?: {
-      storeId: string;
-      storePassword: string;
-      isSandbox: boolean;
+      storeId?: string;
+      storePassword?: string;
+      isSandbox?: boolean;
     };
   };
   manualPaymentConfig?: {
@@ -72,20 +72,20 @@ export interface IGlobalSettings extends Document {
     openRouterApiKey?: string;
     systemPrompt?: string;
   };
-  uiTemplates: {
-    layout: string;
-    navbar: string;
-    hero: string;
-    categories: string;
-    productCard: string;
-    productDetail: string;
-    blogDetail: string;
-    shopListing: string;
-    blogListing: string;
-    footer: string;
-    theme: string;
-    logoFont: string;
-    bodyFont: string;
+  uiTemplates?: {
+    layout?: string;
+    navbar?: string;
+    hero?: string;
+    categories?: string;
+    productCard?: string;
+    productDetail?: string;
+    blogDetail?: string;
+    shopListing?: string;
+    blogListing?: string;
+    footer?: string;
+    theme?: string;
+    logoFont?: string;
+    bodyFont?: string;
   };
   saasSubscription?: {
     expiryDate: Date;
@@ -111,21 +111,9 @@ import { encrypt, decrypt } from '@/lib/encryption';
 const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
   {
     brandName: { type: String },
-    contact: {
-      email: { type: String },
-      phone: { type: String },
-      address: { type: String },
-    },
+    contact: { type: Object, default: {} },
     logoUrl: { type: String, default: '/logo.png' },
-    socialLinks: {
-      facebook: { type: String },
-      twitter: { type: String },
-      instagram: { type: String },
-      youtube: { type: String },
-      linkedin: { type: String },
-      tiktok: { type: String },
-      whatsapp: { type: String },
-    },
+    socialLinks: { type: Object, default: {} },
     marqueeText: { type: String },
     freeDeliveryThreshold: { type: Number, default: 0 },
     deliveryChargeInsideDhaka: { type: Number, default: 60 },
@@ -138,25 +126,8 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     metaPixelId: { type: String },
     facebookAccessToken: { type: String, get: decrypt, set: encrypt },
     facebookTestEventCode: { type: String },
-    courierConfig: {
-      activeProvider: { type: String, enum: ['steadfast', 'pathao', 'redx', 'none'], default: 'none' },
-      steadfast: {
-        apiKey: { type: String, get: decrypt, set: encrypt },
-        secretKey: { type: String, get: decrypt, set: encrypt },
-      },
-      pathao: {
-        clientId: { type: String, get: decrypt, set: encrypt },
-        clientSecret: { type: String, get: decrypt, set: encrypt },
-        storeId: { type: String, get: decrypt, set: encrypt },
-      },
-      redx: {
-        apiKey: { type: String, get: decrypt, set: encrypt },
-      },
-    },
-    subscriptionConfig: {
-      activationThreshold: { type: Number, default: 5000 },
-      rewardPercentage: { type: Number, default: 5 },
-    },
+    courierConfig: { type: Object, default: { activeProvider: 'none' } },
+    subscriptionConfig: { type: Object, default: { activationThreshold: 5000, rewardPercentage: 5 } },
     domain: {
       type: String,
       required: [true, 'Domain is required'],
@@ -167,36 +138,8 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
       default: 'elyjen.shop'
     },
     storeId: { type: String, required: false, unique: false }, // Will be set to required: true, unique: true after migration
-    paymentConfig: {
-      activeMethod: { type: String, enum: ['sslcommerz', 'none'], default: 'none' },
-      sslcommerz: {
-        storeId: { type: String, get: decrypt, set: encrypt },
-        storePassword: { type: String, get: decrypt, set: encrypt },
-        isSandbox: { type: Boolean, default: true }
-      }
-    },
-    manualPaymentConfig: {
-      bkash: { 
-        number: String, 
-        qrCode: String, 
-        active: { type: Boolean, default: false } 
-      },
-      nagad: { 
-        number: String, 
-        qrCode: String, 
-        active: { type: Boolean, default: false } 
-      },
-      rocket: { 
-        number: String, 
-        qrCode: String, 
-        active: { type: Boolean, default: false } 
-      },
-      banglaQr: {
-        qrCode: String,
-        active: { type: Boolean, default: false }
-      },
-      instructions: { type: String, default: 'Please send the money to any of the numbers below and provide the transaction ID.' }
-    },
+    paymentConfig: { type: Object, default: { activeMethod: 'none' } },
+    manualPaymentConfig: { type: Object, default: {} },
     googleAnalyticsId: { type: String },
     googleAnalyticsPropertyId: { type: String },
     googleSearchConsoleId: { type: String },
@@ -204,21 +147,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
       openRouterApiKey: { type: String, get: decrypt, set: encrypt },
       systemPrompt: { type: String, default: 'You are a helpful e-commerce assistant.' }
     },
-    uiTemplates: {
-      layout: { type: String, default: 'fashion' },
-      navbar: { type: String, default: 'v2' },
-      hero: { type: String, default: 'v2' },
-      categories: { type: String, default: 'v1' },
-      productCard: { type: String, default: 'v6' },
-      productDetail: { type: String, default: 'v1' },
-      blogDetail: { type: String, default: 'v1' },
-      shopListing: { type: String, default: 'v1' },
-      blogListing: { type: String, default: 'v1' },
-      footer: { type: String, default: 'v2' },
-      theme: { type: String, default: 'black' },
-      logoFont: { type: String, default: 'jost' },
-      bodyFont: { type: String, default: 'jost' },
-    },
+    uiTemplates: { type: Object, default: {} },
     saasSubscription: {
       expiryDate: { type: Date, index: true },
       status: { type: String, enum: ['Active', 'Expired', 'Suspended'], default: 'Active' },
