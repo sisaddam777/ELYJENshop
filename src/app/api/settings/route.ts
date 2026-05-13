@@ -205,13 +205,14 @@ export async function POST(req: NextRequest) {
             // Use Deep Merge for objects (contact, socialLinks, courierConfig, etc.)
             const currentValue = (settings as any)[key] || {};
             (settings as any)[key] = deepMerge({...currentValue}, newValue);
+            settings.markModified(key); // Explicitly mark as modified for Mongoose
           } else {
             // Standard overwrite for primitives
             (settings as any)[key] = newValue;
           }
         }
       });
-      await settings.save({ validateBeforeSave: false });
+      await settings.save();
     } else {
       // Create new settings record for this domain
       settings = await GlobalSettings.create({ ...allowedBody, domain });
