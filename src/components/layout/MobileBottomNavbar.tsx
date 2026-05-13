@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, ShoppingBag, ShoppingCart, Search, X, Mic, MicOff } from 'lucide-react';
+import { Home, ShoppingBag, ShoppingCart, Search, User, X, Mic, MicOff } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 export function MobileBottomNavbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
   const { totalQuantity: cartCount } = useAppSelector((state) => state.cart);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,6 +31,8 @@ export function MobileBottomNavbar() {
       setSearchTerm('');
     }
   };
+
+  const accountHref = session ? '/dashboard' : '/login';
 
   return (
     <>
@@ -81,6 +85,24 @@ export function MobileBottomNavbar() {
             <Search className="h-5 w-5 stroke-[1.5]" />
             <span className="text-[10px] font-bold uppercase tracking-wider">Search</span>
           </button>
+
+          {/* Account Item */}
+          <Link
+            href={accountHref}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[64px] transition-all relative ${
+              pathname === accountHref ? 'text-primary scale-110' : 'text-muted-foreground'
+            } active:scale-95 transition-transform`}
+          >
+            <User className={`h-5 w-5 ${pathname === accountHref ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Account</span>
+            {pathname === accountHref && (
+              <motion.div
+                layoutId="bottom-nav-indicator"
+                className="absolute -bottom-0.5 w-8 h-0.5 bg-primary rounded-full"
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </Link>
         </div>
       </nav>
 
