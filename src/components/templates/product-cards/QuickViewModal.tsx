@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { fbEvent } from '@/lib/fpixel';
 import { Badge } from '@/components/ui/badge';
 
+import { useSession } from 'next-auth/react';
+
 interface QuickViewModalProps {
   product: any;
   isOpen: boolean;
@@ -21,6 +23,7 @@ interface QuickViewModalProps {
 
 export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps) {
   const dispatch = useAppDispatch();
+  const { data: session } = useSession();
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -76,9 +79,13 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
         content_type: 'product',
         value: product.salePrice || product.price,
         currency: 'BDT'
+      }, {
+        em: session?.user?.email || undefined,
+        ph: (session?.user as any)?.phone || undefined,
+        fn: session?.user?.name || undefined
       });
     }
-  }, [isOpen, uniqueColors, product.variants, product.images]);
+  }, [isOpen, uniqueColors, product.variants, product.images, session]);
 
   useEffect(() => {
     if (selectedSize == null || !availableSizes.includes(selectedSize)) {
@@ -118,6 +125,10 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       value: (displaySalePrice ?? displayPrice) * quantity,
       currency: 'BDT',
       quantity: quantity
+    }, {
+      em: session?.user?.email || undefined,
+      ph: (session?.user as any)?.phone || undefined,
+      fn: session?.user?.name || undefined
     });
 
     toast.success(`${product.name} added to cart`);

@@ -43,9 +43,19 @@ const generateEventId = (): string => {
 export const fbEvent = (
   eventName: string,
   customData: Record<string, unknown> = {},
-  userData: { em?: string; ph?: string; fn?: string; ln?: string } = {}
+  userData: { 
+    em?: string; 
+    ph?: string; 
+    fn?: string; 
+    ln?: string;
+    ct?: string;
+    st?: string;
+    zp?: string;
+    country?: string;
+  } = {},
+  providedEventId?: string
 ) => {
-  const eventId = generateEventId();
+  const eventId = providedEventId || generateEventId();
 
   // 1. Browser Pixel Tracking
   if (typeof window !== "undefined" && typeof window.fbq === "function") {

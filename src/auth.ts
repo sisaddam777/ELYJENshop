@@ -44,6 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           image: user.image,
           role: user.role,
+          phone: user.phone,
         };
       },
     }),
@@ -65,6 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                token.id = dbUser._id.toString();
                token.role = dbUser.role ?? 'user';
                token.domain = dbUser.domain;
+               token.phone = dbUser.phone;
                token.image = dbUser.image || user.image || token.picture;
              } else {
                token.id = user.id;
@@ -103,6 +105,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session.user as any).role = token.role ?? 'user';
         (session.user as any).domain = token.domain as string;
+        (session.user as any).phone = token.phone as string;
         if (token.image) {
           session.user.image = token.image as string;
         }

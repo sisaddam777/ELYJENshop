@@ -23,6 +23,17 @@ interface SettingsContextType {
     openRouterApiKey?: string;
     systemPrompt?: string;
   };
+  footerNavigation?: {
+    label: string;
+    href: string;
+  }[];
+  testimonials?: {
+    name: string;
+    role: string;
+    content: string;
+    image: string;
+    rating: number;
+  }[];
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

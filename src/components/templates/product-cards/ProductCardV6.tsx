@@ -6,11 +6,12 @@ import Image from 'next/image';
 import { ShoppingCart, Heart, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { addToCart } from '@/store/slices/cartSlice';
+import { addToCart, clearCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { QuickViewModal } from './QuickViewModal';
 import { fbEvent } from '@/lib/fpixel';
 import {
@@ -42,7 +43,8 @@ interface ProductCardProps {
 
 export default function ProductCardV6({ product, isFlashSale }: ProductCardProps) {
   const dispatch = useAppDispatch();
-  const { status } = useSession();
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const wishlist = useAppSelector((state) => state.wishlist.items);
   const isInWishlist = wishlist.includes(product._id);
   const hasVariants = product.variants && product.variants.length > 0;
@@ -72,10 +74,51 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
         value: product.salePrice || product.price,
         currency: 'BDT',
         quantity: 1
+      }, {
+        em: session?.user?.email || undefined,
+        ph: (session?.user as any)?.phone || undefined,
+        fn: session?.user?.name || undefined
       });
 
       toast.success(`${product.name} added to cart`);
     }
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (hasVariants) {
+      setShowQuickViewModal(true);
+      return;
+    }
+
+    // Clear cart first for a clean "Buy Now" experience
+    dispatch(clearCart());
+
+    dispatch(addToCart({
+      productId: product._id,
+      name: product.name,
+      price: product.salePrice ?? product.price,
+      basePrice: product.price,
+      quantity: 1,
+      image: product.images?.[0]
+    }));
+
+    // Track InitiateCheckout
+    fbEvent('InitiateCheckout', {
+      content_name: product.name,
+      content_category: product.categories?.[0]?.name || 'Uncategorized',
+      content_ids: [product._id],
+      content_type: 'product',
+      value: product.salePrice || product.price,
+      currency: 'BDT',
+      quantity: 1
+    }, {
+      em: session?.user?.email || undefined,
+      ph: (session?.user as any)?.phone || undefined,
+      fn: session?.user?.name || undefined
+    });
+
+    router.push('/checkout');
   };
 
   const handleWishlist = async (e: React.MouseEvent) => {
@@ -95,6 +138,10 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
         content_type: 'product',
         value: product.salePrice || product.price,
         currency: 'BDT'
+      }, {
+        em: session?.user?.email || undefined,
+        ph: (session?.user as any)?.phone || undefined,
+        fn: session?.user?.name || undefined
       });
     }
 
@@ -191,22 +238,43 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
       </div>
 
       {/* Product Info */}
-      <div className="mt-4 text-center space-y-1">
-        <Link 
-          href={`/product/${product.slug}`}
-          className="text-base font-semibold text-foreground hover:text-primary transition-colors block leading-tight px-4"
-        >
-          {product.name}
-        </Link>
-        <div className="flex items-center justify-center gap-2">
-          {product.salePrice ? (
-            <>
-              <span className="text-[#00a870] font-semibold text-[15px]">৳{Math.round(product.salePrice)}</span>
-              <span className="text-muted-foreground line-through text-[13px] font-normal">৳{Math.round(product.price)}</span>
-            </>
-          ) : (
-            <span className="text-[#00a870] font-semibold text-[15px]">৳{Math.round(product.price)}</span>
-          )}
+      <div className="mt-4 text-center space-y-4 px-2 pb-2">
+        <div>
+            <Link 
+            href={`/product/${product.slug}`}
+            className="text-base font-semibold text-foreground hover:text-primary transition-colors block leading-tight px-4"
+            >
+            {product.name}
+            </Link>
+            <div className="flex items-center justify-center gap-2 mt-1">
+            {product.salePrice ? (
+                <>
+                <span className="text-[#00a870] font-bold text-[16px]">৳{Math.round(product.salePrice)}</span>
+                <span className="text-muted-foreground line-through text-[13px] font-normal">৳{Math.round(product.price)}</span>
+                </>
+            ) : (
+                <span className="text-[#00a870] font-bold text-[16px]">৳{Math.round(product.price)}</span>
+            )}
+            </div>
+        </div>
+
+        {/* Action Buttons - Visible on hover for Desktop, Always for Mobile */}
+        <div className="flex flex-col sm:flex-row gap-2 pt-1 transition-all duration-300 sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 rounded-full border-primary text-primary hover:bg-primary hover:text-white font-bold text-xs h-10 transition-all active:scale-95"
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" /> Cart
+          </Button>
+          <Button 
+            size="sm" 
+            className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-white font-bold text-xs h-10 shadow-lg shadow-primary/20 transition-all active:scale-95"
+            onClick={handleBuyNow}
+          >
+            Buy Now
+          </Button>
         </div>
       </div>
 

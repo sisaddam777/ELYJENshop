@@ -62,7 +62,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-screen overflow-hidden bg-transparent font-jost">
+    <section className="relative w-full h-[600px] md:h-[600px] lg:h-screen overflow-hidden bg-transparent font-jost">
       {/* Logic Layer (Hidden Embla) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -106,35 +106,35 @@ export default function HeroV2({ banners }: HeroSliderProps) {
                     sizes="100vw"
                   />
                 </motion.div>
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-10" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70 z-10" />
               </div>
 
               {/* Text Content */}
               <div className="container relative z-20 mx-auto px-6 sm:px-12 md:px-20 lg:px-32 h-full flex items-end">
-                <div className="max-w-[100%] sm:max-w-3xl w-full flex flex-col pb-10 sm:pb-16 lg:pb-24 text-center sm:text-left">
+                <div className="max-w-[100%] sm:max-w-3xl w-full flex flex-col pb-12 sm:pb-16 lg:pb-24 text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                   >
-                    <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tighter mb-4 sm:mb-8 drop-shadow-2xl uppercase">
+                    <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tighter mb-4 sm:mb-8 drop-shadow-2xl uppercase">
                       {banner.title}
                     </h1>
 
-                    <div className="flex flex-row items-center justify-center sm:justify-start gap-3 sm:gap-6 flex-wrap">
+                    <div className="flex flex-row items-center justify-start gap-2.5 sm:gap-6 flex-wrap">
                       <Link
                         href={banner.primaryBtnLink || banner.link || '/shop'}
-                        className="group inline-flex items-center gap-2 px-5 py-2.5 sm:px-12 sm:py-5 bg-primary text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-[11px] sm:text-base uppercase tracking-widest shadow-2xl"
+                        className="group inline-flex items-center gap-1.5 px-4 py-2 sm:px-12 sm:py-5 bg-primary text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-[10px] sm:text-base uppercase tracking-widest shadow-2xl"
                       >
                         {banner.primaryBtnText || 'Shop Now'}
-                        <ArrowRight className="h-3.5 w-3.5 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2" />
+                        <ArrowRight className="h-3 w-3 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2" />
                       </Link>
 
                       {banner.secondaryBtnText && (
                         <Link
                           href={banner.secondaryBtnLink || '/contact'}
-                          className="inline-flex items-center px-5 py-2.5 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/30 text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-[11px] sm:text-base uppercase tracking-widest"
+                          className="inline-flex items-center px-4 py-2 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-md border border-white/30 text-white font-black rounded-full hover:bg-white hover:text-black transition-all text-[10px] sm:text-base uppercase tracking-widest"
                         >
                           {banner.secondaryBtnText}
                         </Link>
@@ -160,19 +160,19 @@ export default function HeroV2({ banners }: HeroSliderProps) {
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
         >
-          <ChevronDown className="h-4 w-4 sm:h-6 sm:h-6" />
+          <ChevronDown className="h-4 w-4 sm:h-6" />
         </motion.div>
       </motion.div>
 
-      {/* Pagination Dots — mobile: right side vertical center | desktop: bottom right */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-12 sm:right-12 z-30 flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+      {/* Pagination Dots — bottom right for all devices */}
+      <div className="absolute bottom-8 right-6 sm:bottom-12 sm:right-12 z-30 flex flex-row items-center gap-2 sm:gap-3">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => scrollTo(i)}
             className={`transition-all duration-300 rounded-full ${i === activeIndex
-                ? "h-8 w-1 sm:w-10 sm:h-1.5 bg-primary"
-                : "h-1.5 w-1.5 sm:w-2 sm:h-2 bg-white/30"
+                ? "w-8 h-1 sm:w-10 sm:h-1.5 bg-primary shadow-[0_0_10px_rgba(255,0,0,0.5)]"
+                : "w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white/30 hover:bg-white/50"
               }`}
             aria-label={`Go to slide ${i + 1}`}
           />

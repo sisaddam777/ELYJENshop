@@ -60,6 +60,12 @@ export async function POST(request: NextRequest) {
         // Hash name if provided
         const hashedFirstName = userData.fn ? await hashData(userData.fn) : undefined;
         const hashedLastName = userData.ln ? await hashData(userData.ln) : undefined;
+        
+        // Hash additional details
+        const hashedCity = userData.ct ? await hashData(userData.ct) : undefined;
+        const hashedState = userData.st ? await hashData(userData.st) : undefined;
+        const hashedZip = userData.zp ? await hashData(userData.zp) : undefined;
+        const hashedCountry = userData.country ? await hashData(userData.country) : undefined;
 
         // Prepare user data for best match quality
         const fbUserData: any = {
@@ -71,6 +77,10 @@ export async function POST(request: NextRequest) {
             ...(hashedPhone && { ph: [hashedPhone] }),
             ...(hashedFirstName && { fn: [hashedFirstName] }),
             ...(hashedLastName && { ln: [hashedLastName] }),
+            ...(hashedCity && { ct: [hashedCity] }),
+            ...(hashedState && { st: [hashedState] }),
+            ...(hashedZip && { zp: [hashedZip] }),
+            ...(hashedCountry && { country: [hashedCountry] }),
         };
 
         const payload: any = {

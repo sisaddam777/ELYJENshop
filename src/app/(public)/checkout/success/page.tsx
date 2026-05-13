@@ -46,13 +46,14 @@ function SuccessContent() {
             }))
           }, {
             // Note: Hashing is handled server-side in the API route.
-            // Explicit consent check placeholder: 
-            // if (getConsent()) { ... }
             em: orderData.shippingAddress?.email,
             ph: orderData.shippingAddress?.phone,
             fn: nameParts[0] || '',
-            ln: nameParts.slice(1).join(' ') || ''
-          });
+            ln: nameParts.slice(1).join(' ') || '',
+            ct: orderData.shippingAddress?.state, // District
+            st: orderData.shippingAddress?.division, // Division
+            country: 'bd'
+          }, orderData._id); // Use Order ID as eventId for deduplication
         }
       } catch (error) {
         console.error('Failed to fetch order for tracking:', error);
