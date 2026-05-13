@@ -42,6 +42,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
 import PrintableInvoice from '@/components/admin/PrintableInvoice';
+import { generateInvoicePDF } from '@/lib/invoice-generator';
 
 
 export default function OrdersPage() {
@@ -61,6 +62,16 @@ export default function OrdersPage() {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [printingOrders, setPrintingOrders] = useState<any[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+
+  const handleDownloadInvoice = async (order: any) => {
+    try {
+      toast.info('Generating PDF invoice...');
+      await generateInvoicePDF(order, settings);
+    } catch (error) {
+      toast.error('Failed to generate PDF invoice');
+    }
+  };
 
   const handlePrint = (ids: string[]) => {
     const toPrint = orders.filter(o => ids.includes(o._id));
@@ -92,6 +103,12 @@ export default function OrdersPage() {
       }
       const data = await res.json();
       setOrders(data);
+
+      // Also fetch settings for the invoice generator
+      const settingsRes = await fetch('/api/settings');
+      if (settingsRes.ok) {
+        setSettings(await settingsRes.json());
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to load orders');
     } finally {
@@ -610,7 +627,7 @@ export default function OrdersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuGroup>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handlePrint([order._id])}>
+                            <DropdownMenuItem onClick={() => handleDownloadInvoice(order)}>
                               <FileText className="mr-2 h-4 w-4 text-primary" /> Download Invoice
                             </DropdownMenuItem>
                           </DropdownMenuGroup>
