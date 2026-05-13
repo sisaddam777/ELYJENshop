@@ -5,6 +5,36 @@ import GlobalSettings from '@/models/GlobalSettings';
 import { auth } from '@/auth';
 import { getTenantDomain } from '@/lib/tenant';
 
+// Helper to consistently mask sensitive data in API responses
+const getMaskedSettings = (raw: any, masked: any) => ({
+    ...masked,
+    facebookAccessToken: (raw.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
+    courierConfig: masked.courierConfig ? {
+      ...masked.courierConfig,
+      steadfast: raw.courierConfig?.steadfast?.apiKey ? { 
+          apiKey: "********************", 
+          secretKey: "********************" 
+      } : masked.courierConfig.steadfast,
+      pathao: raw.courierConfig?.pathao?.clientId ? { 
+          clientId: "********************", 
+          clientSecret: "********************", 
+          storeId: "********************" 
+      } : masked.courierConfig.pathao,
+      redx: raw.courierConfig?.redx?.apiKey ? { apiKey: "********************" } : masked.courierConfig.redx,
+    } : masked.courierConfig,
+    paymentConfig: masked.paymentConfig ? {
+      ...masked.paymentConfig,
+      sslcommerz: raw.paymentConfig?.sslcommerz?.storePassword ? {
+        ...masked.paymentConfig.sslcommerz,
+        storePassword: "********************"
+      } : masked.paymentConfig.sslcommerz
+    } : masked.paymentConfig,
+    aiConfig: masked.aiConfig ? {
+      ...masked.aiConfig,
+      openRouterApiKey: raw.aiConfig?.openRouterApiKey ? "********************" : null
+    } : masked.aiConfig
+  });
+
 // GET global settings
 export async function GET() {
   try {
@@ -49,29 +79,7 @@ export async function GET() {
     const rawSettings = settings.toObject({ getters: false });
     const maskedSettings = settings.toObject({ getters: true });
 
-    const safeResult = {
-      ...maskedSettings,
-      facebookAccessToken: (rawSettings.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
-      courierConfig: maskedSettings.courierConfig ? {
-        ...maskedSettings.courierConfig,
-        steadfast: rawSettings.courierConfig?.steadfast?.apiKey ? { apiKey: "********************", secretKey: "********************" } : maskedSettings.courierConfig.steadfast,
-        pathao: rawSettings.courierConfig?.pathao?.clientId ? { clientId: "********************", clientSecret: "********************", storeId: "********************" } : maskedSettings.courierConfig.pathao,
-        redx: rawSettings.courierConfig?.redx?.apiKey ? { apiKey: "********************" } : maskedSettings.courierConfig.redx,
-      } : maskedSettings.courierConfig,
-      paymentConfig: maskedSettings.paymentConfig ? {
-        ...maskedSettings.paymentConfig,
-        sslcommerz: rawSettings.paymentConfig?.sslcommerz?.storePassword ? {
-          ...maskedSettings.paymentConfig.sslcommerz,
-          storePassword: "********************"
-        } : maskedSettings.paymentConfig.sslcommerz
-      } : maskedSettings.paymentConfig,
-      aiConfig: maskedSettings.aiConfig ? {
-        ...maskedSettings.aiConfig,
-        openRouterApiKey: rawSettings.aiConfig?.openRouterApiKey ? "********************" : null
-      } : maskedSettings.aiConfig
-    };
-
-    return NextResponse.json(safeResult);
+    return NextResponse.json(getMaskedSettings(rawSettings, maskedSettings));
   } catch (error) {
     console.error('Error fetching settings:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
@@ -218,12 +226,10 @@ export async function POST(req: NextRequest) {
     revalidatePath('/blog', 'page');
 
     // Mask sensitive response data for the return
-    const safeResult = {
-      ...(settings as any).toObject ? (settings as any).toObject() : settings,
-      facebookAccessToken: (settings as any).facebookAccessToken ? "********************" : null
-    };
-
-    return NextResponse.json(safeResult, { status: 200 });
+    const updatedRaw = settings.toObject({ getters: false });
+    const updatedMasked = settings.toObject({ getters: true });
+  
+    return NextResponse.json(getMaskedSettings(updatedRaw, updatedMasked), { status: 200 });
   } catch (error: any) {
     console.error('CRITICAL: Error updating settings:', error);
     if (error.name === 'ValidationError') {
