@@ -46,6 +46,9 @@ export function CartHydrator({ children }: { children: React.ReactNode }) {
 
   // 2. Auth Sync with Database (Merge Local & DB on Login)
   useEffect(() => {
+    // Check if we already merged in this browser session to prevent reappearing items on refresh
+    const sessionSynced = typeof window !== 'undefined' && sessionStorage.getItem('cartSynced') === 'true';
+
     if (status === 'authenticated' && cart.isHydrated && !authSyncAttempted.current && !isSyncingRef.current) {
       const syncCart = async () => {
         isSyncingRef.current = true;
@@ -56,51 +59,61 @@ export function CartHydrator({ children }: { children: React.ReactNode }) {
             const dbCartItems = await res.json();
             const currentLocalItems = latestCartItemsRef.current;
             
-            // Merge logic: Combine local items and DB items using variant-aware keys.
-            const mergedMap = new Map();
-            
-            const getVariantKey = (item: any) => {
-                const othersStr = item.others 
-                  ? JSON.stringify(Object.keys(item.others).sort().reduce((obj: any, key) => {
-                      obj[key] = item.others[key];
-                      return obj;
-                    }, {}))
-                  : '';
-                return `${item.productId}-${item.color || ''}-${item.size || ''}-${othersStr}`;
-            };
+            let finalItems = [];
 
-            // Add DB items
-            if (Array.isArray(dbCartItems)) {
-                dbCartItems.forEach((item: any) => {
-                    const key = getVariantKey(item);
-                    mergedMap.set(key, item);
-                });
-            }
-            
-            // Add Local items (merge quantities if same variant)
-            currentLocalItems.forEach((item) => {
-                const key = getVariantKey(item);
-                if (mergedMap.has(key)) {
-                    const existing = mergedMap.get(key);
-                    mergedMap.set(key, { ...existing, quantity: Math.max(existing.quantity, item.quantity) });
-                } else {
-                    mergedMap.set(key, item);
+            if (sessionSynced) {
+                // If already synced in this session, trust the local state (which was hydrated from localStorage)
+                // This prevents deleted items from coming back on refresh
+                finalItems = currentLocalItems;
+            } else {
+                // First time in this session (e.g. just logged in or fresh visit)
+                // Merge logic: Combine local items and DB items
+                const mergedMap = new Map();
+                
+                const getVariantKey = (item: any) => {
+                    const othersStr = item.others 
+                    ? JSON.stringify(Object.keys(item.others).sort().reduce((obj: any, key) => {
+                        obj[key] = item.others[key];
+                        return obj;
+                        }, {}))
+                    : '';
+                    return `${item.productId}-${item.color || ''}-${item.size || ''}-${othersStr}`;
+                };
+
+                // Add DB items
+                if (Array.isArray(dbCartItems)) {
+                    dbCartItems.forEach((item: any) => {
+                        const key = getVariantKey(item);
+                        mergedMap.set(key, item);
+                    });
                 }
-            });
+                
+                // Add Local items (merge quantities if same variant)
+                currentLocalItems.forEach((item) => {
+                    const key = getVariantKey(item);
+                    if (mergedMap.has(key)) {
+                        const existing = mergedMap.get(key);
+                        mergedMap.set(key, { ...existing, quantity: Math.max(existing.quantity, item.quantity) });
+                    } else {
+                        mergedMap.set(key, item);
+                    }
+                });
 
-            const mergedItems = Array.from(mergedMap.values());
+                finalItems = Array.from(mergedMap.values());
+                sessionStorage.setItem('cartSynced', 'true');
+            }
             
             // Recalculate totals
             let totalQty = 0;
             let totalAmt = 0;
-            mergedItems.forEach(item => {
+            finalItems.forEach(item => {
                 totalQty += item.quantity;
                 totalAmt += item.price * item.quantity;
             });
             totalAmt = Math.round(totalAmt * 100) / 100;
 
             const finalCartState = {
-                items: mergedItems,
+                items: finalItems,
                 totalQuantity: totalQty,
                 totalAmount: totalAmt,
             };
@@ -109,12 +122,11 @@ export function CartHydrator({ children }: { children: React.ReactNode }) {
             const syncRes = await fetch('/api/cart/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartItems: mergedItems })
+                body: JSON.stringify({ cartItems: finalItems })
             });
 
             if (syncRes.ok) {
                 authSyncAttempted.current = true;
-                // Dispatch to Redux only after successful DB sync to ensure consistency
                 dispatch(hydrateCart({
                     ...finalCartState,
                     isHydrated: true
@@ -122,19 +134,10 @@ export function CartHydrator({ children }: { children: React.ReactNode }) {
                 dbSyncReady.current = true;
             } else {
                 console.error('Failed to sync merged cart to database:', syncRes.status);
-                if (syncRes.status === 401 || syncRes.status === 403) {
-                    signOut({ callbackUrl: '/login' });
-                    return;
-                }
-                // Recovery: mark as attempted to prevent loops, but allow normal ops
                 authSyncAttempted.current = true;
                 dbSyncReady.current = true;
             }
-          } else if (res.status === 401 || res.status === 403) {
-              signOut({ callbackUrl: '/login' });
-              return;
           } else {
-              console.error(`Cart fetch failed: ${res.status} ${res.statusText}`);
               authSyncAttempted.current = true;
               dbSyncReady.current = true;
           }
@@ -165,15 +168,11 @@ export function CartHydrator({ children }: { children: React.ReactNode }) {
                   });
                   if (!res.ok) {
                       console.error('Debounced cart sync failed:', res.status);
-                      if (res.status === 401 || res.status === 403) {
-                          signOut({ callbackUrl: '/login' });
-                          return;
-                      }
                   }
               } catch (e) {
                   console.error('Failed debounced cart sync', e);
               }
-          }, 1000); // 1 second debounce
+          }, 500); // Reduced to 500ms for faster sync
       }
       
       return () => {
