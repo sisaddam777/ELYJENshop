@@ -172,24 +172,33 @@ export async function POST(req: NextRequest) {
         return cleaned;
       };
 
+      // Recursive Deep Merge helper
+      const deepMerge = (target: any, source: any) => {
+        Object.keys(source).forEach(key => {
+          if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            if (!target[key]) target[key] = {};
+            deepMerge(target[key], source[key]);
+          } else {
+            target[key] = source[key];
+          }
+        });
+        return target;
+      };
+
       // Update existing settings document manually to trigger setters/encryption
       Object.keys(allowedBody).forEach((key) => {
         let newValue = allowedBody[key];
-        const oldValue = (settings as any)[key];
-
+        
         // Clean masked values from newValue
         newValue = removeMasked(newValue);
 
-        if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
-          // Universal Smart Merge for objects (contact, socialLinks, uiTemplates, etc.)
-          (settings as any)[key] = {
-            ...(oldValue || {}),
-            ...newValue
-          };
-        } else {
-          // Standard overwrite for primitives (strings, numbers, booleans) or arrays
-          // Only overwrite if newValue is not undefined (which happens if it was masked and removed)
-          if (newValue !== undefined) {
+        if (newValue !== undefined) {
+          if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
+            // Use Deep Merge for objects (contact, socialLinks, courierConfig, etc.)
+            const currentValue = (settings as any)[key] || {};
+            (settings as any)[key] = deepMerge({...currentValue}, newValue);
+          } else {
+            // Standard overwrite for primitives
             (settings as any)[key] = newValue;
           }
         }
