@@ -64,7 +64,7 @@ export async function POST(
     const shippingData = {
       invoice: String(order._id),
       recipient_name: addr.fullName || "Customer",
-      recipient_phone: addr.phone,
+      recipient_phone: addr.phone ? addr.phone.replace(/\D/g, '').slice(-11) : "",
       recipient_address: addressParts.join(', '),
       cod_amount: order.paymentStatus === 'Paid' ? 0 : (order.totalAmount || 0),
       note: body.note || `Payment: ${order.paymentMethod || "N/A"}`,
@@ -75,8 +75,11 @@ export async function POST(
       area_id: body.area_id,
     };
 
-    if (activeProvider === 'steadfast' && steadfast?.apiKey && steadfast?.secretKey) {
-      provider = new SteadfastProvider(steadfast.apiKey, steadfast.secretKey);
+    const sApiKey = steadfast?.apiKey || process.env.STEADFAST_API_KEY;
+    const sSecretKey = steadfast?.secretKey || process.env.STEADFAST_SECRET_KEY;
+
+    if (activeProvider === 'steadfast' && sApiKey && sSecretKey) {
+      provider = new SteadfastProvider(sApiKey, sSecretKey);
       courierName = 'Steadfast';
     } else if (activeProvider === 'pathao' && pathao?.clientId && pathao?.clientSecret) {
       provider = new PathaoProvider(pathao.clientId, pathao.clientSecret, pathao.storeId || '');
