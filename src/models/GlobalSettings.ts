@@ -220,7 +220,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
       bodyFont: { type: String, default: 'jost' },
     },
     saasSubscription: {
-      expiryDate: { type: Date, required: true, index: true },
+      expiryDate: { type: Date, index: true },
       status: { type: String, enum: ['Active', 'Expired', 'Suspended'], default: 'Active' },
     },
     footerNavigation: [
