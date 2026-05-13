@@ -11,7 +11,7 @@ const getMaskedSettings = (raw: any, masked: any) => ({
     facebookAccessToken: (raw.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
     courierConfig: masked.courierConfig ? {
       ...masked.courierConfig,
-      steadfast: raw.courierConfig?.steadfast?.apiKey ? { 
+      steadfast: (raw.courierConfig?.steadfast?.apiKey || process.env.STEADFAST_API_KEY) ? { 
           apiKey: "********************", 
           secretKey: "********************" 
       } : masked.courierConfig.steadfast,
@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
             // Use Deep Merge for objects (contact, socialLinks, courierConfig, etc.)
             const currentValue = (settings as any)[key] || {};
             (settings as any)[key] = deepMerge({...currentValue}, newValue);
-            settings.markModified(key); // Explicitly mark as modified for Mongoose
+            (settings as any).markModified(key); // Explicitly mark as modified for Mongoose
           } else {
             // Standard overwrite for primitives
             (settings as any)[key] = newValue;

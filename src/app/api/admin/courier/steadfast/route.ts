@@ -34,17 +34,23 @@ export async function POST(req: NextRequest) {
 
     // Fetch Global Settings for Courier Config
     const settingsDoc = await GlobalSettings.findOne({ domain });
-    const settings = settingsDoc?.toObject({ getters: true });
+    if (!settingsDoc) {
+      return NextResponse.json({ message: 'Global settings not found.' }, { status: 404 });
+    }
+    const settings = settingsDoc.toObject({ getters: true });
     
-    if (!settings?.courierConfig?.steadfast?.apiKey || !settings?.courierConfig?.steadfast?.secretKey) {
+    const apiKey = settings?.courierConfig?.steadfast?.apiKey || process.env.STEADFAST_API_KEY;
+    const secretKey = settings?.courierConfig?.steadfast?.secretKey || process.env.STEADFAST_SECRET_KEY;
+    
+    if (!apiKey || !secretKey) {
       return NextResponse.json({ 
-        message: 'Steadfast API credentials are not configured in System Design settings.' 
+        message: 'Steadfast API credentials are not configured (Check System Design or .env file).' 
       }, { status: 400 });
     }
 
     const courierConfig = {
-      apiKey: settings.courierConfig.steadfast.apiKey,
-      secretKey: settings.courierConfig.steadfast.secretKey
+      apiKey,
+      secretKey
     };
 
     const results = [];
