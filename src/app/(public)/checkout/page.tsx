@@ -47,7 +47,7 @@ const checkoutSchema = z.object({
   phone: z.string().min(11, 'সঠিক মোবাইল নম্বর লিখুন'),
   street: z.string().min(5, 'আপনার সম্পূর্ণ ঠিকানা লিখুন'),
   shippingRegion: z.enum(['Inside Dhaka', 'Outside Dhaka'], {
-    required_error: 'ডেলিভারি এলাকা সিলেক্ট করুন',
+    message: 'ডেলিভারি এলাকা সিলেক্ট করুন',
   }),
   paymentMethod: z.enum(['COD', 'Online', 'Manual'], {
     message: 'পেমেন্ট মেথড সিলেক্ট করুন'
@@ -74,10 +74,6 @@ export default function CheckoutPage() {
     senderNumber: '',
     transactionId: ''
   });
-  const [divisions, setDivisions] = useState<any[]>([]);
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [thanas, setThanas] = useState<any[]>([]);
-
   const form = useForm<CheckoutValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
@@ -97,11 +93,6 @@ export default function CheckoutPage() {
       setManualDetails({ senderNumber: '', transactionId: '' });
     }
   }, [form.watch('paymentMethod')]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Simplified: No longer fetching external locations
-  const divisions: any[] = [];
-  const districts: any[] = [];
-  const thanas: any[] = [];
 
 
 
@@ -504,7 +495,7 @@ export default function CheckoutPage() {
                         <FormControl>
                           <RadioGroup
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             className="flex gap-4"
                           >
                             <FormItem className="flex items-center space-x-2 space-y-0">
@@ -852,18 +843,18 @@ export default function CheckoutPage() {
             {/* Verification Fields */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase opacity-60">Your Mobile Number</Label>
+                <Label className="text-xs font-black uppercase opacity-60">আপনার মোবাইল নম্বর</Label>
                 <Input 
-                  placeholder="The number you paid from" 
+                  placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন" 
                   value={manualDetails.senderNumber}
                   onChange={(e) => setManualDetails({...manualDetails, senderNumber: e.target.value})}
                   className="h-12 rounded-xl focus:ring-primary/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase opacity-60">Transaction ID (TrxID)</Label>
+                <Label className="text-xs font-black uppercase opacity-60">ট্রানজেকশন আইডি (TrxID)</Label>
                 <Input 
-                  placeholder="e.g. 8N7A6D5C" 
+                  placeholder="যেমন: 8N7A6D5C" 
                   value={manualDetails.transactionId}
                   onChange={(e) => setManualDetails({...manualDetails, transactionId: e.target.value.toUpperCase()})}
                   className="h-12 rounded-xl focus:ring-primary/20"
@@ -873,13 +864,13 @@ export default function CheckoutPage() {
 
             <div className="p-4 bg-muted/30 rounded-xl">
                 <p className="text-[10px] leading-relaxed text-muted-foreground italic">
-                   <strong>Instructions:</strong> {settings?.manualPaymentConfig?.instructions || 'Please send the exact order amount.'}
+                   <strong>নির্দেশনা:</strong> {settings?.manualPaymentConfig?.instructions || 'সঠিক পরিমাণ টাকা পাঠিয়ে নিচে তথ্য দিন।'}
                 </p>
             </div>
           </div>
 
           <DialogFooter className="p-8 bg-muted/20 border-t flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="rounded-full h-12 flex-1 font-bold">Cancel</Button>
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)} className="rounded-full h-12 flex-1 font-bold">বাতিল করুন</Button>
             <Button 
               disabled={!manualDetails.senderNumber || !manualDetails.transactionId}
               onClick={() => {
@@ -888,7 +879,7 @@ export default function CheckoutPage() {
               }} 
               className="rounded-full h-12 flex-1 font-black uppercase tracking-widest shadow-lg shadow-primary/20"
             >
-              Confirm Payment
+              পেমেন্ট নিশ্চিত করুন
             </Button>
           </DialogFooter>
         </DialogContent>
