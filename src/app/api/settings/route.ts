@@ -157,7 +157,19 @@ export async function POST(req: NextRequest) {
     if (settings) {
       // Update existing settings document manually to trigger setters/encryption
       Object.keys(allowedBody).forEach((key) => {
-        (settings as any)[key] = allowedBody[key];
+        const newValue = allowedBody[key];
+        const oldValue = (settings as any)[key];
+
+        if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
+          // Universal Smart Merge for objects (contact, socialLinks, uiTemplates, etc.)
+          (settings as any)[key] = {
+            ...(oldValue || {}),
+            ...newValue
+          };
+        } else {
+          // Standard overwrite for primitives (strings, numbers, booleans) or arrays
+          (settings as any)[key] = newValue;
+        }
       });
       await settings.save({ validateBeforeSave: false });
     } else {

@@ -52,6 +52,7 @@ const FONT_OPTIONS = [
   { id: 'syne', label: 'Syne (Artistic/Trendy)' },
   { id: 'space-grotesk', label: 'Space Grotesk (Futuristic/Tech)' },
   { id: 'orbitron', label: 'Orbitron (Futuristic)' },
+  { id: 'jost', label: 'Jost (Sporty/Clean)' },
   { id: 'geist', label: 'Geist (Next.js Default)' },
 ];
 
