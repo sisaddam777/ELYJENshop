@@ -112,7 +112,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
 
               {/* Text Content */}
               <div className="container relative z-20 mx-auto px-6 sm:px-12 md:px-20 lg:px-32 h-full flex items-end">
-                <div className="max-w-[100%] sm:max-w-3xl w-full flex flex-col pb-6 sm:pb-16 lg:pb-24 text-left">
+                <div className="max-w-[60%] sm:max-w-3xl w-full flex flex-col pb-10 sm:pb-16 lg:pb-24 text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
