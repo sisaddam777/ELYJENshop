@@ -19,6 +19,7 @@ export interface IProduct extends Document {
     value: string;
   }[];
   variants?: {
+    _id?: any;
     color?: string;
     size?: string;
     price: number;

@@ -66,7 +66,7 @@ const orderSchema = z.object({
 
 export async function POST(req: NextRequest) {
   let session: mongoose.ClientSession | null = null;
-  
+  const successfulDeductions: { productId: string, quantity: number, variantId?: string }[] = [];
   try {
     const sessionUser = await auth();
     const body = await req.json();
@@ -152,7 +152,6 @@ export async function POST(req: NextRequest) {
 
     let serverComputedTotal = 0;
     const validatedItems: IOrderItem[] = [];
-    const successfulDeductions: { productId: string, quantity: number, variantId?: string }[] = [];
 
     try {
       // 2a. Pre-check loop (ensure all items exist and have stock before any deductions)
@@ -211,7 +210,7 @@ export async function POST(req: NextRequest) {
             successfulDeductions.push({ 
               productId: product._id.toString(), 
               quantity: item.quantity, 
-              variantId: variant?._id?.toString() 
+              variantId: (variant as any)?._id?.toString() 
             });
           }
         } else {
