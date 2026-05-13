@@ -12,7 +12,7 @@ import { getTenantDomain } from '@/lib/tenant';
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    
+
     // Authorization Check
     if (!session || !session.user || !(['admin', 'super_admin'].includes((session.user as any)?.role))) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -38,13 +38,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Global settings not found.' }, { status: 404 });
     }
     const settings = settingsDoc.toObject({ getters: true });
-    
+
     const apiKey = process.env.STEADFAST_API_KEY;
     const secretKey = process.env.STEADFAST_SECRET_KEY;
-    
+
     if (!apiKey || !secretKey) {
-      return NextResponse.json({ 
-        message: 'Steadfast API credentials are not configured in your .env file.' 
+      return NextResponse.json({
+        message: 'Steadfast API credentials are not configured in your .env file.'
       }, { status: 400 });
     }
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     for (const orderId of orderIds) {
       try {
         const order = await Order.findOne({ _id: orderId, domain });
-        
+
         if (!order) {
           results.push({ id: orderId, success: false, message: 'Order record not found' });
           continue;
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
           const variantDesc = [i.color, i.size].filter(Boolean).join('/');
           return `${i.name}${variantDesc ? `(${variantDesc})` : ''}`;
         }).join(', ');
-        
+
         // Map order data to Steadfast payload
         const payload = {
           invoice: order.shortId || order._id.toString().slice(-8).toUpperCase(),
@@ -99,16 +99,16 @@ export async function POST(req: NextRequest) {
 
         // Progress status if it was just 'Confirmed' or 'Paid'
         if (order.status === 'Confirmed' || order.status === 'Paid' || order.status === 'Order Placed') {
-            order.status = 'Ready for Delivery';
+          order.status = 'Ready for Delivery';
         }
 
         await order.save();
 
-        results.push({ 
-            id: orderId, 
-            success: true, 
-            consignment_id: response.consignment_id,
-            tracking_code: response.tracking_code
+        results.push({
+          id: orderId,
+          success: true,
+          consignment_id: response.consignment_id,
+          tracking_code: response.tracking_code
         });
       } catch (err: any) {
         console.error(`Steadfast Processing Error for order ${orderId}:`, err.message);
@@ -119,9 +119,9 @@ export async function POST(req: NextRequest) {
     const successCount = results.filter(r => r.success).length;
     const failCount = results.length - successCount;
 
-    return NextResponse.json({ 
-        message: `Processed ${results.length} orders. Success: ${successCount}, Failed: ${failCount}`,
-        results 
+    return NextResponse.json({
+      message: `Processed ${results.length} orders. Success: ${successCount}, Failed: ${failCount}`,
+      results
     });
 
   } catch (error: any) {
