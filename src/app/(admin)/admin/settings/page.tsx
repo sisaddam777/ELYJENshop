@@ -282,22 +282,15 @@ export default function SettingsPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-semibold text-gray-700">Store Logo</FormLabel>
-                        <div className="flex items-center gap-4">
-                          {field.value && (
-                            <div className="h-12 w-12 rounded-xl border bg-white p-1 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                              <img src={field.value} alt="Logo" className="max-h-full max-w-full object-contain" />
-                            </div>
-                          )}
-                          <FormControl>
-                            <div className="flex-1">
-                              <ImageUpload 
-                                onUpload={(url) => field.onChange(url)} 
-                                className="h-12 rounded-xl border-2 border-dashed border-gray-200 hover:border-primary transition-colors bg-gray-50/50"
-                              />
-                            </div>
-                          </FormControl>
-                        </div>
-                        <FormDescription>Upload your store logo (PNG, JPG, or WEBP)</FormDescription>
+                        <FormControl>
+                          <ImageUpload 
+                            value={field.value}
+                            onUpload={(url) => field.onChange(url)} 
+                            className="bg-white border-2 border-gray-100"
+                            aspect="square"
+                          />
+                        </FormControl>
+                        <FormDescription>Professional high-resolution logo (PNG, JPG, or WEBP)</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

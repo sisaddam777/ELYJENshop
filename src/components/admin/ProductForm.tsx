@@ -386,7 +386,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                       </button>
                     </div>
                   ))}
-                  <ImageUpload onUpload={addImage} />
+                  <ImageUpload onUpload={addImage} compact />
                 </div>
                 {form.formState.errors.images?.message && (
                   <p className="text-[0.8rem] font-medium text-destructive">
@@ -492,6 +492,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                                     onUpload={(url) => form.setValue(`variants.${index}.image`, url)} 
                                     className="p-0 border-none h-full w-full rounded-none"
                                     iconClassName="h-4 w-4"
+                                    compact
                                   />
                                 )}
                               </div>

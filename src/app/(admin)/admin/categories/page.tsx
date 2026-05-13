@@ -281,6 +281,7 @@ export default function CategoriesPage() {
                           <ImageUpload 
                             value={field.value} 
                             onUpload={(url) => field.onChange(url)} 
+                            aspect="square"
                           />
                         </FormControl>
                         <FormMessage />

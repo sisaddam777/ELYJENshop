@@ -238,39 +238,25 @@ export function BannerForm({ initialData }: BannerFormProps) {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <Label>Banner Image</Label>
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  {form.watch('image') ? (
-                    <div className="relative aspect-[21/9] w-full rounded-md overflow-hidden border bg-muted">
-                      <Image 
-                        src={form.watch('image')} 
-                        alt="Banner preview" 
-                        fill
-                        className="object-cover" 
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => form.setValue('image', '')}
-                        className="absolute top-2 right-2 bg-destructive text-white rounded-full p-1.5 z-10 shadow-lg"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-full">
-                      <ImageUpload 
-                        onUpload={(url) => form.setValue('image', url, { shouldValidate: true })} 
-                        className="aspect-[21/9] w-full"
-                      />
-                    </div>
-                  )}
-                  {form.formState.errors.image?.message && (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {form.formState.errors.image.message}
-                    </p>
-                  )}
+                <div className="w-full">
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <ImageUpload 
+                            value={field.value}
+                            onUpload={(url) => field.onChange(url)} 
+                            className="aspect-[21/9] w-full"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <p className="text-[0.8rem] text-muted-foreground">Recommended aspect ratio: 21:9 or 1920x800px</p>
+                <p className="text-[0.8rem] text-muted-foreground italic">Recommended aspect ratio: 21:9 or 1920x800px for best display across all devices.</p>
               </CardContent>
             </Card>
           </div>
