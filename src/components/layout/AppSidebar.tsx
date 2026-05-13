@@ -51,10 +51,6 @@ const data = {
         {
           title: "Dashboard",
           url: "/admin/dashboard",
-        },
-        {
-          title: "Analytics",
-          url: "/admin/dashboard/analytics",
         }
       ],
     },
