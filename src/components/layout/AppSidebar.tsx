@@ -113,6 +113,10 @@ const data = {
           url: "/admin/cms/banners",
         },
         {
+          title: "Testimonials",
+          url: "/admin/cms/testimonials",
+        },
+        {
           title: "FAQs",
           url: "/admin/cms/faqs",
         },

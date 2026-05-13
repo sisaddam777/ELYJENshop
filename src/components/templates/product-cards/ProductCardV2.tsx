@@ -6,7 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, PlusCircle, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, PlusCircle } from 'lucide-react';
+import { RatingStars } from '@/components/ui/rating-stars';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -270,14 +271,7 @@ export default function ProductCardV2({ product, isFlashSale }: ProductCardProps
               className="flex items-center justify-center gap-1.5 mt-1"
               aria-label={`${product.ratings || 0} out of 5 stars, ${product.numReviews || 0} reviews`}
             >
-              <div className="flex gap-0.5 text-yellow-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3 w-3 ${i < Math.floor(product.ratings || 0) ? 'fill-current' : 'text-muted'}`}
-                  />
-                ))}
-              </div>
+              <RatingStars rating={product.ratings || 0} starClassName="h-3 w-3" />
               <span className="text-[10px] text-muted-foreground font-bold">({product.numReviews})</span>
             </div>
           )}

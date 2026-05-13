@@ -6,7 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, Layers, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, Layers } from 'lucide-react';
+import { RatingStars } from '@/components/ui/rating-stars';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -265,15 +266,7 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
               className="flex items-center gap-1.5 mt-1"
               aria-label={`${product.ratings || 0} out of 5 stars, ${product.numReviews || 0} reviews`}
             >
-              <div className="flex gap-0.5 text-yellow-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    aria-hidden="true"
-                    className={`h-2.5 w-2.5 ${i < Math.floor(product.ratings || 0) ? 'fill-current' : 'text-muted-foreground'}`}
-                  />
-                ))}
-              </div>
+              <RatingStars rating={product.ratings || 0} starClassName="h-2.5 w-2.5" />
               <span className="text-[9px] font-mono text-muted-foreground font-bold">({product.numReviews})</span>
             </div>
           )}
@@ -283,7 +276,7 @@ export default function ProductCardV3({ product, isFlashSale }: ProductCardProps
           <div className="flex flex-col">
              <span className="text-xs font-mono text-muted-foreground uppercase mb-1">Price_</span>
              <div className="flex items-center gap-2">
-                <span className="text-xl font-black font-mono text-[#00a870]">
+                <span className="text-xl font-black font-mono text-primary">
                   ৳{Math.round(product.salePrice ?? product.price)}
                 </span>
                 {product.salePrice != null && product.salePrice < product.price && (

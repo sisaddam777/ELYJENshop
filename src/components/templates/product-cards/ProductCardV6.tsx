@@ -249,11 +249,11 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
             <div className="flex items-center justify-center gap-2 mt-1">
             {product.salePrice ? (
                 <>
-                <span className="text-[#00a870] font-bold text-[16px]">৳{Math.round(product.salePrice)}</span>
+                <span className="text-primary font-bold text-[16px]">৳{Math.round(product.salePrice)}</span>
                 <span className="text-muted-foreground line-through text-[13px] font-normal">৳{Math.round(product.price)}</span>
                 </>
             ) : (
-                <span className="text-[#00a870] font-bold text-[16px]">৳{Math.round(product.price)}</span>
+                <span className="text-primary font-bold text-[16px]">৳{Math.round(product.price)}</span>
             )}
             </div>
         </div>

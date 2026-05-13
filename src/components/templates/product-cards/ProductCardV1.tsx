@@ -3,7 +3,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, PlusCircle, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, PlusCircle } from 'lucide-react';
+import { RatingStars } from '@/components/ui/rating-stars';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -256,7 +257,7 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="h-12 w-12 rounded-full shadow-lg hover:scale-110 transition-transform bg-[#00a870] text-white hover:bg-[#008f5d] border-none"
+                  className="h-12 w-12 rounded-full shadow-lg hover:scale-110 transition-transform bg-primary text-white hover:bg-primary/90 border-none"
                   onClick={handleQuickView}
                 >
                   <Search className="h-5 w-5" />
@@ -303,15 +304,7 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
             className="flex items-center gap-2 mb-1"
             aria-label={`${product.ratings || 0} out of 5 stars, ${product.numReviews || 0} reviews`}
           >
-            <div className="flex gap-0.5 text-yellow-400">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  aria-hidden="true"
-                  className={`h-3 w-3 ${i < Math.floor(product.ratings || 0) ? 'fill-current' : 'text-muted-foreground'}`}
-                />
-              ))}
-            </div>
+              <RatingStars rating={product.ratings || 0} starClassName="h-3 w-3" />
             <span className="text-[10px] text-muted-foreground font-bold">({product.numReviews})</span>
           </div>
         )}
@@ -332,12 +325,12 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
                 <span className="text-xs line-through text-muted-foreground leading-none mb-1">
                   ৳{product.price ? Math.round(product.price) : '0'}
                 </span>
-                <span className="font-bold text-lg text-[#00a870] leading-none">
+                <span className="font-bold text-lg text-primary leading-none">
                   ৳{Math.round(product.salePrice)}
                 </span>
               </>
             ) : (
-              <span className="font-bold text-lg text-[#00a870] leading-none">
+              <span className="font-bold text-lg text-primary leading-none">
                 ৳{product.price ? Math.round(product.price) : '0'}
               </span>
             )}

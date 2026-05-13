@@ -109,10 +109,10 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       )}
       <FBBlogTracker title={blog.title} id={blogId} />
       <ViewTracker id={blogId} type="blog" />
-      <BlogDetailsSelector 
-        style={style} 
-        blog={blog} 
-        readingTime={readingTime} 
+      <BlogDetailsSelector
+        style={style}
+        blog={blog}
+        readingTime={readingTime}
       />
     </>
   );

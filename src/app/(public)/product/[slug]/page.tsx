@@ -33,7 +33,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   ]);
   if (!product) return { title: 'Product Not Found' };
 
-  const safeDescription = (product.description ?? '').slice(0, 160);
+  // Strip HTML tags and JSON structure for a clean meta description
+  const cleanDescription = (product.description ?? '')
+    .replace(/<[^>]*>?/gm, '') // Remove HTML tags
+    .replace(/\{"type":"doc"[\s\S]*\}/g, (match: string) => {
+        try {
+            const parsed = JSON.parse(match);
+            const getText = (node: any): string => {
+                if (node.text) return node.text;
+                if (node.content) return node.content.map(getText).join(' ');
+                return '';
+            };
+            return getText(parsed);
+        } catch (e) {
+            return match;
+        }
+    })
+    .slice(0, 160);
+
+  const safeDescription = cleanDescription;
   const mainImage = product.images?.[0] ? [{ url: product.images[0] }] : [];
   const twitterImage = product.images?.[0] ? [product.images[0]] : [];
   const siteName = settings?.brandName || 'Online Shop';
@@ -122,7 +140,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               Explore More
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {related.map((item: any) => (
               <ProductCard key={item._id} product={item} style={settings?.uiTemplates?.productCard || 'v1'} />
             ))}

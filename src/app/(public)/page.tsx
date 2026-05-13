@@ -54,15 +54,16 @@ export async function generateMetadata(): Promise<Metadata> {
   ]);
 
   const brandName = settings?.brandName || 'ELYJEN';
-  const description = settings?.siteDescription || 'Your ultimate destination for quality products.';
-  const ogImage = banners?.[0]?.image || settings?.logo || '';
+  const metaTitle = settings?.metaTitle || brandName;
+  const description = settings?.metaDescription || settings?.siteDescription || 'Your ultimate destination for quality products.';
+  const ogImage = banners?.[0]?.image || settings?.logoUrl || '';
   
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
   const baseUrl = `${protocol}://${hostname}`;
 
   return {
     title: {
-      default: brandName,
+      default: metaTitle,
       template: `%s | ${brandName}`,
     },
     description,

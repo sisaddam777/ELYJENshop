@@ -5,7 +5,8 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart, X, Plus, Minus, Star } from 'lucide-react';
+import { ShoppingCart, Heart, X, Plus, Minus } from 'lucide-react';
+import { RatingStars } from '@/components/ui/rating-stars';
 import { useState, useMemo, useEffect } from 'react';
 import { useAppDispatch } from '@/store/hooks';
 import { addToCart } from '@/store/slices/cartSlice';
@@ -167,7 +168,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                   <button
                     key={idx}
                     onClick={() => setActiveImage(img)}
-                    className={`h-16 w-16 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${activeImage === img ? 'border-[#00a870]' : 'border-white opacity-60 hover:opacity-100'
+                    className={`h-16 w-16 flex-shrink-0 border-2 rounded-none overflow-hidden transition-all duration-300 ${activeImage === img ? 'border-primary' : 'border-white opacity-60 hover:opacity-100'
                       }`}
                   >
                     <img src={img} alt="" className="h-full w-full object-cover" />
@@ -186,18 +187,14 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
           {/* Right: Scrollable Details Section */}
           <div className="w-full md:w-[50%] p-10 flex flex-col font-jost overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-200">
             <div className="mb-2 flex items-center gap-2">
-              <div className="flex text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`h-4 w-4 fill-current ${i < (product.ratings || 5) ? 'text-yellow-400' : 'text-gray-300'}`} />
-                ))}
-              </div>
+              <RatingStars rating={product.ratings || 5} />
               <span className="text-xs text-gray-500">({product.numReviews || 0} Reviews)</span>
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">{product.name}</h2>
 
             <div className="flex items-baseline gap-3 mb-4 pb-4 border-b border-gray-100">
-              <span className="text-3xl font-bold text-[#00a870]">
+              <span className="text-3xl font-bold text-primary">
                 ৳{Math.round(activeVariant?.salePrice ?? activeVariant?.price ?? product.salePrice ?? product.price)}
               </span>
               {(activeVariant?.salePrice ?? product.salePrice) != null && (
@@ -256,7 +253,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                         key={i}
                         onClick={(e) => { e.preventDefault(); setSelectedColor(colorName); }}
                         className={`px-4 py-2 text-xs font-bold rounded-none border transition-all ${selectedColor === colorName
-                          ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
+                          ? 'border-primary bg-primary/5 text-primary'
                           : 'border-gray-200 hover:border-gray-900 text-gray-600'
                           }`}
                       >
@@ -279,7 +276,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                           disabled={!isAvailable}
                           onClick={(e) => { e.preventDefault(); setSelectedSize(sizeName); }}
                           className={`min-w-[44px] px-2 py-2 text-xs font-bold rounded-none border transition-all ${selectedSize === sizeName
-                            ? 'border-[#00a870] bg-[#00a870]/5 text-[#00a870]'
+                            ? 'border-primary bg-primary/5 text-primary'
                             : !isAvailable
                               ? 'opacity-30 grayscale cursor-not-allowed bg-gray-100'
                               : 'border-gray-200 hover:border-gray-900 text-gray-600'
@@ -313,7 +310,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
               </div>
 
               <Button
-                className="flex-grow h-12 bg-[#00a870] hover:bg-[#008f5d] text-white font-bold uppercase tracking-widest text-xs rounded-none shadow-lg shadow-[#00a870]/20"
+                className="flex-grow h-12 bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest text-xs rounded-none shadow-lg shadow-primary/20"
                 onClick={handleAddToCart}
                 disabled={(activeVariant?.stock ?? product.stock) === 0}
               >

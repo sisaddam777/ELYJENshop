@@ -6,7 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings, Star } from 'lucide-react';
+import { ShoppingCart, Heart, Search, MoreVertical, Edit, Trash2, Settings } from 'lucide-react';
+import { RatingStars } from '@/components/ui/rating-stars';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -255,14 +256,7 @@ export default function ProductCardV4({ product, isFlashSale }: ProductCardProps
             className="flex items-center gap-1.5 mb-2"
             aria-label={`${product.ratings || 0} out of 5 stars, ${product.numReviews || 0} reviews`}
           >
-              <div className="flex gap-0.5 text-yellow-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3 w-3 ${i < Math.floor(product.ratings || 0) ? 'fill-current' : 'text-muted-foreground'}`}
-                  />
-                ))}
-              </div>
+              <RatingStars rating={product.ratings || 0} starClassName="h-3 w-3" />
               <span className="text-[10px] text-muted-foreground font-black tracking-widest">
                 ({product.numReviews})
               </span>
@@ -277,7 +271,7 @@ export default function ProductCardV4({ product, isFlashSale }: ProductCardProps
 
         <div className="flex flex-col items-center gap-1 mb-4">
            <div className="flex items-center gap-2">
-              <span className="text-2xl font-black text-[#00a870]">
+              <span className="text-2xl font-black text-primary">
                 ৳{Math.round(product.salePrice ?? product.price)}
               </span>
               {product.salePrice && (

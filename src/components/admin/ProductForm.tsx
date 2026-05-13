@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,6 +38,11 @@ import {
   RadioGroupItem 
 } from '@/components/ui/radio-group';
 import { slugify } from '@/lib/slugify';
+
+const NovelEditor = dynamic(() => import('@/components/editor/NovelEditor'), {
+  ssr: false,
+  loading: () => <div className="h-[200px] w-full animate-pulse bg-muted rounded-md" />
+});
 
 const productSchema = z.object({
   name: z.string().min(3, 'Name is required'),
@@ -329,11 +335,22 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                            rows={6} 
-                            placeholder="Write product description here..." 
-                            {...field} 
-                        />
+                        <div className="min-h-[300px] border rounded-md overflow-hidden bg-background prose-sm max-w-none">
+                          <NovelEditor 
+                            initialValue={(() => {
+                              try {
+                                return field.value ? JSON.parse(field.value) : undefined;
+                              } catch (e) {
+                                // Fallback for plain text description
+                                return {
+                                  type: 'doc',
+                                  content: [{ type: 'paragraph', content: [{ type: 'text', text: field.value }] }]
+                                };
+                              }
+                            })()} 
+                            onChange={field.onChange} 
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
