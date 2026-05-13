@@ -202,7 +202,9 @@ export default function NavbarV2() {
                     }`}
                   >
                     {item.label}
-                    <span className={`absolute -bottom-1 left-0 h-[2px] bg-primary transition-all duration-300 ${pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                    <span className={`absolute -bottom-1 left-0 h-[2px] transition-all duration-300 ${
+                      (!isHomePage || isScrolled) ? 'bg-foreground' : 'bg-white'
+                    } ${pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
                   </Link>
                 </li>
                 {index === 0 && (
