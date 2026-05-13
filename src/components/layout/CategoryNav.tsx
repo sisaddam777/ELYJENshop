@@ -50,7 +50,7 @@ export function CategoryNav({ isScrolled = true }: { isScrolled?: boolean }) {
         setActiveParent(null);
       }}
     >
-      <button className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors h-full px-1 group ${isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'}`}>
+      <button className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-colors h-full px-1 group ${isScrolled ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white'}`}>
         Categories
         <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isHovered ? 'rotate-180' : ''}`} />
       </button>
