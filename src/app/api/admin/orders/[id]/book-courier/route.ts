@@ -62,7 +62,7 @@ export async function POST(
     }
 
     const shippingData = {
-      invoice: String(order._id),
+      invoice: order.shortId || order._id.toString().slice(-8).toUpperCase(),
       recipient_name: addr.fullName || "Customer",
       recipient_phone: addr.phone ? addr.phone.replace(/\D/g, '').slice(-11) : "",
       recipient_address: addressParts.join(', '),
