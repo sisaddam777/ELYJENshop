@@ -13,6 +13,7 @@ import { addToCart } from '@/store/slices/cartSlice';
 import { toast } from 'sonner';
 import { fbEvent } from '@/lib/fpixel';
 import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 
 import { useSession } from 'next-auth/react';
 
@@ -103,7 +104,9 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
   const displayPrice = activeVariant?.price || product.price;
   const displaySalePrice = activeVariant?.salePrice || product.salePrice;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const router = useRouter();
+
+  const handleAddToCart = (e: React.MouseEvent, redirect: boolean = false) => {
     e.preventDefault();
 
     dispatch(addToCart({
@@ -132,7 +135,12 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       fn: session?.user?.name || undefined
     });
 
-    toast.success(`${product.name} added to cart`);
+    if (redirect) {
+      router.push('/checkout');
+    } else {
+      toast.success(`${product.name} added to cart`);
+    }
+    
     onClose();
   };
 
@@ -310,12 +318,20 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
               </div>
 
               <Button
-                className="flex-grow h-12 bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest text-xs rounded-none shadow-lg shadow-primary/20"
-                onClick={handleAddToCart}
+                className="flex-grow h-12 bg-primary hover:bg-primary/90 text-white font-bold uppercase tracking-widest text-[10px] rounded-none shadow-lg shadow-primary/20"
+                onClick={(e) => handleAddToCart(e)}
                 disabled={(activeVariant?.stock ?? product.stock) === 0}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 {(activeVariant?.stock ?? product.stock) === 0 ? 'Out of Stock' : 'Add to Cart'}
+              </Button>
+
+              <Button
+                className="flex-grow h-12 bg-black hover:bg-neutral-800 text-white font-bold uppercase tracking-widest text-[10px] rounded-none shadow-lg"
+                onClick={(e) => handleAddToCart(e, true)}
+                disabled={(activeVariant?.stock ?? product.stock) === 0}
+              >
+                Buy Now
               </Button>
 
               <button 
