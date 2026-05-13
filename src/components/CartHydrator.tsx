@@ -51,7 +51,7 @@ export function CartHydrator({ children }: { children: React.ReactNode }) {
         isSyncingRef.current = true;
         try {
           // Fetch cart from DB
-          const res = await fetch('/api/cart');
+          const res = await fetch('/api/cart', { cache: 'no-store' });
           if (res.ok) {
             const dbCartItems = await res.json();
             const currentLocalItems = latestCartItemsRef.current;
