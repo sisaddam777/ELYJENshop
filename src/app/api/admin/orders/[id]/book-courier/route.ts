@@ -78,6 +78,9 @@ export async function POST(
     const sApiKey = steadfast?.apiKey || process.env.STEADFAST_API_KEY;
     const sSecretKey = steadfast?.secretKey || process.env.STEADFAST_SECRET_KEY;
 
+    console.log('[Courier Booking] Using Provider:', activeProvider);
+    console.log('[Courier Booking] API Key exists:', !!sApiKey);
+
     if (activeProvider === 'steadfast' && sApiKey && sSecretKey) {
       provider = new SteadfastProvider(sApiKey, sSecretKey);
       courierName = 'Steadfast';
@@ -90,7 +93,9 @@ export async function POST(
     }
 
     if (provider) {
+      console.log('[Courier Booking] Sending Data to', courierName, shippingData);
       const result = await provider.createOrder(shippingData);
+      console.log('[Courier Booking] Provider Response:', result);
 
       if (result.success) {
         order.shippingDetails = {
@@ -109,15 +114,20 @@ export async function POST(
           trackingCode: result.tracking_code 
         });
       } else {
+        console.error('[Courier Booking] Booking Failed:', result.message);
         return NextResponse.json({ message: result.message || 'Courier booking failed' }, { status: 500 });
       }
     }
 
-    return NextResponse.json({ message: 'Unsupported or unconfigured courier provider' }, { status: 400 });
+    console.error('[Courier Booking] No provider initialized. Active:', activeProvider);
+    return NextResponse.json({ message: 'Courier provider not properly configured or keys missing' }, { status: 400 });
 
   } catch (error: any) {
-    console.error('Courier Booking Error:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Courier Booking Exception:', error);
+    return NextResponse.json({ 
+      message: 'Internal server error during courier booking',
+      debug: error.message 
+    }, { status: 500 });
   }
 }
 
