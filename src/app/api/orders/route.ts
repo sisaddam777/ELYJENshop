@@ -271,10 +271,13 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Calculate Delivery Charge
+    const city = shippingAddress.city.toLowerCase();
+    const state = shippingAddress.state.toLowerCase();
+    const division = shippingAddress.division.toLowerCase();
+
     const isDhaka = 
-      shippingAddress.city.toLowerCase().includes('dhaka') || 
-      shippingAddress.state.toLowerCase().includes('dhaka') ||
-      shippingAddress.division.toLowerCase().includes('dhaka');
+      (city.includes('dhaka') || state.includes('dhaka') || division.includes('dhaka')) &&
+      !city.includes('outside'); // Explicitly exclude "Outside Dhaka"
     
     const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
     const isFreeDelivery = freeDeliveryThreshold > 0 && serverComputedTotal >= freeDeliveryThreshold;
