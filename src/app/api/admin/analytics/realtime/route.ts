@@ -35,10 +35,14 @@ export async function GET() {
 
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/"/g, '');
-    propertyId = settings?.googleAnalyticsPropertyId || settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
+    const rawPropertyId = settings?.googleAnalyticsPropertyId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
+    
+    // Ensure propertyId is numeric (GA4 Data API requires numeric property IDs)
+    propertyId = /^\d+$/.test(rawPropertyId) ? rawPropertyId : 'unknown';
 
     if (propertyId === 'unknown') {
-       return NextResponse.json({ message: 'Property ID is not configured' }, { status: 400 });
+       console.error('Realtime Analytics Error: Valid numeric Property ID is missing');
+       return NextResponse.json({ message: 'Valid numeric Property ID is not configured. Please add GA4 Property ID in System Design.' }, { status: 400 });
     }
 
     console.log('Realtime API Execution State:', {
