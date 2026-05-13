@@ -115,7 +115,11 @@ export async function POST(
         });
       } else {
         console.error('[Courier Booking] Booking Failed:', result.message);
-        return NextResponse.json({ message: result.message || 'Courier booking failed' }, { status: 500 });
+        // Change to 400 so the UI can show the actual error message
+        return NextResponse.json({ 
+            message: result.message || 'Courier booking failed',
+            details: result
+        }, { status: 400 });
       }
     }
 
