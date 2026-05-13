@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import Image from 'next/image';
+import { generateHtml } from '@/lib/server-html';
 
 const CURRENCY_SYMBOL = '৳';
 
@@ -337,8 +338,11 @@ export default function ProductDetailsV5Client({ product }: ProductDetailsV5Clie
                   <TabsContent value="reviews" className="animate-in fade-in duration-500">
                      <ReviewsSection productId={product._id} />
                   </TabsContent>
-                  <TabsContent value="story" className="animate-in fade-in duration-500 prose dark:prose-invert text-muted-foreground italic text-lg leading-relaxed">
-                     <p>{product.description}</p>
+                  <TabsContent value="story" className="animate-in fade-in duration-500">
+                     <div 
+                        className="ProseMirror max-w-none text-muted-foreground italic text-lg leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: generateHtml(product.description) }}
+                     />
                   </TabsContent>
                </Tabs>
             </div>

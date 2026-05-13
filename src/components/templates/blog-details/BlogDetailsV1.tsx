@@ -64,9 +64,9 @@ export default function BlogDetailsV1({ blog, readingTime }: { blog: any, readin
 
             {/* Content Body */}
             <article className="flex-1 order-1 lg:order-2">
-              <div className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-muted-foreground prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-foreground">
+              <div className="ProseMirror max-w-none">
                 <div
-                  className="ProseMirror prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-muted-foreground prose-headings:font-black prose-headings:tracking-tight prose-a:text-primary prose-strong:text-foreground min-h-[400px]"
+                  className="ProseMirror max-w-none min-h-[400px]"
                   dangerouslySetInnerHTML={{ __html: generateHtml(blog.content) }}
                 />
               </div>

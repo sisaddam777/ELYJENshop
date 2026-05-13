@@ -57,7 +57,7 @@ export default function BlogDetailsV5({ blog, readingTime }: BlogDetailsV5Props)
             </div>
          </div>
 
-         <article className="prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-neutral-400 prose-headings:text-white prose-headings:font-black prose-code:text-primary prose-code:bg-primary/5 prose-code:px-2 prose-code:rounded">
+         <article className="ProseMirror max-w-none">
             <div dangerouslySetInnerHTML={{ __html: generateHtml(blog?.content || '') }} />
          </article>
 

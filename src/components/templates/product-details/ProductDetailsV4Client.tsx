@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ProductImageGallery } from '@/components/storefront/ProductImageGallery';
+import { generateHtml } from '@/lib/server-html';
 
 const CURRENCY_SYMBOL = '৳';
 
@@ -350,8 +351,11 @@ export default function ProductDetailsV4Client({ product }: ProductDetailsV4Clie
               <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-4 font-black uppercase text-[10px] tracking-widest text-muted-foreground data-[state=active]:text-foreground">About Piece</TabsTrigger>
               <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-4 font-black uppercase text-[10px] tracking-widest text-muted-foreground data-[state=active]:text-foreground">Client Feedback ({product.numReviews || 0})</TabsTrigger>
             </TabsList>
-            <TabsContent value="description" className="animate-in fade-in duration-500 prose dark:prose-invert max-w-none">
-              <p className="text-muted-foreground leading-relaxed italic">{product.description}</p>
+            <TabsContent value="description" className="animate-in fade-in duration-500">
+               <div 
+                  className="ProseMirror max-w-none text-muted-foreground"
+                  dangerouslySetInnerHTML={{ __html: generateHtml(product.description) }}
+               />
             </TabsContent>
             <TabsContent value="reviews" className="animate-in fade-in duration-500">
               <ReviewsSection productId={product._id} />

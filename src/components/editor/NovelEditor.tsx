@@ -58,7 +58,7 @@ export default function NovelEditor({ initialValue, onChange, readOnly = false }
                         className="min-h-[200px] w-full"
                         editorProps={{
                             attributes: {
-                                class: "prose prose-lg dark:prose-invert prose-headings:font-title font-sans leading-normal focus:outline-none max-w-full",
+                                class: "focus:outline-none max-w-full",
                             },
                         }}
                     >
@@ -85,7 +85,7 @@ export default function NovelEditor({ initialValue, onChange, readOnly = false }
                         handlePaste: (view, event) => handleImagePaste(view, event, uploadFn),
                         handleDrop: (view, event, _slice, moved) => handleImageDrop(view, event, moved, uploadFn),
                         attributes: {
-                            class: "prose prose-lg dark:prose-invert prose-headings:font-title font-sans leading-normal focus:outline-none max-w-full",
+                            class: "focus:outline-none max-w-full",
                         },
                     }}
                     onUpdate={({ editor }) => {
