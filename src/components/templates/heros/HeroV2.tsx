@@ -62,7 +62,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative w-full h-[600px] md:h-[600px] lg:h-screen overflow-hidden bg-transparent font-jost">
+    <section className="relative w-full aspect-video md:aspect-auto md:h-[600px] lg:h-screen overflow-hidden bg-transparent font-jost">
       {/* Logic Layer (Hidden Embla) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-0" ref={emblaRef}>
         <div className="flex h-full w-full">
@@ -112,7 +112,7 @@ export default function HeroV2({ banners }: HeroSliderProps) {
 
               {/* Text Content */}
               <div className="container relative z-20 mx-auto px-6 sm:px-12 md:px-20 lg:px-32 h-full flex items-end">
-                <div className="max-w-[100%] sm:max-w-3xl w-full flex flex-col pb-12 sm:pb-16 lg:pb-24 text-left">
+                <div className="max-w-[100%] sm:max-w-3xl w-full flex flex-col pb-6 sm:pb-16 lg:pb-24 text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -222,8 +222,8 @@ export default function HeroV1({ banners }: HeroSliderProps) {
                   key={index}
                   onClick={() => scrollTo(index)}
                   className={`transition-all duration-300 cursor-pointer rounded-full ${index === activeIndex
-                      ? "w-4 sm:w-10 bg-primary h-1 sm:h-2"
-                      : "w-1 sm:w-2 bg-white/30 h-1 sm:h-2"
+                    ? "w-4 sm:w-10 bg-primary h-1 sm:h-2"
+                    : "w-1 sm:w-2 bg-white/30 h-1 sm:h-2"
                     }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
