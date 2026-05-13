@@ -43,15 +43,14 @@ import {
 } from "@/components/ui/dialog";
 
 const checkoutSchema = z.object({
-  fullName: z.string().min(2, 'Full name is required'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(11, 'Invalid phone number'),
-  division: z.string().min(1, 'Division is required'),
-  district: z.string().min(1, 'District is required'),
-  thana: z.string().min(1, 'Thana is required'),
-  street: z.string().min(5, 'Full address is required'),
+  fullName: z.string().min(2, 'আপনার নাম লিখুন'),
+  phone: z.string().min(11, 'সঠিক মোবাইল নম্বর লিখুন'),
+  street: z.string().min(5, 'আপনার সম্পূর্ণ ঠিকানা লিখুন'),
+  shippingRegion: z.enum(['Inside Dhaka', 'Outside Dhaka'], {
+    required_error: 'ডেলিভারি এলাকা সিলেক্ট করুন',
+  }),
   paymentMethod: z.enum(['COD', 'Online', 'Manual'], {
-    message: 'Select a payment method'
+    message: 'পেমেন্ট মেথড সিলেক্ট করুন'
   }),
 });
 
@@ -83,12 +82,9 @@ export default function CheckoutPage() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       fullName: '',
-      email: '',
       phone: '',
-      division: '',
-      district: '',
-      thana: '',
       street: '',
+      shippingRegion: 'Inside Dhaka',
       paymentMethod: 'COD',
     },
   });
@@ -102,67 +98,10 @@ export default function CheckoutPage() {
     }
   }, [form.watch('paymentMethod')]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch divisions on mount
-  useEffect(() => {
-    async function fetchDivisions() {
-      try {
-        const res = await fetch('/api/locations/divisions');
-        if (res.ok) setDivisions(await res.json());
-      } catch (error) {
-        console.error('Failed to fetch divisions');
-      }
-    }
-    fetchDivisions();
-  }, []);
-
-  // Fetch districts when division changes
-  useEffect(() => {
-    const division = form.watch('division');
-    if (division) {
-      async function fetchDistricts() {
-        try {
-          const res = await fetch(`/api/locations/districts?division=${division}`);
-          if (res.ok) {
-            setDistricts(await res.json());
-            // Only reset dependent fields if the value actually changed
-            if (form.getValues('district')) {
-              form.setValue('district', '');
-              form.setValue('thana', '');
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch districts');
-        }
-      }
-      fetchDistricts();
-    } else {
-      setDistricts([]);
-      setThanas([]);
-    }
-  }, [form.watch('division')]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Fetch thanas when district changes
-  useEffect(() => {
-    const district = form.watch('district');
-    if (district) {
-      async function fetchThanas() {
-        try {
-          const res = await fetch(`/api/locations/thanas?district=${district}`);
-          if (res.ok) {
-            setThanas(await res.json());
-            if (form.getValues('thana')) {
-              form.setValue('thana', '');
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch thanas');
-        }
-      }
-      fetchThanas();
-    } else {
-      setThanas([]);
-    }
-  }, [form.watch('district')]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Simplified: No longer fetching external locations
+  const divisions: any[] = [];
+  const districts: any[] = [];
+  const thanas: any[] = [];
 
 
 
@@ -180,12 +119,9 @@ export default function CheckoutPage() {
           if (profileData) {
             form.reset({
               fullName: profileData.name || '',
-              email: profileData.email || '',
               phone: profileData.phone || '',
-              division: profileData.division || '',
-              district: profileData.district || '',
-              thana: profileData.thana || '',
               street: profileData.address || '',
+              shippingRegion: profileData.division === 'Dhaka' ? 'Inside Dhaka' : 'Outside Dhaka',
               paymentMethod: 'COD',
             });
           }
@@ -275,13 +211,13 @@ export default function CheckoutPage() {
         shippingAddress: {
             fullName: values.fullName,
             phone: values.phone,
-            email: values.email,
+            email: profile?.email || `${values.phone}@store.com`, // Email is hidden now, use fallback
             street: values.street,
-            city: values.district,
-            state: values.division,
-            division: values.division,
-            district: values.district,
-            thana: values.thana,
+            city: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            state: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            division: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            district: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            thana: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
             zipCode: '0000',
             country: 'Bangladesh'
         },
@@ -405,7 +341,7 @@ export default function CheckoutPage() {
   }, 0);
 
   const deliveryCharge = items.length > 0 ? (
-    isFreeDelivery ? 0 : (form.watch('division') === 'Dhaka' ? chargeInsideDhaka : chargeOutsideDhaka)
+    isFreeDelivery ? 0 : (form.watch('shippingRegion') === 'Inside Dhaka' ? chargeInsideDhaka : chargeOutsideDhaka)
   ) : 0;
 
   const totalAfterCoupon = Math.max(0, totalAmount + deliveryCharge - couponDiscount);
@@ -420,12 +356,9 @@ export default function CheckoutPage() {
   const watchedFields = form.watch();
   const isFormValid = !!(
     watchedFields.fullName?.trim() && 
-    watchedFields.email?.trim() && 
     watchedFields.phone?.trim() && 
-    watchedFields.division?.trim() && 
-    watchedFields.district?.trim() && 
-    watchedFields.thana?.trim() && 
     watchedFields.street?.trim() && 
+    watchedFields.shippingRegion &&
     (watchedFields.paymentMethod !== 'Manual' || (selectedMethod?.id && manualDetails.senderNumber && manualDetails.transactionId))
   );
 
@@ -458,8 +391,8 @@ export default function CheckoutPage() {
         <div className="hidden lg:block sticky top-24 self-start space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Your Items</CardTitle>
-              <CardDescription>Items you are about to purchase.</CardDescription>
+              <CardTitle>অর্ডার লিস্ট</CardTitle>
+              <CardDescription>আপনার কার্টে থাকা প্রোডাক্টগুলো।</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="max-h-[500px] overflow-y-auto space-y-4 pr-2 -mr-2">
@@ -511,7 +444,7 @@ export default function CheckoutPage() {
               </div>
               <Separator />
               <div className="flex justify-between items-center pt-2">
-                <span className="text-base font-bold">Items Total</span>
+                <span className="text-base font-bold">আইটেম টোটাল</span>
                 <span className="text-xl font-black text-primary">৳{Math.round(totalAmount)}</span>
               </div>
             </CardContent>
@@ -521,147 +454,90 @@ export default function CheckoutPage() {
         {/* Right Side: Delivery & Payment */}
         <div className="space-y-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
-            <p className="text-muted-foreground mt-2">Complete your order by filling in the details below.</p>
+            <h1 className="text-3xl font-bold tracking-tight">চেকআউট</h1>
+            <p className="text-muted-foreground mt-2">অর্ডারটি সম্পন্ন করতে আপনার তথ্যগুলো পূরণ করুন।</p>
           </div>
 
           <Form {...form}>
             <form id="checkout-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Truck className="h-5 w-5 text-primary" />
-                    Delivery Information
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Truck className="h-6 w-6 text-primary" />
+                    ডেলিভারি তথ্য
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel className="text-sm font-bold">আপনার নাম</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} className="h-11 focus-visible:ring-primary/20" />
+                          <Input placeholder="আপনার পূর্ণ নাম লিখুন" {...field} className="h-12 focus-visible:ring-primary/20" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="john@example.com" type="email" {...field} className="h-11 focus-visible:ring-primary/20" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mobile Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="017XXXXXXXX" {...field} className="h-11 focus-visible:ring-primary/20" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-bold">মোবাইল নম্বর</FormLabel>
+                        <FormControl>
+                          <Input placeholder="আপনার সচল মোবাইল নম্বর লিখুন" {...field} className="h-12 focus-visible:ring-primary/20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="division"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Division</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Select division" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {divisions.map((div) => (
-                                <SelectItem key={div} value={div}>{div}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="district"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>District</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value}
-                            disabled={!form.watch('division')}
+                  <FormField
+                    control={form.control}
+                    name="shippingRegion"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel className="text-sm font-bold">ডেলিভারি এলাকা</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex gap-4"
                           >
-                            <FormControl>
-                              <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Select district" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {districts.map((dist) => (
-                                <SelectItem key={dist} value={dist}>{dist}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="thana"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Thana</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value}
-                            disabled={!form.watch('district')}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Select thana" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {thanas.map((th) => (
-                                <SelectItem key={th} value={th}>{th}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="Inside Dhaka" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                ঢাকার ভিতরে
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="Outside Dhaka" />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                ঢাকার বাইরে
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
                     name="street"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Address</FormLabel>
+                        <FormLabel className="text-sm font-bold">সম্পূর্ণ ঠিকানা</FormLabel>
                         <FormControl>
-                          <Input placeholder="House #, Road #, Area, City" {...field} className="h-11 focus-visible:ring-primary/20" />
+                          <Input placeholder="গ্রাম/বাসা নং, রোড নং, এলাকা, থানা, জেলা" {...field} className="h-12 focus-visible:ring-primary/20" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
