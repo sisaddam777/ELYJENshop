@@ -314,50 +314,43 @@ export default function OrderDetailsDialog({
                       <button
                         disabled={bookingLoading}
                         onClick={async () => {
+                          const isActiveSteadfast = settings?.courierConfig?.activeProvider === 'steadfast';
+                          const endpoint = isActiveSteadfast 
+                            ? '/api/admin/courier/steadfast' 
+                            : `/api/admin/orders/${order._id}/book-courier`;
+                          const payload = isActiveSteadfast 
+                            ? { orderIds: [order._id] } 
+                            : { city_id: cityId, zone_id: zoneId, area_id: areaId, note: shippingNote };
+
                           const result = await Swal.fire({
-                            title: 'Book Courier?',
-                            text: `Hand over order #${order._id} to ${settings?.courierConfig?.activeProvider}?`,
+                            title: isActiveSteadfast ? 'Send to Steadfast?' : 'Book Courier?',
+                            text: isActiveSteadfast 
+                              ? `Are you sure you want to send 1 order(s) to Steadfast Courier?`
+                              : `Hand over order #${order._id} to ${settings?.courierConfig?.activeProvider}?`,
                             icon: 'question',
                             showCancelButton: true,
-                            confirmButtonColor: '#00D1B2',
-                            confirmButtonText: 'Yes, book now!'
+                            confirmButtonColor: '#2563eb',
+                            confirmButtonText: 'Yes, send now!'
                           });
                           
                           if (!result.isConfirmed) return;
                           
                           setBookingLoading(true);
                           try {
-                            const res = await fetch(`/api/admin/orders/${order._id}/book-courier`, { 
+                            const res = await fetch(endpoint, { 
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    city_id: cityId,
-                                    zone_id: zoneId,
-                                    area_id: areaId,
-                                    note: shippingNote
-                                })
+                                body: JSON.stringify(payload)
                             });
                             
+                            const data = await res.json();
                             if (res.ok) {
-                              toast.success(`${settings?.courierConfig?.activeProvider} booked successfully!`);
+                              toast.success(data.message || `${settings?.courierConfig?.activeProvider} booked successfully!`);
                               onUpdate();
                               const updateRes = await fetch(`/api/orders/${orderId}`);
                               if (updateRes.ok) setOrder(await updateRes.json());
                             } else {
-                              let errorMessage = 'Failed to book courier';
-                              try {
-                                const contentType = res.headers.get('content-type');
-                                if (contentType && contentType.includes('application/json')) {
-                                  const err = await res.json();
-                                  errorMessage = err.message || errorMessage;
-                                } else {
-                                  const text = await res.text();
-                                  errorMessage = text || res.statusText || errorMessage;
-                                }
-                              } catch (e) {
-                                errorMessage = res.statusText || errorMessage;
-                              }
-                              toast.error(errorMessage);
+                              toast.error(data.message || 'Courier booking failed');
                             }
                           } catch (e) {
                             toast.error('Network error');

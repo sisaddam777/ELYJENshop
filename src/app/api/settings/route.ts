@@ -7,33 +7,33 @@ import { getTenantDomain } from '@/lib/tenant';
 
 // Helper to consistently mask sensitive data in API responses
 const getMaskedSettings = (raw: any, masked: any) => ({
-    ...masked,
-    facebookAccessToken: (raw.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
-    courierConfig: masked.courierConfig ? {
-      ...masked.courierConfig,
-      steadfast: process.env.STEADFAST_API_KEY ? { 
-          apiKey: "********************", 
-          secretKey: "********************" 
-      } : null,
-      pathao: raw.courierConfig?.pathao?.clientId ? { 
-          clientId: "********************", 
-          clientSecret: "********************", 
-          storeId: "********************" 
-      } : masked.courierConfig.pathao,
-      redx: raw.courierConfig?.redx?.apiKey ? { apiKey: "********************" } : masked.courierConfig.redx,
-    } : masked.courierConfig,
-    paymentConfig: masked.paymentConfig ? {
-      ...masked.paymentConfig,
-      sslcommerz: raw.paymentConfig?.sslcommerz?.storePassword ? {
-        ...masked.paymentConfig.sslcommerz,
-        storePassword: "********************"
-      } : masked.paymentConfig.sslcommerz
-    } : masked.paymentConfig,
-    aiConfig: masked.aiConfig ? {
-      ...masked.aiConfig,
-      openRouterApiKey: raw.aiConfig?.openRouterApiKey ? "********************" : null
-    } : masked.aiConfig
-  });
+  ...masked,
+  facebookAccessToken: (raw.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
+  courierConfig: masked.courierConfig ? {
+    ...masked.courierConfig,
+    steadfast: process.env.STEADFAST_API_KEY ? {
+      apiKey: "********************",
+      secretKey: "********************"
+    } : null,
+    pathao: raw.courierConfig?.pathao?.clientId ? {
+      clientId: "********************",
+      clientSecret: "********************",
+      storeId: "********************"
+    } : masked.courierConfig.pathao,
+    redx: raw.courierConfig?.redx?.apiKey ? { apiKey: "********************" } : masked.courierConfig.redx,
+  } : masked.courierConfig,
+  paymentConfig: masked.paymentConfig ? {
+    ...masked.paymentConfig,
+    sslcommerz: raw.paymentConfig?.sslcommerz?.storePassword ? {
+      ...masked.paymentConfig.sslcommerz,
+      storePassword: "********************"
+    } : masked.paymentConfig.sslcommerz
+  } : masked.paymentConfig,
+  aiConfig: masked.aiConfig ? {
+    ...masked.aiConfig,
+    openRouterApiKey: raw.aiConfig?.openRouterApiKey ? "********************" : null
+  } : masked.aiConfig
+});
 
 // GET global settings
 export async function GET() {
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
       const removeMasked = (obj: any): any => {
         if (!obj || typeof obj !== 'object') return obj;
         if (Array.isArray(obj)) return obj.map(removeMasked);
-        
+
         const cleaned: any = {};
         Object.keys(obj).forEach(k => {
           if (obj[k] === '********************') return;
@@ -196,7 +196,7 @@ export async function POST(req: NextRequest) {
       // Update existing settings document manually to trigger setters/encryption
       Object.keys(allowedBody).forEach((key) => {
         let newValue = allowedBody[key];
-        
+
         // Clean masked values from newValue
         newValue = removeMasked(newValue);
 
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
           if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
             // Use Deep Merge for objects (contact, socialLinks, courierConfig, etc.)
             const currentValue = (settings as any)[key] || {};
-            (settings as any)[key] = deepMerge({...currentValue}, newValue);
+            (settings as any)[key] = deepMerge({ ...currentValue }, newValue);
             (settings as any).markModified(key); // Explicitly mark as modified for Mongoose
           } else {
             // Standard overwrite for primitives
@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
     // Mask sensitive response data for the return
     const updatedRaw = settings.toObject({ getters: false });
     const updatedMasked = settings.toObject({ getters: true });
-  
+
     return NextResponse.json(getMaskedSettings(updatedRaw, updatedMasked), { status: 200 });
   } catch (error: any) {
     console.error('CRITICAL: Error updating settings:', error);

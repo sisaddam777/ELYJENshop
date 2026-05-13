@@ -5,7 +5,9 @@ import { getTenantDomain } from '@/lib/tenant';
 
 export async function POST(req: NextRequest) {
   try {
-    const { items } = await req.json();
+    const body = await req.json();
+    const items = body.items || body.cartItems;
+    
     if (!items || !Array.isArray(items)) {
       return NextResponse.json({ message: 'Invalid items array' }, { status: 400 });
     }
