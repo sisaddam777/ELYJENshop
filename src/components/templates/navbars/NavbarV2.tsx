@@ -226,7 +226,7 @@ export default function NavbarV2() {
               <Button variant="ghost" size="icon" className={`rounded-full relative group ${!isHomePage || isScrolled ? 'text-foreground hover:bg-muted' : 'text-white hover:bg-white/10'}`}>
                 <Heart className={`h-5 w-5 transition-all ${wishlistCount > 0 ? 'fill-primary text-primary' : ( (!isHomePage || isScrolled) ? 'group-hover:text-primary' : 'group-hover:text-white')}`} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center border-2 border-background animate-in zoom-in">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center animate-in zoom-in">
                     {wishlistCount}
                   </span>
                 )}
@@ -236,9 +236,9 @@ export default function NavbarV2() {
             <CartDrawer>
               <div className="relative group cursor-pointer">
                 <Button variant="ghost" size="icon" className={`rounded-full relative pointer-events-none ${!isHomePage || isScrolled ? 'text-foreground hover:bg-muted' : 'text-white hover:bg-white/10'}`}>
-                  <ShoppingCart className={`h-5 w-5 transition-all ${cartCount > 0 ? 'text-primary' : ( (!isHomePage || isScrolled) ? 'group-hover:text-primary' : 'group-hover:text-white')}`} />
+                  <ShoppingCart className={`h-5 w-5 transition-all ${(!isHomePage || isScrolled) ? 'group-hover:text-primary' : 'group-hover:text-white'}`} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center border-2 border-background animate-in zoom-in">
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[9px] font-black text-white rounded-full flex items-center justify-center animate-in zoom-in">
                       {cartCount}
                     </span>
                   )}

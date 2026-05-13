@@ -192,22 +192,6 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
                   size="icon"
                   variant="secondary"
                   className="h-12 w-12 rounded-full bg-white text-black hover:bg-primary hover:text-white shadow-xl transition-all hover:scale-110"
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Add to cart</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-12 w-12 rounded-full bg-white text-black hover:bg-primary hover:text-white shadow-xl transition-all hover:scale-110"
                   onClick={(e) => { e.preventDefault(); setShowQuickViewModal(true); }}
                 >
                   <Search className="h-5 w-5" />

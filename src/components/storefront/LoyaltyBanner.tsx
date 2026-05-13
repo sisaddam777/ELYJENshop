@@ -3,6 +3,7 @@
 // Loyalty promotion banner component for home page
 import { Sparkles, Trophy, Wallet, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 import dynamic from 'next/dynamic';
@@ -16,6 +17,22 @@ interface LoyaltyBannerProps {
 export function LoyaltyBanner({ settings }: LoyaltyBannerProps) {
   const threshold = settings?.subscriptionConfig?.activationThreshold || 5000;
   const percentage = settings?.subscriptionConfig?.rewardPercentage || 5;
+  const [primaryColor, setPrimaryColor] = useState(0x0D8252);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const temp = document.createElement('div');
+    temp.style.color = 'var(--primary)';
+    document.body.appendChild(temp);
+    const computedColor = getComputedStyle(temp).color;
+    document.body.removeChild(temp);
+
+    const rgb = computedColor.match(/\d+/g);
+    if (rgb && rgb.length >= 3) {
+      const hex = (parseInt(rgb[0]) << 16) | (parseInt(rgb[1]) << 8) | parseInt(rgb[2]);
+      setPrimaryColor(hex);
+    }
+  }, []);
 
   return (
     <section className="py-12 bg-black text-white overflow-hidden relative">
@@ -54,9 +71,9 @@ export function LoyaltyBanner({ settings }: LoyaltyBannerProps) {
               background: 0x000000,
               shoulderLines: 0xFFFFFF,
               brokenLines: 0xFFFFFF,
-              leftCars: [0x0D8252, 0x064229, 0x0D8252], // Modified to match ELYJEN green brand
+              leftCars: [primaryColor, primaryColor, primaryColor],
               rightCars: [0xFFFFFF, 0xDDDDDD, 0xEEEEEE],
-              sticks: 0x0D8252,
+              sticks: primaryColor,
             }
           }}
         />

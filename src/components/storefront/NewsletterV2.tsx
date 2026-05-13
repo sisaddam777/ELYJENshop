@@ -50,11 +50,14 @@ export function NewsletterV2() {
     };
 
     return (
-        <section className="py-10 bg-gradient-to-br from-[#053622] via-[#0D8252] to-[#032014] text-white relative overflow-hidden">
+        <section className="py-10 bg-primary text-white relative overflow-hidden">
+            {/* Dark gradient overlay for the professional gradient look */}
+            <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/40 pointer-events-none" />
+            
             {/* Threads animated background */}
             <div className="absolute inset-0 opacity-100 mix-blend-screen">
                 <Threads
-                    color={[0.6, 1, 0.6]}
+                    color={[1, 1, 1]}
                     amplitude={3}
                     distance={0}
                     enableMouseInteraction={true}
@@ -88,7 +91,7 @@ export function NewsletterV2() {
                     <div className="w-full md:w-auto md:min-w-[400px]">
                         {subscribed ? (
                             <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-center gap-4 animate-in fade-in zoom-in duration-500">
-                                <div className="bg-white rounded-full p-2 text-[#0D8252]">
+                                <div className="bg-white rounded-full p-2 text-primary">
                                     <CheckCircle2 className="size-6" />
                                 </div>
                                 <div className="text-left">
