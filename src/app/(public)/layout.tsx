@@ -4,6 +4,7 @@ import { Marquee } from '@/components/layout/Marquee';
 import { getCachedSettings } from '@/lib/data-fetching';
 import { headers } from 'next/headers';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
+import { MobileBottomNavbar } from '@/components/layout/MobileBottomNavbar';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -27,9 +28,10 @@ export default async function PublicLayout({ children }: { children: React.React
     <>
       {ui.layout !== 'v2' && <Marquee marqueeText={marqueeText} />}
       <Navbar style={ui.navbar} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <Footer style={ui.footer} />
       <ScrollToTop />
+      <MobileBottomNavbar />
     </>
   );
 }
