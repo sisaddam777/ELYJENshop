@@ -203,25 +203,23 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   const handleAddToCart = () => {
     if (uniqueColors.length > 0 && !selectedColor) {
       toast.error('Please select a color');
-      return;
+      return false;
     }
     if (uniqueSizes.length > 0 && !selectedSize) {
       toast.error('Please select a size');
-      return;
+      return false;
     }
 
     const stock = displayStock || 0;
     if (stock <= 0) {
       toast.error('This item is currently out of stock');
-      return;
+      return false;
     }
 
-    let finalQuantity = quantity;
+    const finalQuantity = quantity > stock ? stock : quantity;
     if (quantity > stock) {
       toast.info(`Adjusted quantity to ${stock} (available stock)`);
-      finalQuantity = stock;
     }
-
 
     dispatch(addToCart({
       productId: product._id,
@@ -250,6 +248,14 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     });
 
     toast.success(`Added ${finalQuantity} ${product.name} to cart`);
+    return true;
+  };
+
+  const handleBuyNow = () => {
+    const success = handleAddToCart();
+    if (success) {
+      router.push('/checkout');
+    }
   };
 
   const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
@@ -487,7 +493,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
           <div className="flex items-center gap-4 py-2">
             <div className="flex items-center gap-1">
-                <RatingStars rating={product.ratings || 0} />
+              <RatingStars rating={product.ratings || 0} />
               <span className="text-sm font-bold ml-1">{(product.ratings || 0).toFixed(1)}</span>
             </div>
             <Separator orientation="vertical" className="h-4" />
@@ -615,65 +621,83 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t">
-          <div className="flex items-center border rounded-full overflow-hidden h-12 bg-muted/50">
+        <div className="flex flex-col gap-4 py-8 sm:py-6 border-t">
+          {/* Row 1: Quantity and Wishlist */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center border rounded-full overflow-hidden h-12 bg-muted/50">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-full rounded-none px-4 hover:bg-muted"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="w-12 text-center font-bold">{quantity}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-full rounded-none px-4 hover:bg-muted"
+                onClick={() => setQuantity(Math.min(displayStock || 0, quantity + 1))}
+                disabled={quantity >= (displayStock || 0)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
             <Button
-              variant="ghost"
               size="icon"
-              className="h-full rounded-none px-4 hover:bg-muted"
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              variant="outline"
+              className="h-12 w-12 rounded-full transition-all hover:scale-110 active:scale-95 flex-shrink-0"
+              onClick={handleFavorite}
+              aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="w-12 text-center font-bold">{quantity}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-full rounded-none px-4 hover:bg-muted"
-              onClick={() => setQuantity(Math.min(displayStock || 0, quantity + 1))}
-              disabled={quantity >= (displayStock || 0)}
-            >
-              <Plus className="h-4 w-4" />
+              <Heart className={`h-5 w-5 transition-colors ${isInWishlist ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
             </Button>
           </div>
-          <Button
-            size="lg"
-            className="flex-1 h-14 rounded-full font-black text-sm uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/25"
-            onClick={handleAddToCart}
-            disabled={(displayStock || 0) === 0}
-          >
-            <ShoppingCart className="mr-2 h-6 w-6" /> Add to Cart
-          </Button>
 
+          {/* Row 2: Add to Cart and Buy Now */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-14 rounded-full font-black text-[10px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.2em] border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all hover:scale-[1.02] active:scale-95"
+              onClick={handleAddToCart}
+              disabled={(displayStock || 0) === 0}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5 hidden sm:block" /> Add to Cart
+            </Button>
+            <Button
+              size="lg"
+              className="h-14 rounded-full font-black text-[10px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/25"
+              onClick={handleBuyNow}
+              disabled={(displayStock || 0) === 0}
+            >
+              Buy Now
+            </Button>
+          </div>
+
+          {/* Row 3: WhatsApp */}
           {whatsappNumber && (
             <Button
               size="lg"
               variant="outline"
-              className="flex-1 h-14 rounded-full font-black text-sm uppercase tracking-[0.2em] border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all hover:scale-[1.02] active:scale-95"
+              className="w-full h-14 rounded-full font-black text-xs uppercase tracking-[0.2em] border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
               onClick={() => {
                 const message = encodeURIComponent(`Hi, I'm interested in ${product.name}. Price: ${CURRENCY_SYMBOL}${displaySalePrice || displayPrice}`);
                 window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
               }}
             >
               <svg 
-                className="mr-2 h-6 w-6 fill-current" 
+                className="h-5 w-5 fill-current" 
                 viewBox="0 0 24 24" 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.067 2.877 1.215 3.076.149.198 2.095 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
               </svg>
-              WhatsApp
+              Order via WhatsApp
             </Button>
           )}
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full transition-all hover:scale-110 active:scale-95"
-            onClick={handleFavorite}
-            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <Heart className={`h-5 w-5 transition-colors ${isInWishlist ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
-          </Button>
         </div>
 
 
@@ -699,7 +723,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
 
           <TabsContent value="description" className="animate-in fade-in-50 duration-500">
             <div className="ProseMirror max-w-none">
-              <div 
+              <div
                 className="ProseMirror max-w-none text-muted-foreground"
                 dangerouslySetInnerHTML={{ __html: generateHtml(product.description) }}
               />

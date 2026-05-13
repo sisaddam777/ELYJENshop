@@ -155,10 +155,30 @@ export async function POST(req: NextRequest) {
     // Check if settings already exist for this domain
     let settings = await GlobalSettings.findOne({ domain }).sort({ updatedAt: -1 });
     if (settings) {
+      // Helper to recursively remove masked values ('********************')
+      const removeMasked = (obj: any): any => {
+        if (!obj || typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) return obj.map(removeMasked);
+        
+        const cleaned: any = {};
+        Object.keys(obj).forEach(k => {
+          if (obj[k] === '********************') return;
+          if (typeof obj[k] === 'object' && obj[k] !== null) {
+            cleaned[k] = removeMasked(obj[k]);
+          } else {
+            cleaned[k] = obj[k];
+          }
+        });
+        return cleaned;
+      };
+
       // Update existing settings document manually to trigger setters/encryption
       Object.keys(allowedBody).forEach((key) => {
-        const newValue = allowedBody[key];
+        let newValue = allowedBody[key];
         const oldValue = (settings as any)[key];
+
+        // Clean masked values from newValue
+        newValue = removeMasked(newValue);
 
         if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
           // Universal Smart Merge for objects (contact, socialLinks, uiTemplates, etc.)
@@ -168,7 +188,10 @@ export async function POST(req: NextRequest) {
           };
         } else {
           // Standard overwrite for primitives (strings, numbers, booleans) or arrays
-          (settings as any)[key] = newValue;
+          // Only overwrite if newValue is not undefined (which happens if it was masked and removed)
+          if (newValue !== undefined) {
+            (settings as any)[key] = newValue;
+          }
         }
       });
       await settings.save({ validateBeforeSave: false });

@@ -540,6 +540,10 @@ export default function SuperConfigPage() {
                     <input id="steadfast-api-key" type="password" value={settings?.courierConfig?.steadfast?.apiKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), steadfast: {...(settings?.courierConfig?.steadfast || {}), apiKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="steadfast-secret-key" className="font-bold text-xs">Steadfast Secret Key</Label>
+                    <input id="steadfast-secret-key" type="password" value={settings?.courierConfig?.steadfast?.secretKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), steadfast: {...(settings?.courierConfig?.steadfast || {}), secretKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="pathao-store-id" className="font-bold text-xs">Pathao Store ID</Label>
                     <input id="pathao-store-id" value={settings?.courierConfig?.pathao?.storeId || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), pathao: {...(settings?.courierConfig?.pathao || {}), storeId: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
                   </div>

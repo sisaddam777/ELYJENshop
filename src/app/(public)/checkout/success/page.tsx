@@ -50,8 +50,8 @@ function SuccessContent() {
             ph: orderData.shippingAddress?.phone,
             fn: nameParts[0] || '',
             ln: nameParts.slice(1).join(' ') || '',
-            ct: orderData.shippingAddress?.state, // District
-            st: orderData.shippingAddress?.division, // Division
+            ct: orderData.shippingAddress?.city,
+            st: orderData.shippingAddress?.state,
             country: 'bd'
           }, orderData._id); // Use Order ID as eventId for deduplication
         }

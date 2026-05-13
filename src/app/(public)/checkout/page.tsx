@@ -24,9 +24,6 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, CreditCard, Truck, ShoppingBag, CheckCircle2, Plus, Minus, X, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { fbEvent } from '@/lib/fpixel';
-
-import { divisions, bdDivisions, bdLocations } from '@/lib/bd-locations';
 import {
   Select,
   SelectContent,
@@ -34,6 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { fbEvent } from '@/lib/fpixel';
+
 import {
   Dialog,
   DialogContent,
@@ -45,12 +44,12 @@ import {
 
 const checkoutSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
+  email: z.string().email('Invalid email address'),
   phone: z.string().min(11, 'Invalid phone number'),
-  email: z.string().email('Invalid email address').min(1, 'Email is required'),
-  street: z.string().min(5, 'Street address is required'),
   division: z.string().min(1, 'Division is required'),
   district: z.string().min(1, 'District is required'),
   thana: z.string().min(1, 'Thana is required'),
+  street: z.string().min(5, 'Full address is required'),
   paymentMethod: z.enum(['COD', 'Online', 'Manual'], {
     message: 'Select a payment method'
   }),
@@ -76,17 +75,20 @@ export default function CheckoutPage() {
     senderNumber: '',
     transactionId: ''
   });
+  const [divisions, setDivisions] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [thanas, setThanas] = useState<any[]>([]);
 
   const form = useForm<CheckoutValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       fullName: '',
-      phone: '',
       email: '',
-      street: '',
+      phone: '',
       division: '',
       district: '',
       thana: '',
+      street: '',
       paymentMethod: 'COD',
     },
   });
@@ -100,11 +102,69 @@ export default function CheckoutPage() {
     }
   }, [form.watch('paymentMethod')]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selectedDivision = form.watch('division');
-  const selectedDistrict = form.watch('district');
+  // Fetch divisions on mount
+  useEffect(() => {
+    async function fetchDivisions() {
+      try {
+        const res = await fetch('/api/locations/divisions');
+        if (res.ok) setDivisions(await res.json());
+      } catch (error) {
+        console.error('Failed to fetch divisions');
+      }
+    }
+    fetchDivisions();
+  }, []);
 
-  const availableDistricts = selectedDivision ? bdDivisions[selectedDivision] : [];
-  const availableThanas = selectedDistrict ? bdLocations[selectedDistrict] : [];
+  // Fetch districts when division changes
+  useEffect(() => {
+    const division = form.watch('division');
+    if (division) {
+      async function fetchDistricts() {
+        try {
+          const res = await fetch(`/api/locations/districts?division=${division}`);
+          if (res.ok) {
+            setDistricts(await res.json());
+            // Only reset dependent fields if the value actually changed
+            if (form.getValues('district')) {
+              form.setValue('district', '');
+              form.setValue('thana', '');
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch districts');
+        }
+      }
+      fetchDistricts();
+    } else {
+      setDistricts([]);
+      setThanas([]);
+    }
+  }, [form.watch('division')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch thanas when district changes
+  useEffect(() => {
+    const district = form.watch('district');
+    if (district) {
+      async function fetchThanas() {
+        try {
+          const res = await fetch(`/api/locations/thanas?district=${district}`);
+          if (res.ok) {
+            setThanas(await res.json());
+            if (form.getValues('thana')) {
+              form.setValue('thana', '');
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch thanas');
+        }
+      }
+      fetchThanas();
+    } else {
+      setThanas([]);
+    }
+  }, [form.watch('district')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
 
   useEffect(() => {
     async function fetchLoyaltyAndSyncCart() {
@@ -120,12 +180,12 @@ export default function CheckoutPage() {
           if (profileData) {
             form.reset({
               fullName: profileData.name || '',
-              phone: profileData.phone || '',
               email: profileData.email || '',
-              street: profileData.address || '',
+              phone: profileData.phone || '',
               division: profileData.division || '',
               district: profileData.district || '',
               thana: profileData.thana || '',
+              street: profileData.address || '',
               paymentMethod: 'COD',
             });
           }
@@ -217,9 +277,11 @@ export default function CheckoutPage() {
             phone: values.phone,
             email: values.email,
             street: values.street,
-            city: values.thana,
-            state: values.district,
+            city: values.district,
+            state: values.division,
             division: values.division,
+            district: values.district,
+            thana: values.thana,
             zipCode: '0000',
             country: 'Bangladesh'
         },
@@ -329,9 +391,7 @@ export default function CheckoutPage() {
     toast.info('Coupon removed');
   };
 
-  const division = form.watch('division');
-  const district = form.watch('district');
-  const isDhaka = division?.toLowerCase().includes('dhaka') || district?.toLowerCase().includes('dhaka');
+
   
   const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
   const isFreeDelivery = freeDeliveryThreshold > 0 && totalAmount >= freeDeliveryThreshold;
@@ -344,7 +404,9 @@ export default function CheckoutPage() {
     return sum + Math.max(0, itemBasePrice - item.price) * item.quantity;
   }, 0);
 
-  const deliveryCharge = items.length > 0 ? (isFreeDelivery ? 0 : (isDhaka ? chargeInsideDhaka : chargeOutsideDhaka)) : 0;
+  const deliveryCharge = items.length > 0 ? (
+    isFreeDelivery ? 0 : (form.watch('division') === 'Dhaka' ? chargeInsideDhaka : chargeOutsideDhaka)
+  ) : 0;
 
   const totalAfterCoupon = Math.max(0, totalAmount + deliveryCharge - couponDiscount);
 
@@ -358,12 +420,12 @@ export default function CheckoutPage() {
   const watchedFields = form.watch();
   const isFormValid = !!(
     watchedFields.fullName?.trim() && 
-    watchedFields.phone?.trim() && 
     watchedFields.email?.trim() && 
+    watchedFields.phone?.trim() && 
+    watchedFields.division?.trim() && 
+    watchedFields.district?.trim() && 
+    watchedFields.thana?.trim() && 
     watchedFields.street?.trim() && 
-    watchedFields.division && 
-    watchedFields.district && 
-    watchedFields.thana &&
     (watchedFields.paymentMethod !== 'Manual' || (selectedMethod?.id && manualDetails.senderNumber && manualDetails.transactionId))
   );
 
@@ -486,46 +548,35 @@ export default function CheckoutPage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mobile Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="017XXXXXXXX" {...field} className="h-11 focus-visible:ring-primary/20" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="example@mail.com" {...field} className="h-11 focus-visible:ring-primary/20" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="street"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address Line</FormLabel>
-                        <FormControl>
-                          <Input placeholder="House #, Road #, Area" {...field} className="h-11 focus-visible:ring-primary/20" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="john@example.com" type="email" {...field} className="h-11 focus-visible:ring-primary/20" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mobile Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="017XXXXXXXX" {...field} className="h-11 focus-visible:ring-primary/20" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
@@ -533,24 +584,15 @@ export default function CheckoutPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Division</FormLabel>
-                          <Select 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              form.setValue('district', '');
-                              form.setValue('thana', '');
-                            }} 
-                            value={field.value}
-                          >
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger className="h-11 focus:ring-primary/20">
+                              <SelectTrigger className="h-11">
                                 <SelectValue placeholder="Select division" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {divisions.map((division) => (
-                                <SelectItem key={division} value={division}>
-                                  {division}
-                                </SelectItem>
+                              {divisions.map((div) => (
+                                <SelectItem key={div} value={div}>{div}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -565,23 +607,18 @@ export default function CheckoutPage() {
                         <FormItem>
                           <FormLabel>District</FormLabel>
                           <Select 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              form.setValue('thana', '');
-                            }} 
+                            onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={!selectedDivision}
+                            disabled={!form.watch('division')}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-11 focus:ring-primary/20">
+                              <SelectTrigger className="h-11">
                                 <SelectValue placeholder="Select district" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {availableDistricts?.map((district) => (
-                                <SelectItem key={district} value={district}>
-                                  {district}
-                                </SelectItem>
+                              {districts.map((dist) => (
+                                <SelectItem key={dist} value={dist}>{dist}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -598,18 +635,16 @@ export default function CheckoutPage() {
                           <Select 
                             onValueChange={field.onChange} 
                             value={field.value}
-                            disabled={!selectedDistrict}
+                            disabled={!form.watch('district')}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-11 focus:ring-primary/20">
+                              <SelectTrigger className="h-11">
                                 <SelectValue placeholder="Select thana" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {availableThanas?.map((thana) => (
-                                <SelectItem key={thana} value={thana}>
-                                  {thana}
-                                </SelectItem>
+                              {thanas.map((th) => (
+                                <SelectItem key={th} value={th}>{th}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -618,6 +653,20 @@ export default function CheckoutPage() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="street"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Address</FormLabel>
+                        <FormControl>
+                          <Input placeholder="House #, Road #, Area, City" {...field} className="h-11 focus-visible:ring-primary/20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 

@@ -360,6 +360,43 @@ export default function OrdersPage() {
     }
   };
 
+  const handleSendToSteadfast = async (ids: string[]) => {
+    if (ids.length === 0) return;
+
+    const result = await Swal.fire({
+      title: 'Send to Steadfast?',
+      text: `Are you sure you want to send ${ids.length} order(s) to Steadfast Courier?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      confirmButtonText: 'Yes, send now!'
+    });
+
+    if (!result.isConfirmed) return;
+
+    setBulkActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/courier/steadfast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIds: ids }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message);
+        if (ids.length > 1) setSelectedIds([]);
+        fetchOrders();
+      } else {
+        toast.error(data.message || 'Submission failed');
+      }
+    } catch (error) {
+      toast.error('Error sending to Steadfast');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const handleCancelOrder = async (orderId: string) => {
     const result = await Swal.fire({
       title: 'Cancel Order?',
@@ -520,6 +557,15 @@ export default function OrdersPage() {
                 <Printer className="mr-2 h-3 w-3" /> Print Invoices
               </Button>
 
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-orange-500 text-white hover:bg-orange-600 border-none"
+                onClick={() => handleSendToSteadfast(selectedIds)}
+              >
+                <Truck className="mr-2 h-3 w-3" /> Send to Steadfast
+              </Button>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="bg-white text-primary hover:bg-white/90">
@@ -629,6 +675,9 @@ export default function OrdersPage() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleDownloadInvoice(order)}>
                               <FileText className="mr-2 h-4 w-4 text-primary" /> Download Invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSendToSteadfast([order._id])} disabled={!!order.shippingDetails?.consignmentId}>
+                              <Truck className="mr-2 h-4 w-4 text-orange-500" /> Send to Steadfast
                             </DropdownMenuItem>
                           </DropdownMenuGroup>
                           <DropdownMenuSeparator />
