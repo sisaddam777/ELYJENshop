@@ -11,10 +11,10 @@ const getMaskedSettings = (raw: any, masked: any) => ({
     facebookAccessToken: (raw.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
     courierConfig: masked.courierConfig ? {
       ...masked.courierConfig,
-      steadfast: (raw.courierConfig?.steadfast?.apiKey || process.env.STEADFAST_API_KEY) ? { 
+      steadfast: process.env.STEADFAST_API_KEY ? { 
           apiKey: "********************", 
           secretKey: "********************" 
-      } : masked.courierConfig.steadfast,
+      } : null,
       pathao: raw.courierConfig?.pathao?.clientId ? { 
           clientId: "********************", 
           clientSecret: "********************", 

@@ -39,12 +39,12 @@ export async function POST(req: NextRequest) {
     }
     const settings = settingsDoc.toObject({ getters: true });
     
-    const apiKey = settings?.courierConfig?.steadfast?.apiKey || process.env.STEADFAST_API_KEY;
-    const secretKey = settings?.courierConfig?.steadfast?.secretKey || process.env.STEADFAST_SECRET_KEY;
+    const apiKey = process.env.STEADFAST_API_KEY;
+    const secretKey = process.env.STEADFAST_SECRET_KEY;
     
     if (!apiKey || !secretKey) {
       return NextResponse.json({ 
-        message: 'Steadfast API credentials are not configured (Check System Design or .env file).' 
+        message: 'Steadfast API credentials are not configured in your .env file.' 
       }, { status: 400 });
     }
 
