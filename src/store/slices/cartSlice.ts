@@ -101,12 +101,26 @@ const cartSlice = createSlice({
         isHydrated: true
       };
     },
+    syncItems(state, action: PayloadAction<{ productId: string; color?: string; size?: string }[]>) {
+      const validKeys = action.payload.map(i => `${i.productId}-${i.color || ''}-${i.size || ''}`);
+      
+      const filteredItems = state.items.filter(item => {
+        const key = `${item.productId}-${item.color || ''}-${item.size || ''}`;
+        return validKeys.includes(key);
+      });
+
+      if (filteredItems.length !== state.items.length) {
+        state.items = filteredItems;
+        state.totalQuantity = state.items.reduce((sum, item) => sum + item.quantity, 0);
+        state.totalAmount = Math.round(state.items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100;
+      }
+    },
     setHydrated(state) {
       state.isHydrated = true;
     }
   },
 });
 
-export const { addToCart, removeFromCart, clearCart, hydrateCart, setHydrated } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart, hydrateCart, syncItems, setHydrated } = cartSlice.actions;
 export default cartSlice.reducer;
 

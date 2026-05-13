@@ -152,78 +152,123 @@ export async function POST(req: NextRequest) {
 
     let serverComputedTotal = 0;
     const validatedItems: IOrderItem[] = [];
+    const successfulDeductions: { productId: string, quantity: number, variantId?: string }[] = [];
 
-    // 2. Atomic Stock Validation and Price Verification
-    for (const item of items) {
-      let product;
-      const hasVariant = !!(item.color || item.size);
+    try {
+      // 2a. Pre-check loop (ensure all items exist and have stock before any deductions)
+      for (const item of items) {
+        const product = await Product.findOne({ _id: item.product, domain, isPublished: true }).session(session);
+        if (!product) {
+          throw new StockError(`Product not found: ${item.name}`);
+        }
 
-      if (hasVariant) {
-        // Attempt to update variant stock
-        const variantQuery: any = { 
-          _id: item.product, 
-          domain, // Add domain filter
-          isPublished: true,
-          variants: {
-            $elemMatch: {
-              ...(item.color && { color: item.color }),
-              ...(item.size && { size: item.size }),
-              stock: { $gte: item.quantity }
-            }
+        if (item.color || item.size) {
+          const variant = product.variants?.find((v: any) => 
+            (v.color || undefined) === (item.color || undefined) &&
+            (v.size || undefined) === (item.size || undefined)
+          );
+          if (!variant || variant.stock < item.quantity) {
+            const variantDesc = [item.color, item.size].filter(Boolean).join(' / ');
+            throw new StockError(`Insufficient stock for ${product.name}${variantDesc ? ` (${variantDesc})` : ''}. Available: ${variant?.stock || 0}`);
           }
-        };
-        
-        product = await Product.findOneAndUpdate(
-          variantQuery,
-          { $inc: { "variants.$.stock": -item.quantity } },
-          { session, new: true }
-        );
-      } else {
-        // Fallback to main stock
-        product = await Product.findOneAndUpdate(
-          { 
-            _id: item.product, 
-            domain, // Add domain filter
-            stock: { $gte: item.quantity },
-            isPublished: true 
-          },
-          { $inc: { stock: -item.quantity } },
-          { session, new: true }
-        );
-      }
-
-      if (!product) {
-        const variantDesc = [item.color, item.size].filter(Boolean).join(' / ');
-        throw new StockError(`Insufficient stock or product not found: ${item.name}${variantDesc ? ` (${variantDesc})` : ''}`);
-      }
-
-      // 2b. Determine Price (Server-side source of truth)
-      let itemPrice = product.salePrice ?? product.price;
-      let itemPurchasePrice = product.purchasePrice ?? 0;
-      if (hasVariant) {
-        const variant = product.variants?.find((v: any) => 
-          (v.color || undefined) === (item.color || undefined) &&
-          (v.size || undefined) === (item.size || undefined)
-        );
-        if (variant) {
-          itemPrice = (variant.salePrice ?? variant.price) ?? (product.salePrice ?? product.price);
-          itemPurchasePrice = variant.purchasePrice ?? product.purchasePrice ?? 0;
+        } else {
+          if (product.stock < item.quantity) {
+            throw new StockError(`Insufficient stock for ${product.name}. Available: ${product.stock}`);
+          }
         }
       }
 
-      const lineTotal = itemPrice * item.quantity;
-      serverComputedTotal += lineTotal;
+      // 2b. Atomic Stock Deduction and Price Verification
+      for (const item of items) {
+        let product;
+        const hasVariant = !!(item.color || item.size);
 
-      validatedItems.push({
-        product: product._id,
-        name: product.name,
-        quantity: item.quantity,
-        price: itemPrice,
-        purchasePrice: itemPurchasePrice,
-        image: item.image || product.images?.[0] || '',
-        color: item.color,
-        size: item.size,
-      });
+        if (hasVariant) {
+          const variantQuery: any = { 
+            _id: item.product, 
+            domain,
+            isPublished: true,
+            variants: {
+              $elemMatch: {
+                ...(item.color && { color: item.color }),
+                ...(item.size && { size: item.size }),
+                stock: { $gte: item.quantity }
+              }
+            }
+          };
+          
+          product = await Product.findOneAndUpdate(
+            variantQuery,
+            { $inc: { "variants.$.stock": -item.quantity } },
+            { session, new: true }
+          );
+
+          if (product) {
+            const variant = product.variants?.find((v: any) => 
+              (v.color || undefined) === (item.color || undefined) &&
+              (v.size || undefined) === (item.size || undefined)
+            );
+            successfulDeductions.push({ 
+              productId: product._id.toString(), 
+              quantity: item.quantity, 
+              variantId: variant?._id?.toString() 
+            });
+          }
+        } else {
+          product = await Product.findOneAndUpdate(
+            { 
+              _id: item.product, 
+              domain,
+              stock: { $gte: item.quantity },
+              isPublished: true 
+            },
+            { $inc: { stock: -item.quantity } },
+            { session, new: true }
+          );
+
+          if (product) {
+            successfulDeductions.push({ 
+              productId: product._id.toString(), 
+              quantity: item.quantity 
+            });
+          }
+        }
+
+        if (!product) {
+          throw new StockError(`Stock deduction failed unexpectedly for ${item.name}. Please try again.`);
+        }
+
+        // Determine Price (Server-side source of truth)
+        let itemPrice = product.salePrice ?? product.price;
+        let itemPurchasePrice = product.purchasePrice ?? 0;
+        if (hasVariant) {
+          const variant = product.variants?.find((v: any) => 
+            (v.color || undefined) === (item.color || undefined) &&
+            (v.size || undefined) === (item.size || undefined)
+          );
+          if (variant) {
+            itemPrice = (variant.salePrice ?? variant.price) ?? (product.salePrice ?? product.price);
+            itemPurchasePrice = variant.purchasePrice ?? product.purchasePrice ?? 0;
+          }
+        }
+
+        const lineTotal = itemPrice * item.quantity;
+        serverComputedTotal += lineTotal;
+
+        validatedItems.push({
+          product: product._id,
+          name: product.name,
+          quantity: item.quantity,
+          price: itemPrice,
+          purchasePrice: itemPurchasePrice,
+          image: item.image || product.images?.[0] || '',
+          color: item.color,
+          size: item.size,
+        });
+      }
+    } catch (err: any) {
+      // If any item fails during deduction loop, we throw and trigger rollback
+      throw err;
     }
 
     // 3. Calculate Delivery Charge
@@ -379,6 +424,29 @@ export async function POST(req: NextRequest) {
     if (session) {
       await session.abortTransaction();
     }
+
+    // Manual Rollback Fallback (Crucial for non-replica set MongoDB)
+    if (successfulDeductions.length > 0) {
+      console.log('Attempting manual stock restoration for failed order...');
+      for (const ded of successfulDeductions) {
+        try {
+          if (ded.variantId) {
+            await Product.updateOne(
+              { _id: ded.productId, "variants._id": ded.variantId },
+              { $inc: { "variants.$.stock": ded.quantity } }
+            );
+          } else {
+            await Product.updateOne(
+              { _id: ded.productId },
+              { $inc: { stock: ded.quantity } }
+            );
+          }
+        } catch (rollbackErr) {
+          console.error('Critical: Manual rollback failed for product:', ded.productId, rollbackErr);
+        }
+      }
+    }
+
     console.error('Error creating order (Combo Discount):', error);
     const isClientError = error instanceof StockError;
     return NextResponse.json({ 

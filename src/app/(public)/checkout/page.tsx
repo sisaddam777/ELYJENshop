@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { addToCart, removeFromCart, clearCart } from '@/store/slices/cartSlice';
+import { addToCart, removeFromCart, clearCart, syncItems } from '@/store/slices/cartSlice';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -107,17 +107,16 @@ export default function CheckoutPage() {
   const availableThanas = selectedDistrict ? bdLocations[selectedDistrict] : [];
 
   useEffect(() => {
-    async function fetchLoyaltyData() {
+    async function fetchLoyaltyAndSyncCart() {
       try {
         const [profileRes, settingsRes] = await Promise.all([
           fetch('/api/user/profile'),
           fetch('/api/settings')
         ]);
+        
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setProfile(profileData);
-          
-          // Pre-fill form if user is logged in
           if (profileData) {
             form.reset({
               fullName: profileData.name || '',
@@ -132,11 +131,29 @@ export default function CheckoutPage() {
           }
         }
         if (settingsRes.ok) setSettings(await settingsRes.json());
+
+        // --- CART SYNC LOGIC ---
+        // Verify all items in cart still exist and have correct variants
+        if (items.length > 0) {
+          const syncRes = await fetch('/api/cart/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, color: i.color, size: i.size })) })
+          });
+          
+          if (syncRes.ok) {
+            const { validItems, removedCount } = await syncRes.json();
+            if (removedCount > 0) {
+              dispatch(syncItems(validItems));
+              toast.info(`${removedCount} stale items removed from your cart`);
+            }
+          }
+        }
       } catch (error) {
-        console.error('Failed to fetch loyalty data');
+        console.error('Failed to fetch initial data or sync cart');
       }
     }
-    fetchLoyaltyData();
+    fetchLoyaltyAndSyncCart();
   }, [form]);
 
   const hasTrackedInitiate = useRef(false);
@@ -385,7 +402,7 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="max-h-[500px] overflow-y-auto space-y-4 pr-2 -mr-2">
                 {items.map((item, index) => (
-                  <div key={item.productId ? `${item.productId}-${item.color ?? ''}-${item.size ?? ''}` : index} className="flex gap-4 items-start relative group">
+                  <div key={`${item.productId}-${item.color || 'no-color'}-${item.size || 'no-size'}-${index}`} className="flex gap-4 items-start relative group">
                     <div className="h-16 w-16 rounded-md border bg-muted flex-shrink-0 relative overflow-hidden">
                       {item.image && <img src={item.image} alt={item.name || 'Product'} className="h-full w-full object-cover" />}
                     </div>
