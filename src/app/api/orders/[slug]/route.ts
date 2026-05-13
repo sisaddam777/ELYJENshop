@@ -135,7 +135,10 @@ export async function PATCH(
       if (isOrderSuccessful && !order.isRewarded && order.user) {
         const user = await User.findOne({ _id: order.user, domain }).session(dbSession);
         const settings = await GlobalSettings.findOne({ domain }).session(dbSession);
-        const subConfig = settings?.subscriptionConfig || { activationThreshold: 5000, rewardPercentage: 5 };
+        const subConfig = {
+          activationThreshold: settings?.subscriptionConfig?.activationThreshold ?? 5000,
+          rewardPercentage: settings?.subscriptionConfig?.rewardPercentage ?? 5
+        };
 
         if (user) {
           if (!user.isSubscriptionActive && order.totalAmount >= subConfig.activationThreshold) {

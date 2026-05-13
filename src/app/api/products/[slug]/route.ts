@@ -131,7 +131,7 @@ export async function PUT(
             return NextResponse.json({ message: 'Product not found' }, { status: 404 });
           }
 
-          revalidateTag(CACHE_TAGS.products, 'max');
+          revalidateTag(CACHE_TAGS.products);
           revalidatePath('/');
           return NextResponse.json(updatedProduct);
         } catch (error: any) {

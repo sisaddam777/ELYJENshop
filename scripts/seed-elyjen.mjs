@@ -21,8 +21,8 @@ function loadEnvFile() {
 async function seed() {
   loadEnvFile();
   const mongoUri = process.env.MONGODB_URI;
-  const domain = "elyjen.shop"; 
-  
+  const domain = "elyjen.shop";
+
   if (!mongoUri) throw new Error("MONGODB_URI is missing in .env.local");
 
   console.log("Connecting to MongoDB...");
@@ -89,7 +89,7 @@ async function seed() {
   }));
 
   const catResult = await categoriesCollection.insertMany(categoryDocs);
-  const catMap = {}; 
+  const catMap = {};
   Object.keys(catResult.insertedIds).forEach((index) => {
     catMap[CATEGORIES[index].slug] = catResult.insertedIds[index];
   });

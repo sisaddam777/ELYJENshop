@@ -94,7 +94,10 @@ export async function POST(req: NextRequest) {
 
     // Fetch Settings for the current domain
     const settings = await GlobalSettings.findOne({ domain });
-    const subConfig = settings?.subscriptionConfig || { activationThreshold: 5000, rewardPercentage: 5 };
+    const subConfig = {
+      activationThreshold: settings?.subscriptionConfig?.activationThreshold ?? 5000,
+      rewardPercentage: settings?.subscriptionConfig?.rewardPercentage ?? 5
+    };
 
     session = await conn.startSession();
     if (!session) {
@@ -445,7 +448,7 @@ export async function POST(req: NextRequest) {
     // Revalidate products cache to reflect new stock levels across the site
     try {
       const { revalidateTag } = await import('next/cache');
-      revalidateTag(CACHE_TAGS.products, 'max');
+      revalidateTag(CACHE_TAGS.products);
     } catch (e) {
       console.error('Failed to revalidate products cache:', e);
     }
