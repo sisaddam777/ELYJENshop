@@ -7,6 +7,7 @@ import Product from '@/models/Product';
 import { auth } from '@/auth';
 import { generateUniqueSlug } from '@/lib/slugify-server';
 import { getTenantDomain } from '@/lib/tenant';
+import { CACHE_TAGS } from '@/lib/data-fetching';
 
 // GET a single product
 export async function GET(
@@ -130,7 +131,7 @@ export async function PUT(
             return NextResponse.json({ message: 'Product not found' }, { status: 404 });
           }
 
-          revalidateTag('products', 'max');
+          revalidateTag(CACHE_TAGS.products, 'max');
           revalidatePath('/');
           return NextResponse.json(updatedProduct);
         } catch (error: any) {
@@ -198,7 +199,7 @@ export async function DELETE(
     }
 
     try {
-      await revalidateTag('products', 'max');
+      await revalidateTag(CACHE_TAGS.products, 'max');
     } catch (revalidateError) {
       console.error('Failed to revalidate product tags:', revalidateError);
     }

@@ -13,6 +13,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
 import { getTenantDomain } from '@/lib/tenant';
+import { CACHE_TAGS } from '@/lib/data-fetching';
 
 class StockError extends Error {
   constructor(message: string) {
@@ -75,9 +76,9 @@ export async function POST(req: NextRequest) {
     const validation = orderSchema.safeParse(body);
     if (!validation.success) {
       console.error('Order Validation Error:', validation.error.flatten().fieldErrors);
-      return NextResponse.json({ 
-        message: 'Validation failed', 
-        errors: validation.error.flatten().fieldErrors 
+      return NextResponse.json({
+        message: 'Validation failed',
+        errors: validation.error.flatten().fieldErrors
       }, { status: 400 });
     }
 
@@ -90,14 +91,14 @@ export async function POST(req: NextRequest) {
     }
 
     const conn = await connectToDatabase();
-    
+
     // Fetch Settings for the current domain
     const settings = await GlobalSettings.findOne({ domain });
     const subConfig = settings?.subscriptionConfig || { activationThreshold: 5000, rewardPercentage: 5 };
 
     session = await conn.startSession();
     if (!session) {
-        throw new Error('Failed to start database session');
+      throw new Error('Failed to start database session');
     }
     session.startTransaction();
 
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Guest Checkout: Find or Create User by Email within the current domain
       user = await User.findOne({ email: shippingAddress.email.toLowerCase(), domain }).session(session);
-      
+
       if (user) {
         // If user exists but lacks phone or address, update it
         let needsUpdate = false;
@@ -154,43 +155,52 @@ export async function POST(req: NextRequest) {
     const validatedItems: IOrderItem[] = [];
 
     try {
-      // 2a. Pre-check loop (ensure all items exist and have stock before any deductions)
+      // 2a. Group items by product/variant to avoid duplicate checks failing during deduction
+      const groupedItems: Record<string, any> = {};
       for (const item of items) {
+        const key = `${item.product}-${String(item.color || '').trim()}-${String(item.size || '').trim()}`;
+        if (groupedItems[key]) {
+          groupedItems[key].quantity += item.quantity;
+        } else {
+          groupedItems[key] = { ...item };
+        }
+      }
+
+      const uniqueItems = Object.values(groupedItems);
+
+      // 2b. Pre-check loop (ensure all items exist and have combined stock before any deductions)
+      for (const item of uniqueItems) {
         const product = await Product.findOne({ _id: item.product, domain, isPublished: true }).session(session);
         if (!product) {
           throw new StockError(`Product not found: ${item.name}`);
         }
 
         if (item.color || item.size) {
-          const variant = product.variants?.find((v: any) => 
+          const variant = product.variants?.find((v: any) =>
             String(v.color || '').trim() === String(item.color || '').trim() &&
             String(v.size || '').trim() === String(item.size || '').trim()
           );
-          if (!variant || variant.stock < item.quantity) {
+          if (!variant || (variant.stock || 0) < item.quantity) {
             const variantDesc = [item.color, item.size].filter(Boolean).join(' / ');
-            console.error('Stock Check Failed:', {
-              productName: product.name,
-              requestedVariant: { color: item.color, size: item.size },
-              foundVariant: variant,
-              availableVariants: product.variants?.map((v: any) => ({ color: v.color, size: v.size, stock: v.stock }))
-            });
             throw new StockError(`Insufficient stock for ${product.name}${variantDesc ? ` (${variantDesc})` : ''}. Available: ${variant?.stock || 0}`);
           }
         } else {
-          if (product.stock < item.quantity) {
-            throw new StockError(`Insufficient stock for ${product.name}. Available: ${product.stock}`);
+          if ((product.stock || 0) < item.quantity) {
+            throw new StockError(`Insufficient stock for ${product.name}. Available: ${product.stock || 0}`);
           }
         }
       }
 
-      // 2b. Atomic Stock Deduction and Price Verification
-      for (const item of items) {
+      // 2c. Atomic Stock Deduction and Price Verification
+      // We process the ORIGINAL items list for order record, but use uniqueItems for stock logic
+      // Actually, it's safer to deduct from uniqueItems to ensure atomicity for the group
+      for (const item of uniqueItems) {
         let product;
         const hasVariant = !!(item.color || item.size);
 
         if (hasVariant) {
-          const variantQuery: any = { 
-            _id: item.product, 
+          const variantQuery: any = {
+            _id: item.product,
             domain,
             isPublished: true,
             variants: {
@@ -201,7 +211,7 @@ export async function POST(req: NextRequest) {
               }
             }
           };
-          
+
           product = await Product.findOneAndUpdate(
             variantQuery,
             { $inc: { "variants.$.stock": -item.quantity } },
@@ -209,32 +219,32 @@ export async function POST(req: NextRequest) {
           );
 
           if (product) {
-            const variant = product.variants?.find((v: any) => 
+            const variant = product.variants?.find((v: any) =>
               String(v.color || '').trim() === String(item.color || '').trim() &&
               String(v.size || '').trim() === String(item.size || '').trim()
             );
-            successfulDeductions.push({ 
-              productId: product._id.toString(), 
-              quantity: item.quantity, 
-              variantId: (variant as any)?._id?.toString() 
+            successfulDeductions.push({
+              productId: product._id.toString(),
+              quantity: item.quantity,
+              variantId: (variant as any)?._id?.toString()
             });
           }
         } else {
           product = await Product.findOneAndUpdate(
-            { 
-              _id: item.product, 
+            {
+              _id: item.product,
               domain,
               stock: { $gte: item.quantity },
-              isPublished: true 
+              isPublished: true
             },
             { $inc: { stock: -item.quantity } },
             { session, new: true }
           );
 
           if (product) {
-            successfulDeductions.push({ 
-              productId: product._id.toString(), 
-              quantity: item.quantity 
+            successfulDeductions.push({
+              productId: product._id.toString(),
+              quantity: item.quantity
             });
           }
         }
@@ -242,12 +252,19 @@ export async function POST(req: NextRequest) {
         if (!product) {
           throw new StockError(`Stock deduction failed unexpectedly for ${item.name}. Please try again.`);
         }
+      }
 
-        // Determine Price (Server-side source of truth)
+      // 2d. Price Verification and Validated Items List (using ORIGINAL items for order structure)
+      for (const item of items) {
+        const product = await Product.findOne({ _id: item.product, domain }).session(session);
+        if (!product) throw new Error('Product not found during price verification');
+
+        const hasVariant = !!(item.color || item.size);
         let itemPrice = product.salePrice ?? product.price;
         let itemPurchasePrice = product.purchasePrice ?? 0;
+
         if (hasVariant) {
-          const variant = product.variants?.find((v: any) => 
+          const variant = product.variants?.find((v: any) =>
             String(v.color || '').trim() === String(item.color || '').trim() &&
             String(v.size || '').trim() === String(item.size || '').trim()
           );
@@ -257,8 +274,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const lineTotal = itemPrice * item.quantity;
-        serverComputedTotal += lineTotal;
+        serverComputedTotal += itemPrice * item.quantity;
 
         validatedItems.push({
           product: product._id,
@@ -272,7 +288,6 @@ export async function POST(req: NextRequest) {
         });
       }
     } catch (err: any) {
-      // If any item fails during deduction loop, we throw and trigger rollback
       throw err;
     }
 
@@ -281,28 +296,28 @@ export async function POST(req: NextRequest) {
     const state = shippingAddress.state.toLowerCase();
     const division = shippingAddress.division.toLowerCase();
 
-    const isDhaka = 
+    const isDhaka =
       (city.includes('dhaka') || state.includes('dhaka') || division.includes('dhaka')) &&
       !city.includes('outside'); // Explicitly exclude "Outside Dhaka"
-    
+
     const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
     const isFreeDelivery = freeDeliveryThreshold > 0 && serverComputedTotal >= freeDeliveryThreshold;
-    
+
     const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka || 60;
     const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka || 120;
-    
+
     const serverComputedDeliveryCharge = isFreeDelivery ? 0 : (isDhaka ? chargeInsideDhaka : chargeOutsideDhaka);
 
     // 4. Verify Delivery Charge (if provided by client)
     if (clientProvidedDeliveryCharge !== undefined && clientProvidedDeliveryCharge !== null && clientProvidedDeliveryCharge !== serverComputedDeliveryCharge) {
-      console.warn('Delivery Charge Mismatch:', { 
-        client: clientProvidedDeliveryCharge, 
+      console.warn('Delivery Charge Mismatch:', {
+        client: clientProvidedDeliveryCharge,
         server: serverComputedDeliveryCharge,
         city: shippingAddress.city,
         state: shippingAddress.state
       });
       if (session) await session.abortTransaction();
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'Delivery charge mismatch. Please refresh your cart.',
         serverCharge: serverComputedDeliveryCharge
       }, { status: 400 });
@@ -319,8 +334,8 @@ export async function POST(req: NextRequest) {
     // --- A. Coupon Logic ---
     if (couponCode) {
       const coupon = await Coupon.findOneAndUpdate(
-        { 
-          code: couponCode.toUpperCase(), 
+        {
+          code: couponCode.toUpperCase(),
           domain, // Filter by domain
           isActive: true,
           expiryDate: { $gt: new Date() },
@@ -337,8 +352,8 @@ export async function POST(req: NextRequest) {
       if (!coupon) {
         console.warn('Invalid or Expired Coupon:', { couponCode, baseTotal });
         if (session) await session.abortTransaction();
-        return NextResponse.json({ 
-          message: 'Invalid, expired, or minimum purchase not met for this coupon code.' 
+        return NextResponse.json({
+          message: 'Invalid, expired, or minimum purchase not met for this coupon code.'
         }, { status: 400 });
       }
 
@@ -370,7 +385,7 @@ export async function POST(req: NextRequest) {
           description: `Used tokens for order payment`,
           domain, // Add domain to transaction
         }], { session });
-        
+
         walletTxId = walletTx._id.toString();
       }
 
@@ -384,7 +399,7 @@ export async function POST(req: NextRequest) {
           user.isSubscriptionActive = true;
           await user.save({ session });
         }
-        
+
         // Calculate reward on the remaining amount paid
         const payableAmount = totalAfterCoupon - walletAmountUsed;
         earnedRewardAmount = Math.floor(payableAmount * (subConfig.rewardPercentage / 100));
@@ -426,6 +441,15 @@ export async function POST(req: NextRequest) {
     }
 
     await session.commitTransaction();
+
+    // Revalidate products cache to reflect new stock levels across the site
+    try {
+      const { revalidateTag } = await import('next/cache');
+      revalidateTag(CACHE_TAGS.products, 'max');
+    } catch (e) {
+      console.error('Failed to revalidate products cache:', e);
+    }
+
     return NextResponse.json(newOrder, { status: 201 });
 
   } catch (error: any) {
@@ -457,8 +481,8 @@ export async function POST(req: NextRequest) {
 
     console.error('Error creating order (Combo Discount):', error);
     const isClientError = error instanceof StockError;
-    return NextResponse.json({ 
-        message: isClientError ? error.message : 'Internal Server Error' 
+    return NextResponse.json({
+      message: isClientError ? error.message : 'Internal Server Error'
     }, { status: isClientError ? 400 : 500 });
   } finally {
     if (session) {

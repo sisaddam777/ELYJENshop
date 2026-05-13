@@ -634,16 +634,30 @@ export default function OrdersPage() {
                     />
                   </TableCell>
                   <TableCell>
-                    <button
-                      type="button"
-                      className="flex flex-col cursor-pointer text-left hover:opacity-80 transition-opacity"
-                      onClick={() => openDetails(order._id)}
-                    >
-                      <span className="font-bold text-primary hover:underline">#{order._id.slice(-8).toUpperCase()}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase">
-                        {order.createdAt ? format(new Date(order.createdAt), 'MMM dd, p') : 'N/A'}
-                      </span>
-                    </button>
+                    <div className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        className="flex flex-col cursor-pointer text-left hover:opacity-80 transition-opacity"
+                        onClick={() => openDetails(order._id)}
+                      >
+                        <span className="font-bold text-primary hover:underline">#{order._id.slice(-8).toUpperCase()}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase">
+                          {order.createdAt ? format(new Date(order.createdAt), 'MMM dd, p') : 'N/A'}
+                        </span>
+                      </button>
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {order.items?.map((item: any, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-[9px] px-1 py-0 font-normal truncate max-w-[180px]">
+                            {item.quantity}× {item.name}
+                            {(item.color || item.size) && (
+                              <span className="text-muted-foreground ml-1">
+                                ({[item.color, item.size].filter(Boolean).join('/')})
+                              </span>
+                            )}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col text-xs">

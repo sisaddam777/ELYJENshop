@@ -83,10 +83,10 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     [product.variants]
   );
 
-  // Hierarchical filtering
+  // Hierarchical filtering (only show sizes that have stock for selected color)
   const availableSizes = useMemo(() =>
     (product.variants || [])
-      .filter((v: any) => !selectedColor || v.color === selectedColor)
+      .filter((v: any) => (!selectedColor || v.color === selectedColor) && (v.stock || 0) > 0)
       .map((v: any) => v.size)
       .filter(Boolean) as string[],
     [product.variants, selectedColor]
@@ -199,10 +199,24 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   const displayPrice = activeVariant?.price || product.price;
   const displaySalePrice = activeVariant?.salePrice || product.salePrice;
   const hasVariants = (uniqueColors.length > 0 || uniqueSizes.length > 0);
-  const displayStock = activeVariant 
-    ? (activeVariant.stock ?? 0) 
-    : (hasVariants ? 0 : (product.stock ?? 0));
+  
+  // Strict stock calculation: If product has variants, stock MUST come from the active variant.
+  // We only fallback to product.stock if the product truly has no variants at all.
+  const displayStock = hasVariants 
+    ? (activeVariant ? (activeVariant.stock ?? 0) : 0)
+    : (product.stock ?? 0);
+    
   const displaySku = activeVariant?.sku || product.sku;
+
+  // Debug log for troubleshooting stock discrepancies
+  useEffect(() => {
+    if (selectedSize || selectedColor) {
+      console.log('--- Variant Stock Debug ---');
+      console.log('Selected:', { color: selectedColor, size: selectedSize });
+      console.log('Active Variant:', activeVariant);
+      console.log('Computed displayStock:', displayStock);
+    }
+  }, [selectedColor, selectedSize, activeVariant, displayStock]);
   const handleAddToCart = () => {
     if (uniqueColors.length > 0 && !selectedColor) {
       toast.error('Please select a color');
@@ -533,9 +547,9 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <p className={`text-xs font-bold ${displayStock > 0 ? 'text-green-600' : 'text-destructive'}`}>
+            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${displayStock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
               {displayStock > 0 ? `In stock (${displayStock} units)` : 'Out of stock'}
-            </p>
+            </span>
             {displaySku && (
               <span className="text-xs text-muted-foreground">| SKU: {displaySku}</span>
             )}
@@ -556,24 +570,26 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                   <span className="text-sm text-primary font-medium">{selectedColor}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {uniqueColors.map((colorName, i) => {
-                    // Find first variant for this color to get thumbnail
-                    const colorVariant = product.variants?.find((v: any) => v.color === colorName);
+                  {uniqueColors.map((color) => {
+                    const isOutOfStock = product.variants
+                      ?.filter((v: any) => v.color === color)
+                      .every((v: any) => (v.stock || 0) <= 0);
+
                     return (
                       <button
-                        key={i}
-                        onClick={() => setSelectedColor(colorName)}
-                        className={`relative flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all hover:scale-105 active:scale-95 ${selectedColor === colorName
-                          ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
-                          : 'border-muted hover:border-primary/30'
-                          }`}
+                        key={color}
+                        disabled={isOutOfStock}
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-4 py-2 text-xs font-bold transition-all border ${
+                          selectedColor === color
+                            ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                            : isOutOfStock
+                            ? 'bg-muted/30 border-dashed text-muted-foreground/50 cursor-not-allowed'
+                            : 'border-muted-foreground/20 text-muted-foreground hover:border-primary/50'
+                        }`}
                       >
-                        {colorVariant?.image && (
-                          <div className="h-8 w-8 rounded-full overflow-hidden border bg-background">
-                            <img src={colorVariant.image} alt="" className="h-full w-full object-cover" />
-                          </div>
-                        )}
-                        <span className="text-xs font-bold">{colorName}</span>
+                        {color}
+                        {isOutOfStock && <span className="block text-[8px] mt-0.5 opacity-50">Sold Out</span>}
                       </button>
                     );
                   })}
@@ -596,12 +612,15 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                         key={i}
                         disabled={!isAvailable}
                         onClick={() => setSelectedSize(sizeName)}
-                        className={`min-w-[48px] h-12 flex items-center justify-center rounded-xl border-2 font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:grayscale disabled:scale-100 ${selectedSize === sizeName
+                        className={`min-w-[48px] h-12 flex flex-col items-center justify-center rounded-xl border-2 font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed ${selectedSize === sizeName
                           ? 'border-primary bg-primary/5 ring-4 ring-primary/10 text-primary'
-                          : 'border-muted hover:border-primary/30 text-muted-foreground'
+                          : isAvailable 
+                            ? 'border-muted hover:border-primary/30 text-muted-foreground'
+                            : 'border-muted/50 border-dashed text-muted-foreground/30'
                           }`}
                       >
-                        {sizeName}
+                        <span className="text-sm">{sizeName}</span>
+                        {!isAvailable && <span className="text-[8px] font-black uppercase text-destructive mt-[-2px]">Out</span>}
                       </button>
                     );
                   })}

@@ -122,19 +122,44 @@ export default function CheckoutPage() {
         if (settingsRes.ok) setSettings(await settingsRes.json());
 
         // --- CART SYNC LOGIC ---
-        // Verify all items in cart still exist and have correct variants
+        // Verify all items in cart still exist, have correct variants, and have sufficient stock
         if (items.length > 0) {
+          // Group items by product/variant for accurate stock check
+          const groupedForSync: Record<string, any> = {};
+          items.forEach(item => {
+            const key = `${item.productId}-${String(item.color || '').trim()}-${String(item.size || '').trim()}`;
+            if (groupedForSync[key]) {
+              groupedForSync[key].quantity += item.quantity;
+            } else {
+              groupedForSync[key] = { 
+                productId: item.productId, 
+                color: item.color, 
+                size: item.size, 
+                quantity: item.quantity 
+              };
+            }
+          });
+
           const syncRes = await fetch('/api/cart/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, color: i.color, size: i.size })) })
+            body: JSON.stringify({ items: Object.values(groupedForSync) })
           });
           
           if (syncRes.ok) {
-            const { validItems, removedCount } = await syncRes.json();
+            const { validItems, removedCount, hasInsufficientStock } = await syncRes.json();
+            
+            // If items were removed (product/variant no longer exists)
             if (removedCount > 0) {
               dispatch(syncItems(validItems));
-              toast.info(`${removedCount} stale items removed from your cart`);
+              toast.info(`${removedCount} items are no longer available and were removed`);
+            }
+
+            // If stock is insufficient, we'll store this state locally to show warnings
+            setSyncData({ validItems, hasInsufficientStock });
+            
+            if (hasInsufficientStock) {
+              toast.error('Some items in your cart have insufficient stock. Please adjust quantities.');
             }
           } else {
              console.error('Cart sync failed:', await syncRes.text());
@@ -146,6 +171,48 @@ export default function CheckoutPage() {
     }
     fetchLoyaltyAndSyncCart();
   }, [form, isHydrated, items.length, dispatch]);
+
+  // Re-sync cart stock when items change (including quantity)
+  useEffect(() => {
+    if (!isHydrated || items.length === 0) return;
+    
+    const syncCartStock = async () => {
+      try {
+        const groupedForSync: Record<string, any> = {};
+        items.forEach(item => {
+          const key = `${item.productId}-${String(item.color || '').trim()}-${String(item.size || '').trim()}`;
+          if (groupedForSync[key]) {
+            groupedForSync[key].quantity += item.quantity;
+          } else {
+            groupedForSync[key] = { 
+              productId: item.productId, 
+              color: item.color, 
+              size: item.size, 
+              quantity: item.quantity 
+            };
+          }
+        });
+
+        const syncRes = await fetch('/api/cart/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: Object.values(groupedForSync) })
+        });
+        
+        if (syncRes.ok) {
+          const data = await syncRes.json();
+          setSyncData({ validItems: data.validItems, hasInsufficientStock: data.hasInsufficientStock });
+        }
+      } catch (error) {
+        console.error('Auto-sync failed:', error);
+      }
+    };
+
+    const timer = setTimeout(syncCartStock, 500); // Debounce sync
+    return () => clearTimeout(timer);
+  }, [items, isHydrated]);
+
+  const [syncData, setSyncData] = useState<any>(null);
 
   const hasTrackedInitiate = useRef(false);
   // Track InitiateCheckout
@@ -398,7 +465,14 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex justify-between items-start gap-2">
-                        <p className="text-sm font-bold truncate pr-4">{item.name}</p>
+                        <div className="flex flex-col pr-4">
+                          <p className="text-sm font-bold truncate">{item.name}</p>
+                          {(item.color || item.size) && (
+                            <p className="text-[10px] text-muted-foreground font-medium">
+                              {[item.color, item.size].filter(Boolean).join(' / ')}
+                            </p>
+                          )}
+                        </div>
                         <button 
                           onClick={() => {
                             dispatch(removeFromCart({ productId: item.productId, color: item.color, size: item.size }));
@@ -431,7 +505,24 @@ export default function CheckoutPage() {
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
-                        <p className="text-sm font-bold text-primary">৳{Math.round(item.price * item.quantity)}</p>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-primary">৳{Math.round(item.price * item.quantity)}</p>
+                          {syncData?.validItems?.find((v: any) => 
+                            v.productId === item.productId && 
+                            v.color === item.color && 
+                            v.size === item.size
+                          )?.isInsufficient && (
+                            <p className="text-[9px] text-destructive font-black animate-pulse mt-1">
+                              INSUFFICIENT STOCK (Available: {
+                                syncData.validItems.find((v: any) => 
+                                  v.productId === item.productId && 
+                                  v.color === item.color && 
+                                  v.size === item.size
+                                ).availableStock
+                              })
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -766,14 +857,14 @@ export default function CheckoutPage() {
                   <Button 
                     type="submit"
                     className={`w-full h-14 rounded-full font-black uppercase tracking-widest text-sm transition-all ${
-                      isFormValid 
+                      isFormValid && !syncData?.hasInsufficientStock
                       ? 'bg-primary shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95' 
                       : 'bg-muted text-muted-foreground cursor-not-allowed opacity-70'
                     }`}
-                    disabled={loading || !isFormValid}
+                    disabled={loading || !isFormValid || syncData?.hasInsufficientStock}
                   >
                     {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
-                    Place Order Now
+                    {syncData?.hasInsufficientStock ? 'Insufficient Stock' : 'Place Order Now'}
                   </Button>
                   {!isFormValid && (
                     <p className="text-[10px] font-bold text-muted-foreground text-center w-full uppercase tracking-widest">

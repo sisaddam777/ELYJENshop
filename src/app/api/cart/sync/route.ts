@@ -28,7 +28,10 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      // If item has variant details, check if they still exist
+      // If item has variant details, check if they still exist and check stock
+      let availableStock = product.stock || 0;
+      let variantId = undefined;
+
       if (item.color || item.size) {
         const variant = product.variants?.find((v: any) => 
           String(v.color || '').trim() === String(item.color || '').trim() &&
@@ -39,14 +42,22 @@ export async function POST(req: NextRequest) {
           removedCount++;
           continue;
         }
+        availableStock = variant.stock || 0;
+        variantId = variant._id;
       }
 
-      validItems.push(item);
+      validItems.push({
+        ...item,
+        availableStock,
+        isInsufficient: availableStock < item.quantity,
+        variantId
+      });
     }
 
     return NextResponse.json({ 
       validItems, 
-      removedCount 
+      removedCount,
+      hasInsufficientStock: validItems.some(i => i.isInsufficient)
     });
 
   } catch (error) {
