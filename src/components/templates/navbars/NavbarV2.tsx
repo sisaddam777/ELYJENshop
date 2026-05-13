@@ -195,7 +195,11 @@ export default function NavbarV2() {
                 <li>
                   <Link 
                     href={item.href} 
-                    className={`text-xs font-bold uppercase tracking-widest relative group transition-colors ${pathname === item.href ? 'text-primary' : ( (!isHomePage || isScrolled) ? 'text-foreground/70 hover:text-primary' : 'text-white/80 hover:text-white')}`}
+                    className={`text-xs font-bold uppercase tracking-widest relative group transition-colors ${
+                      (!isHomePage || isScrolled) 
+                        ? (pathname === item.href ? 'text-foreground' : 'text-foreground/70 hover:text-primary') 
+                        : (pathname === item.href ? 'text-white' : 'text-white/80 hover:text-white')
+                    }`}
                   >
                     {item.label}
                     <span className={`absolute -bottom-1 left-0 h-[2px] bg-primary transition-all duration-300 ${pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
