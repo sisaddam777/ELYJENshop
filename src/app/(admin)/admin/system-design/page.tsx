@@ -228,6 +228,11 @@ export default function SuperConfigPage() {
                 </div>
                 <div>
                   <CardTitle className="text-xl md:text-2xl font-bold leading-tight">Brand Identity & Typography</CardTitle>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 md:p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Logo Font */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
