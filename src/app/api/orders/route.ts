@@ -448,7 +448,7 @@ export async function POST(req: NextRequest) {
     // Revalidate products cache to reflect new stock levels across the site
     try {
       const { revalidateTag } = await import('next/cache');
-      revalidateTag(CACHE_TAGS.products);
+      revalidateTag(CACHE_TAGS.products, 'max');
     } catch (e) {
       console.error('Failed to revalidate products cache:', e);
     }
