@@ -288,7 +288,10 @@ export default function OrdersPage() {
     const rows = ordersToExport.map(o => {
       const shipping = o.shippingAddress || {};
       const fullAddress = `${shipping.street || ''}, ${shipping.city || ''}`;
-      const itemsList = o.items.map((i: any) => `• ${i.quantity} x ${i.name} (@৳${i.price})`).join('\n');
+      const itemsList = o.items.map((i: any) => {
+        const variantDesc = [i.color, i.size].filter(Boolean).join('/');
+        return `• ${i.quantity} x ${i.name}${variantDesc ? ` [${variantDesc}]` : ''} (@৳${i.price})`;
+      }).join('\n');
 
       // Profit Calculation: Total - COGS - DeliveryCharge
       const totalPurchaseCost = o.items.reduce((acc: number, i: any) => acc + ((i.purchasePrice || 0) * i.quantity), 0);

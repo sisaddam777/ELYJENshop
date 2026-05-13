@@ -228,48 +228,6 @@ export default function SuperConfigPage() {
                 </div>
                 <div>
                   <CardTitle className="text-xl md:text-2xl font-bold leading-tight">Brand Identity & Typography</CardTitle>
-                  <CardDescription className="text-orange-100 text-xs md:text-sm">Configure your brand name, logo and fonts</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-5 md:p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Brand Name */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-orange-500" />
-                    Brand Name
-                  </Label>
-                  <input 
-                    type="text"
-                    value={settings?.brandName || ''}
-                    onChange={(e) => updateGeneralSetting('brandName', e.target.value)}
-                    className="w-full h-12 px-4 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-500 focus:ring-0 transition-all outline-none"
-                    placeholder="Enter brand name"
-                  />
-                </div>
-
-                {/* Logo Upload */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <Monitor className="w-4 h-4 text-orange-500" />
-                    Store Logo
-                  </Label>
-                  <div className="flex items-center gap-4">
-                    {settings?.logoUrl && (
-                      <div className="h-12 w-12 rounded-xl border bg-white p-1 flex items-center justify-center overflow-hidden shrink-0">
-                        <img src={settings.logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <ImageUpload 
-                        onUpload={(url) => updateGeneralSetting('logoUrl', url)} 
-                        className="h-12 rounded-xl border-2 border-dashed border-gray-200 hover:border-orange-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-                </div>
-
                 {/* Logo Font */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">

@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
       // If item has variant details, check if they still exist
       if (item.color || item.size) {
         const variant = product.variants?.find((v: any) => 
-          (v.color || undefined) === (item.color || undefined) &&
-          (v.size || undefined) === (item.size || undefined)
+          String(v.color || '').trim() === String(item.color || '').trim() &&
+          String(v.size || '').trim() === String(item.size || '').trim()
         );
         
         if (!variant) {

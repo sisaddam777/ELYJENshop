@@ -77,7 +77,7 @@ export async function generateInvoicePDF(order: any, settings: any) {
   const items = Array.isArray(order.items) ? order.items : [];
   const tableRows = items.map((item: any, index: number) => [
     index + 1,
-    item.name,
+    `${item.name}${item.color || item.size ? `\n(${[item.color, item.size].filter(Boolean).join(' / ')})` : ''}`,
     item.quantity,
     `\u09f3 ${Math.round(item.price)}`,
     `\u09f3 ${Math.round(item.price * item.quantity)}`,

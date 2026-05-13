@@ -267,24 +267,37 @@ export default function SettingsPage() {
                     name="brandName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Brand Name</FormLabel>
+                        <FormLabel className="text-sm font-semibold text-gray-700">Brand Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="ELYJEN" {...field} className="h-12 rounded-xl" />
+                          <Input placeholder="ELYJEN" {...field} className="h-12 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-primary transition-all" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="logoUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Logo URL / Image</FormLabel>
-                        <FormControl>
-                          <Input placeholder="/logo.png" {...field} className="h-12 rounded-xl" />
-                        </FormControl>
-                        <FormDescription>Path to your logo image (e.g. /logo.png)</FormDescription>
+                        <FormLabel className="text-sm font-semibold text-gray-700">Store Logo</FormLabel>
+                        <div className="flex items-center gap-4">
+                          {field.value && (
+                            <div className="h-12 w-12 rounded-xl border bg-white p-1 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                              <img src={field.value} alt="Logo" className="max-h-full max-w-full object-contain" />
+                            </div>
+                          )}
+                          <FormControl>
+                            <div className="flex-1">
+                              <ImageUpload 
+                                onUpload={(url) => field.onChange(url)} 
+                                className="h-12 rounded-xl border-2 border-dashed border-gray-200 hover:border-primary transition-colors bg-gray-50/50"
+                              />
+                            </div>
+                          </FormControl>
+                        </div>
+                        <FormDescription>Upload your store logo (PNG, JPG, or WEBP)</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

@@ -163,11 +163,17 @@ export async function POST(req: NextRequest) {
 
         if (item.color || item.size) {
           const variant = product.variants?.find((v: any) => 
-            (v.color || undefined) === (item.color || undefined) &&
-            (v.size || undefined) === (item.size || undefined)
+            String(v.color || '').trim() === String(item.color || '').trim() &&
+            String(v.size || '').trim() === String(item.size || '').trim()
           );
           if (!variant || variant.stock < item.quantity) {
             const variantDesc = [item.color, item.size].filter(Boolean).join(' / ');
+            console.error('Stock Check Failed:', {
+              productName: product.name,
+              requestedVariant: { color: item.color, size: item.size },
+              foundVariant: variant,
+              availableVariants: product.variants?.map((v: any) => ({ color: v.color, size: v.size, stock: v.stock }))
+            });
             throw new StockError(`Insufficient stock for ${product.name}${variantDesc ? ` (${variantDesc})` : ''}. Available: ${variant?.stock || 0}`);
           }
         } else {
@@ -204,8 +210,8 @@ export async function POST(req: NextRequest) {
 
           if (product) {
             const variant = product.variants?.find((v: any) => 
-              (v.color || undefined) === (item.color || undefined) &&
-              (v.size || undefined) === (item.size || undefined)
+              String(v.color || '').trim() === String(item.color || '').trim() &&
+              String(v.size || '').trim() === String(item.size || '').trim()
             );
             successfulDeductions.push({ 
               productId: product._id.toString(), 
@@ -242,8 +248,8 @@ export async function POST(req: NextRequest) {
         let itemPurchasePrice = product.purchasePrice ?? 0;
         if (hasVariant) {
           const variant = product.variants?.find((v: any) => 
-            (v.color || undefined) === (item.color || undefined) &&
-            (v.size || undefined) === (item.size || undefined)
+            String(v.color || '').trim() === String(item.color || '').trim() &&
+            String(v.size || '').trim() === String(item.size || '').trim()
           );
           if (variant) {
             itemPrice = (variant.salePrice ?? variant.price) ?? (product.salePrice ?? product.price);

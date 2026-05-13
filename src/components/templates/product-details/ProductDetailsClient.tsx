@@ -95,8 +95,8 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   const activeVariant = useMemo(() =>
     (product.variants || []).find(
       (v: any) =>
-        (v.color || null) === (selectedColor || null) &&
-        (v.size || null) === (selectedSize || null)
+        String(v.color || '').trim() === String(selectedColor || '').trim() &&
+        String(v.size || '').trim() === String(selectedSize || '').trim()
     ),
     [product.variants, selectedColor, selectedSize]
   );
@@ -198,7 +198,10 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
 
   const displayPrice = activeVariant?.price || product.price;
   const displaySalePrice = activeVariant?.salePrice || product.salePrice;
-  const displayStock = activeVariant?.stock ?? product.stock;
+  const hasVariants = (uniqueColors.length > 0 || uniqueSizes.length > 0);
+  const displayStock = activeVariant 
+    ? (activeVariant.stock ?? 0) 
+    : (hasVariants ? 0 : (product.stock ?? 0));
   const displaySku = activeVariant?.sku || product.sku;
   const handleAddToCart = () => {
     if (uniqueColors.length > 0 && !selectedColor) {

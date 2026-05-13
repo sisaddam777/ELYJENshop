@@ -98,6 +98,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     async function fetchLoyaltyAndSyncCart() {
+      if (!isHydrated) return; // Wait for hydration before doing anything
+
       try {
         const [profileRes, settingsRes] = await Promise.all([
           fetch('/api/user/profile'),
@@ -134,14 +136,16 @@ export default function CheckoutPage() {
               dispatch(syncItems(validItems));
               toast.info(`${removedCount} stale items removed from your cart`);
             }
+          } else {
+             console.error('Cart sync failed:', await syncRes.text());
           }
         }
       } catch (error) {
-        console.error('Failed to fetch initial data or sync cart');
+        console.error('Failed to fetch initial data or sync cart:', error);
       }
     }
     fetchLoyaltyAndSyncCart();
-  }, [form]);
+  }, [form, isHydrated, items.length, dispatch]);
 
   const hasTrackedInitiate = useRef(false);
   // Track InitiateCheckout

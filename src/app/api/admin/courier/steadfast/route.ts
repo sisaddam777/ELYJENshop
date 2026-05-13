@@ -70,6 +70,11 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
+        const itemsNote = order.items.map((i: any) => {
+          const variantDesc = [i.color, i.size].filter(Boolean).join('/');
+          return `${i.name}${variantDesc ? `(${variantDesc})` : ''}`;
+        }).join(', ');
+        
         // Map order data to Steadfast payload
         const payload = {
           invoice: order.shortId || order._id.toString().slice(-8).toUpperCase(),
@@ -77,7 +82,7 @@ export async function POST(req: NextRequest) {
           recipient_phone: order.shippingAddress.phone,
           recipient_address: `${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state}`,
           cod_amount: order.paymentStatus === 'Paid' ? 0 : order.totalAmount,
-          note: `Order #${order.shortId || order._id.toString().slice(-8).toUpperCase()} - ${settings.brandName || 'Shop'}`
+          note: `Order #${order.shortId || order._id.toString().slice(-8).toUpperCase()} - ${itemsNote.slice(0, 100)}${itemsNote.length > 100 ? '...' : ''}`
         };
 
         // Call Steadfast API
