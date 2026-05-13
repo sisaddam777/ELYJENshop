@@ -26,12 +26,27 @@ export function NewsletterV2() {
         if (!email) return;
 
         setLoading(true);
-        setTimeout(() => {
+        try {
+            const res = await fetch('/api/newsletter/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setSubscribed(true);
+                toast.success(data.message || "Welcome aboard! You've successfully subscribed.");
+                localStorage.setItem('newsletter_subscribed', 'true');
+            } else {
+                toast.error(data.message || "Failed to subscribe. Please try again.");
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again later.");
+        } finally {
             setLoading(false);
-            setSubscribed(true);
-            toast.success("Welcome aboard! You've successfully subscribed.");
-            localStorage.setItem('newsletter_subscribed', 'true');
-        }, 1500);
+        }
     };
 
     return (

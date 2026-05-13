@@ -35,7 +35,7 @@ export async function GET() {
 
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/"/g, '');
-    propertyId = settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
+    propertyId = settings?.googleAnalyticsPropertyId || settings?.googleAnalyticsId || process.env.GOOGLE_GA4_PROPERTY_ID || 'unknown';
 
     if (propertyId === 'unknown') {
        return NextResponse.json({ message: 'Property ID is not configured' }, { status: 400 });

@@ -13,7 +13,8 @@ import {
   Image as ImageIcon,
   Settings,
   Megaphone,
-  Store
+  Store,
+  Mail
 } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 
@@ -144,6 +145,11 @@ const data = {
         {
           title: "General Settings",
           url: "/admin/settings",
+        },
+        {
+          title: "Subscribers",
+          url: "/admin/subscribers",
+          icon: Mail,
         },
         {
           title: "Infrastructure & Marketing",

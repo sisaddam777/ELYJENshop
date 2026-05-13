@@ -279,7 +279,7 @@ export default async function RootLayout({
   const showBlocker = isExpired && !isBypassRoute;
 
   // Security Helper: Validate GA ID format (G-XXXX or UA-XXXX)
-  const isValidGAId = (id?: string) => id ? /^(G-[A-Z0-9]{10}|UA-\d{4,}-\d+)$/.test(id) : false;
+  const isValidGAId = (id?: string) => id ? /^(G-[A-Z0-9]+|UA-[0-9-]+)$/i.test(id) : false;
   const gaId = settings?.googleAnalyticsId;
 
   const theme = settings?.uiTemplates?.theme;

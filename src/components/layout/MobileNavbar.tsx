@@ -53,17 +53,13 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
     <header className="lg:hidden sticky top-0 z-50 w-full bg-background border-b shadow-sm">
       <div className="flex h-14 items-center justify-between px-3">
 
-        {/* Left: Mobile Menu Drawer Trigger */}
-        <div className="flex items-center">
+        {/* Left: Mobile Menu Drawer Trigger & Logo */}
+        <div className="flex items-center gap-1 flex-1">
           <MobileMenu
             navItems={navItems}
             categories={categories}
             session={session}
           />
-        </div>
-
-        {/* Center: Logo */}
-        <div className="flex items-center justify-center flex-1">
           <Logo textClassName="text-lg" />
         </div>
 

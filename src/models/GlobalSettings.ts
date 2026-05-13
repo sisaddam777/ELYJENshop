@@ -65,7 +65,8 @@ export interface IGlobalSettings extends Document {
     banglaQr?: { qrCode?: string; active: boolean };
     instructions?: string;
   };
-  googleAnalyticsId?: string; // GA4 Property ID
+  googleAnalyticsId?: string; // GA4 Measurement ID (G-XXXXXX)
+  googleAnalyticsPropertyId?: string; // GA4 Property ID (Numeric)
   googleSearchConsoleId?: string; // Search Console Site URL (e.g. https://www.example.com/ or sc-domain:example.com)
   aiConfig?: {
     openRouterApiKey?: string;
@@ -197,6 +198,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
       instructions: { type: String, default: 'Please send the money to any of the numbers below and provide the transaction ID.' }
     },
     googleAnalyticsId: { type: String },
+    googleAnalyticsPropertyId: { type: String },
     googleSearchConsoleId: { type: String },
     aiConfig: {
       openRouterApiKey: { type: String, get: decrypt, set: encrypt },

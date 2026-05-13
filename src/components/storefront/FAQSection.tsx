@@ -56,28 +56,28 @@ export function FAQSection({ faqs }: { faqs: FAQItem[] }) {
                         <motion.div
                             animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
                             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute -top-6 -right-6 bg-white p-5 rounded-2xl shadow-xl border border-primary/10 hidden md:flex items-center gap-3 z-20"
+                            className="absolute -top-6 -right-6 bg-background p-5 rounded-2xl shadow-xl border border-primary/10 hidden md:flex items-center gap-3 z-20"
                         >
                             <div className="bg-primary/10 p-2 rounded-xl text-primary">
                                 <MessageCircle className="h-6 w-6" />
                             </div>
                             <div className="pr-4">
                                 <p className="text-[10px] font-black uppercase text-muted-foreground leading-none mb-1">Live Chat</p>
-                                <p className="text-sm font-bold whitespace-nowrap">Always Online</p>
+                                <p className="text-sm font-bold whitespace-nowrap text-foreground">Always Online</p>
                             </div>
                         </motion.div>
 
                         <motion.div
                             animate={{ y: [0, 15, 0], x: [0, -10, 0] }}
                             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                            className="absolute -bottom-8 -left-8 bg-white p-5 rounded-2xl shadow-xl border border-primary/10 hidden md:flex items-center gap-3 z-20"
+                            className="absolute -bottom-8 -left-8 bg-background p-5 rounded-2xl shadow-xl border border-primary/10 hidden md:flex items-center gap-3 z-20"
                         >
                             <div className="bg-emerald-500/10 p-2 rounded-xl text-emerald-600">
                                 <HelpCircle className="h-6 w-6" />
                             </div>
                             <div className="pr-4">
                                 <p className="text-[10px] font-black uppercase text-muted-foreground leading-none mb-1">Instant Help</p>
-                                <p className="text-sm font-bold whitespace-nowrap">Smart FAQ System</p>
+                                <p className="text-sm font-bold whitespace-nowrap text-foreground">Smart FAQ System</p>
                             </div>
                         </motion.div>
                     </motion.div>

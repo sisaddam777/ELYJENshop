@@ -104,7 +104,8 @@ export async function POST(req: NextRequest) {
       'deliveryChargeOutsideDhaka',
       'theme',
       'logoUrl',
-      'uiTemplates'
+      'footerNavigation',
+      'testimonials'
     ];
 
     // Restricted fields - ONLY for super_admin
@@ -114,6 +115,8 @@ export async function POST(req: NextRequest) {
       'storeId',
       'paymentConfig',
       'googleAnalyticsId',
+      'googleAnalyticsPropertyId',
+      'googleSearchConsoleId',
       'aiConfig',
       'courierConfig',
       'googleTagManagerId',
@@ -162,10 +165,10 @@ export async function POST(req: NextRequest) {
       settings = await GlobalSettings.create({ ...allowedBody, domain });
     }
 
-    revalidateTag('settings', 'max');
-    revalidateTag('products', 'max');
-    revalidateTag('categories', 'max');
-    revalidateTag('faqs', 'max');
+    revalidateTag('settings');
+    revalidateTag('products');
+    revalidateTag('categories');
+    revalidateTag('faqs');
     revalidatePath('/', 'layout');
     revalidatePath('/shop', 'page');
     revalidatePath('/blog', 'page');
