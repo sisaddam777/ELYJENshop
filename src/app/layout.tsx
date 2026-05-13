@@ -35,7 +35,6 @@ import Script from "next/script";
 import { PWARegistry } from "@/components/pwa-registry";
 import GoogleTagManager from "./components/GoogleTagManager";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
-import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { generateOrganizationSchema } from "@/lib/seo";
 import FacebookPixel from "./components/FacebookPixel";
@@ -347,7 +346,6 @@ export default async function RootLayout({
           <SmoothScroll>
             {children}
             <ScrollProgress />
-            <ScrollToTop />
           </SmoothScroll>
         </Providers>
         <Toaster position="bottom-right" richColors />

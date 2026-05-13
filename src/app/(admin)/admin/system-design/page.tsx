@@ -424,11 +424,21 @@ export default function SuperConfigPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ga4-id" className="font-bold">GA4 Property ID</Label>
+                <Label htmlFor="ga4-id" className="font-bold text-xs uppercase tracking-tight opacity-70">GA4 Measurement ID (G-XXXX)</Label>
                 <input 
                   id="ga4-id"
                   value={settings?.googleAnalyticsId || ''} 
                   onChange={(e) => setSettings({...(settings ?? {}), googleAnalyticsId: e.target.value})}
+                  placeholder="G-XXXXXXXXXX"
+                  className="w-full h-12 rounded-xl border px-4 focus:ring-2 focus:ring-primary outline-none text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ga4-property-id" className="font-bold text-xs uppercase tracking-tight opacity-70">GA4 Property ID (Analytics)</Label>
+                <input 
+                  id="ga4-property-id"
+                  value={settings?.googleAnalyticsPropertyId || ''} 
+                  onChange={(e) => setSettings({...(settings ?? {}), googleAnalyticsPropertyId: e.target.value})}
                   placeholder="e.g. 534447077"
                   className="w-full h-12 rounded-xl border px-4 focus:ring-2 focus:ring-primary outline-none text-sm"
                 />

@@ -3,6 +3,7 @@ import Footer from '@/components/layout/Footer';
 import { Marquee } from '@/components/layout/Marquee';
 import { getCachedSettings } from '@/lib/data-fetching';
 import { headers } from 'next/headers';
+import { ScrollToTop } from '@/components/layout/ScrollToTop';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -28,6 +29,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <Navbar style={ui.navbar} />
       <main className="flex-1">{children}</main>
       <Footer style={ui.footer} />
+      <ScrollToTop />
     </>
   );
 }

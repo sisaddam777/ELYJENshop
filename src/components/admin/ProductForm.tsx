@@ -58,6 +58,7 @@ const productSchema = z.object({
   images: z.array(z.string()).min(1, 'Upload at least one image'),
   isFeatured: z.boolean(),
   isNewArrival: z.boolean(),
+  isFlashSale: z.boolean().optional(),
   isPublished: z.boolean(),
   attributes: z.array(z.object({
     key: z.string(),
@@ -107,6 +108,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     isPublished: initialData?.isPublished ?? true,
     isFeatured: initialData?.isFeatured ?? false,
     isNewArrival: initialData?.isNewArrival ?? false,
+    isFlashSale: initialData?.isFlashSale ?? false,
     attributes: initialData?.attributes || [],
     variants: initialData?.variants?.map((v: any) => ({
       ...v,
@@ -821,6 +823,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
                         type="checkbox" 
                         id="new-arrival"
                         {...form.register('isNewArrival')} 
+                        className="h-4 w-4 accent-primary cursor-pointer hover:scale-110 transition-transform" 
+                    />
+                </div>
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="flash-sale">Flash Sale</Label>
+                    <input 
+                        type="checkbox" 
+                        id="flash-sale"
+                        {...form.register('isFlashSale')} 
                         className="h-4 w-4 accent-primary cursor-pointer hover:scale-110 transition-transform" 
                     />
                 </div>
