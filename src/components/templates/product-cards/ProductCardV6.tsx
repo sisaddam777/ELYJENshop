@@ -54,7 +54,7 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasVariants) {
-      setShowQuickViewModal(true);
+      router.push(`/product/${product.slug}`);
     } else {
       dispatch(addToCart({
         productId: product._id,
@@ -87,7 +87,7 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasVariants) {
-      setShowQuickViewModal(true);
+      router.push(`/product/${product.slug}`);
       return;
     }
 
