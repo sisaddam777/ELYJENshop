@@ -706,8 +706,16 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               variant="outline"
               className="w-full h-14 rounded-full font-black text-xs uppercase tracking-[0.2em] border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
               onClick={() => {
+                // Sanitize number: remove all non-digits
+                let sanitizedNumber = whatsappNumber.replace(/\D/g, '');
+                
+                // If it's a standard Bangladesh number starting with 0 (e.g., 017...), prepend 88
+                if (sanitizedNumber.startsWith('0') && sanitizedNumber.length === 11) {
+                  sanitizedNumber = '88' + sanitizedNumber;
+                }
+                
                 const message = encodeURIComponent(`Hi, I'm interested in ${product.name}. Price: ${CURRENCY_SYMBOL}${displaySalePrice || displayPrice}`);
-                window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+                window.open(`https://wa.me/${sanitizedNumber}?text=${message}`, '_blank');
               }}
             >
               <svg 
