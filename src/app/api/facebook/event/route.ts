@@ -1,28 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCachedSettings } from '@/lib/data-fetching';
 import { headers } from 'next/headers';
+import crypto from 'crypto';
+
+/**
+ * Facebook Conversions API (CAPI) Route Handler
+ * Prioritizes environment variables for configuration.
+ */
 
 async function hashData(data: string): Promise<string> {
     if (!data) return '';
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data.trim().toLowerCase());
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    try {
+        const hash = crypto.createHash('sha256');
+        hash.update(data.trim().toLowerCase());
+        return hash.digest('hex');
+    } catch (error) {
+        console.error('[FB CAPI] Hashing error:', error);
+        return '';
+    }
 }
 
 export async function POST(request: NextRequest) {
     try {
         const headersList = await headers();
         const hostname = headersList.get('host') || 'localhost';
+        
+        // Fetch settings for logging/context, but prioritize ENV for credentials as requested
         const settings = await getCachedSettings(hostname);
 
-        const pixelId = settings?.metaPixelId || process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
-        const accessToken = settings?.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN;
+        const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || settings?.metaPixelId;
+        const accessToken = process.env.FACEBOOK_ACCESS_TOKEN || settings?.facebookAccessToken;
+        const testEventCode = process.env.FACEBOOK_TEST_EVENT_CODE || settings?.facebookTestEventCode;
 
         if (!pixelId || !accessToken) {
-            console.error('[FB CAPI] Missing configuration for', hostname);
-            return NextResponse.json({ error: 'Missing Facebook config' }, { status: 500 });
+            console.error('[FB CAPI] Missing configuration for', hostname, { 
+                hasPixelId: !!pixelId, 
+                hasAccessToken: !!accessToken 
+            });
+            return NextResponse.json({ error: 'Missing Facebook configuration' }, { status: 500 });
         }
 
         const body = await request.json();
@@ -40,39 +55,36 @@ export async function POST(request: NextRequest) {
             request.headers.get('x-real-ip') ||
             '0.0.0.0';
 
-        // Generate/Use event ID for deduplication
+        // Use event ID from client for deduplication, fallback to random
         const eventId = body.eventId || crypto.randomUUID();
 
-        // Get browser identifiers for best match quality
+        // Get browser identifiers from cookies
         const fbp = request.cookies.get('_fbp')?.value;
         const fbc = request.cookies.get('_fbc')?.value;
 
         // --- Hashing & Normalization ---
         const hashedEmail = userData.em ? await hashData(userData.em) : undefined;
         
-        // Process phone: ensure digits only and has country code (BD: 88)
+        // Process phone: ensure digits only and has country code (BD default: 88)
         let phone = userData.ph ? userData.ph.replace(/\D/g, '') : '';
-        if (phone && !phone.startsWith('88')) {
+        if (phone && !phone.startsWith('88') && phone.length <= 11) {
             phone = '88' + phone;
         }
         const hashedPhone = phone ? await hashData(phone) : undefined;
         
-        // Hash name if provided
         const hashedFirstName = userData.fn ? await hashData(userData.fn) : undefined;
         const hashedLastName = userData.ln ? await hashData(userData.ln) : undefined;
-        
-        // Hash additional details
         const hashedCity = userData.ct ? await hashData(userData.ct) : undefined;
         const hashedState = userData.st ? await hashData(userData.st) : undefined;
         const hashedZip = userData.zp ? await hashData(userData.zp) : undefined;
         const hashedCountry = userData.country ? await hashData(userData.country) : undefined;
 
-        // Prepare user data for best match quality
+        // Prepare user data object (filtered for undefined values)
         const fbUserData: any = {
             client_ip_address: ipAddress,
             client_user_agent: userAgent,
-            fbp,
-            fbc,
+            ...(fbp && { fbp }),
+            ...(fbc && { fbc }),
             ...(hashedEmail && { em: [hashedEmail] }),
             ...(hashedPhone && { ph: [hashedPhone] }),
             ...(hashedFirstName && { fn: [hashedFirstName] }),
@@ -97,15 +109,16 @@ export async function POST(request: NextRequest) {
                     },
                 },
             ],
+            // Sending access_token in the body is often more reliable
+            access_token: accessToken,
         };
 
-        // Add test_event_code if present (useful for testing in Events Manager)
-        if (settings?.facebookTestEventCode || process.env.FACEBOOK_TEST_EVENT_CODE) {
-            payload.test_event_code = settings?.facebookTestEventCode || process.env.FACEBOOK_TEST_EVENT_CODE;
+        if (testEventCode) {
+            payload.test_event_code = testEventCode;
         }
 
         const fbResponse = await fetch(
-            `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`,
+            `https://graph.facebook.com/v19.0/${pixelId}/events`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -116,16 +129,18 @@ export async function POST(request: NextRequest) {
         const result = await fbResponse.json();
 
         if (!fbResponse.ok) {
-            console.error('[FB CAPI] Error:', result);
+            console.error('[FB CAPI] Error Response:', JSON.stringify(result, null, 2));
             return NextResponse.json(
-                { error: 'Failed to send event to Facebook', details: result },
+                { error: 'Facebook API Error', details: result },
                 { status: fbResponse.status }
             );
         }
 
+        console.log(`[FB CAPI] Success: ${eventName} (${eventId})`);
         return NextResponse.json({ success: true, eventId });
-    } catch (error) {
-        console.error('[FB CAPI] Unexpected error:', error);
+
+    } catch (error: any) {
+        console.error('[FB CAPI] Unexpected error:', error.message || error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

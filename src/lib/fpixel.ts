@@ -87,8 +87,18 @@ export const fbEvent = (
         userData, // Hashing is handled server-side for maximum privacy & accuracy
         customData,
       }),
-    }).catch(() => {
-       /* Fail silently to not disrupt UX */
+    })
+    .then(res => {
+      if (!res.ok && process.env.NODE_ENV === 'development') {
+        res.json().then(err => console.error('[FB CAPI] Server Error:', err));
+      } else if (process.env.NODE_ENV === 'development') {
+        console.log(`[FB CAPI] Event Sent: ${eventName}`);
+      }
+    })
+    .catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[FB CAPI] Fetch Failed:', err);
+      }
     });
   }
 
