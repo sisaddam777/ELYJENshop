@@ -59,8 +59,14 @@ export async function POST(request: NextRequest) {
         const eventId = body.eventId || crypto.randomUUID();
 
         // Get browser identifiers from cookies
+        // Extract cookies for matching
         const fbp = request.cookies.get('_fbp')?.value;
         const fbc = request.cookies.get('_fbc')?.value;
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[FB CAPI] Event: ${eventName}, ID: ${eventId}`);
+            console.log(`[FB CAPI] Cookies - fbp: ${fbp ? 'Found' : 'Missing'}, fbc: ${fbc ? 'Found' : 'Missing'}`);
+        }
 
         // --- Hashing & Normalization ---
         const hashedEmail = userData.em ? await hashData(userData.em) : undefined;

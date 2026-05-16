@@ -66,6 +66,22 @@ export const fbEvent = (
       "Search", "StartTrial", "SubmitApplication", "Subscribe", "ViewContent", "PageView"
     ];
 
+    // If user data is provided, use Advanced Matching
+    if (userData && (userData.em || userData.ph)) {
+      // We call 'set' to update user data before tracking the event
+      // This improves matching between Browser and Server events
+      (window as any).fbq('set', 'user_data', {
+        ...(userData.em && { em: userData.em.trim().toLowerCase() }),
+        ...(userData.ph && { ph: userData.ph.replace(/\D/g, '') }),
+        ...(userData.fn && { fn: userData.fn.trim().toLowerCase() }),
+        ...(userData.ln && { ln: userData.ln.trim().toLowerCase() }),
+        ...(userData.ct && { ct: userData.ct.trim().toLowerCase() }),
+        ...(userData.st && { st: userData.st.trim().toLowerCase() }),
+        ...(userData.zp && { zp: userData.zp.trim().toLowerCase() }),
+        ...(userData.country && { country: userData.country.trim().toLowerCase() }),
+      });
+    }
+
     if (standardEvents.includes(eventName)) {
       window.fbq("track", eventName, customData, { eventID: eventId });
     } else {
@@ -79,13 +95,25 @@ export const fbEvent = (
     fetch("/api/facebook/event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: 'include', // Crucial for sending _fbp and _fbc cookies
       body: JSON.stringify({
         eventName,
         eventUrl: window.location.href,
         userAgent: navigator.userAgent,
         eventId,
         userData, // Hashing is handled server-side for maximum privacy & accuracy
-        customData,
+        customData: {
+            ...customData,
+            // Standardize contents array if present for both Pixel and CAPI compatibility
+            ...(customData.contents && Array.isArray(customData.contents) ? {
+                contents: (customData.contents as any[]).map((item: any) => ({
+                    ...item,
+                    // Ensure both 'price' and 'item_price' are present for legacy/new compatibility
+                    price: item.price || item.item_price,
+                    item_price: item.item_price || item.price
+                }))
+            } : {})
+        },
       }),
     })
     .then(res => {

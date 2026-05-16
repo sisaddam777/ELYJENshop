@@ -42,17 +42,19 @@ function SuccessContent() {
             contents: safeItems.map((i: any) => ({
               id: i.product?._id || i.product,
               quantity: i.quantity,
+              price: i.price,
               item_price: i.price
             }))
           }, {
-            // Note: Hashing is handled server-side in the API route.
+            // Provide data for Advanced Matching
             em: orderData.shippingAddress?.email,
             ph: orderData.shippingAddress?.phone,
-            fn: nameParts[0] || '',
-            ln: nameParts.slice(1).join(' ') || '',
+            fn: orderData.shippingAddress?.fullName?.split(' ')[0],
+            ln: orderData.shippingAddress?.fullName?.split(' ').slice(1).join(' '),
             ct: orderData.shippingAddress?.city,
             st: orderData.shippingAddress?.state,
-            country: 'bd'
+            zp: orderData.shippingAddress?.zipCode,
+            country: 'BD'
           }, orderData._id); // Use Order ID as eventId for deduplication
         }
       } catch (error) {
