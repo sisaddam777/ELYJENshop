@@ -26,8 +26,6 @@ export interface IGlobalSettings extends Document {
   googleTagManagerId?: string;
   searchConsoleMeta?: string;
   facebookDomainVerification?: string;
-  metaPixelId?: string;
-  facebookAccessToken?: string;
   facebookTestEventCode?: string;
   courierConfig?: {
     activeProvider?: 'steadfast' | 'pathao' | 'redx' | 'none';
@@ -123,8 +121,6 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     googleTagManagerId: { type: String },
     searchConsoleMeta: { type: String },
     facebookDomainVerification: { type: String },
-    metaPixelId: { type: String },
-    facebookAccessToken: { type: String, get: decrypt, set: encrypt },
     facebookTestEventCode: { type: String },
     courierConfig: { type: Object, default: { activeProvider: 'none' } },
     subscriptionConfig: { type: Object, default: { activationThreshold: 5000, rewardPercentage: 5 } },
@@ -187,8 +183,6 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
         if (ret.aiConfig) {
           delete ret.aiConfig.openRouterApiKey;
         }
-        // Security: Remove sensitive Facebook Access Token
-        delete ret.facebookAccessToken;
         return ret;
       }
     },

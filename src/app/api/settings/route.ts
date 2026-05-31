@@ -5,10 +5,8 @@ import GlobalSettings from '@/models/GlobalSettings';
 import { auth } from '@/auth';
 import { getTenantDomain } from '@/lib/tenant';
 
-// Helper to consistently mask sensitive data in API responses
 const getMaskedSettings = (raw: any, masked: any) => ({
   ...masked,
-  facebookAccessToken: (raw.facebookAccessToken || process.env.FACEBOOK_ACCESS_TOKEN) ? "********************" : null,
   courierConfig: masked.courierConfig ? {
     ...masked.courierConfig,
     steadfast: process.env.STEADFAST_API_KEY ? {
@@ -130,8 +128,6 @@ export async function POST(req: NextRequest) {
       'googleTagManagerId',
       'searchConsoleMeta',
       'facebookDomainVerification',
-      'metaPixelId',
-      'facebookAccessToken',
       'facebookTestEventCode',
       'saasSubscription',
       'manualPaymentConfig'

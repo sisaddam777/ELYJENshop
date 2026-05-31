@@ -26,8 +26,6 @@ const marketingSchema = z.object({
   googleAnalyticsPropertyId: z.string().optional(),
   googleSearchConsoleId: z.string().optional(),
   searchConsoleMeta: z.string().optional(),
-  metaPixelId: z.string().optional(),
-  facebookAccessToken: z.string().optional(),
   facebookDomainVerification: z.string().optional(),
   facebookTestEventCode: z.string().optional(),
 });
@@ -50,8 +48,6 @@ export function MarketingForm() {
       googleAnalyticsPropertyId: '',
       googleSearchConsoleId: '',
       searchConsoleMeta: '',
-      metaPixelId: '',
-      facebookAccessToken: '',
       facebookDomainVerification: '',
       facebookTestEventCode: '',
     },
@@ -79,8 +75,6 @@ export function MarketingForm() {
             googleAnalyticsPropertyId: data.googleAnalyticsPropertyId || '',
             googleSearchConsoleId: data.googleSearchConsoleId || '',
             searchConsoleMeta: data.searchConsoleMeta || '',
-            metaPixelId: data.metaPixelId || '',
-            facebookAccessToken: data.facebookAccessToken || '',
             facebookDomainVerification: data.facebookDomainVerification || '',
             facebookTestEventCode: data.facebookTestEventCode || '',
           });
@@ -245,41 +239,7 @@ export function MarketingForm() {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="metaPixelId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meta (Facebook) Pixel ID</FormLabel>
-                      <FormControl>
-                        <Input placeholder="123456789012345" {...field} disabled={isSubmitting} />
-                      </FormControl>
-                      <FormDescription>
-                        15-digit Pixel ID for behavior tracking.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="facebookAccessToken"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Facebook Access Token (CAPI)</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="EAAB..." {...field} disabled={isSubmitting} />
-                      </FormControl>
-                      <FormDescription>
-                        System user access token for Conversions API.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
