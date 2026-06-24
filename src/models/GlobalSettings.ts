@@ -21,6 +21,7 @@ export interface IGlobalSettings extends Document {
   freeDeliveryThreshold?: number;
   deliveryChargeInsideDhaka?: number;
   deliveryChargeOutsideDhaka?: number;
+  freeDeliveryDistricts?: string;
   metaTitle?: string;
   metaDescription?: string;
   googleTagManagerId?: string;
@@ -116,6 +117,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     freeDeliveryThreshold: { type: Number, default: 0 },
     deliveryChargeInsideDhaka: { type: Number, default: 60 },
     deliveryChargeOutsideDhaka: { type: Number, default: 120 },
+    freeDeliveryDistricts: { type: String, default: '' },
     metaTitle: { type: String, default: '' },
     metaDescription: { type: String, default: '' },
     googleTagManagerId: { type: String },
@@ -168,7 +170,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     timestamps: true,
     toJSON: {
       getters: false, // Prevent automatic decryption and exposure in API responses
-      transform: (doc, ret) => {
+      transform: (doc: any, ret: any) => {
         // Security: Explicitly remove sensitive courier credentials from serialized output
         if (ret.courierConfig) {
           delete ret.courierConfig.steadfast;

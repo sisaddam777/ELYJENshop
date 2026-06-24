@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { districts } from '@/lib/bd-locations';
 
 
 const FONT_OPTIONS = [
@@ -82,6 +83,7 @@ const settingsSchema = z.object({
   freeDeliveryThreshold: z.number().min(0, 'Threshold cannot be negative').optional(),
   deliveryChargeInsideDhaka: z.number().min(0, 'Charge cannot be negative').optional(),
   deliveryChargeOutsideDhaka: z.number().min(0, 'Charge cannot be negative').optional(),
+  freeDeliveryDistricts: z.string().nullish().transform(val => val ?? ''),
   logoUrl: z.string().nullish().transform(val => val ?? ''),
   uiTemplates: z.object({
     theme: z.string().default('green'),
@@ -121,6 +123,7 @@ export default function SettingsPage() {
       freeDeliveryThreshold: 0,
       deliveryChargeInsideDhaka: 60,
       deliveryChargeOutsideDhaka: 120,
+      freeDeliveryDistricts: '',
       logoUrl: '',
       uiTemplates: {
         theme: 'green',
@@ -165,6 +168,7 @@ export default function SettingsPage() {
                 freeDeliveryThreshold: result.data.freeDeliveryThreshold ?? 0,
                 deliveryChargeInsideDhaka: result.data.deliveryChargeInsideDhaka ?? 60,
                 deliveryChargeOutsideDhaka: result.data.deliveryChargeOutsideDhaka ?? 120,
+                freeDeliveryDistricts: result.data.freeDeliveryDistricts || '',
                 subscriptionConfig: {
                   activationThreshold: result.data.subscriptionConfig?.activationThreshold ?? 5000,
                   rewardPercentage: result.data.subscriptionConfig?.rewardPercentage ?? 5,
@@ -343,6 +347,84 @@ export default function SettingsPage() {
                       )}
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle>Delivery & Shipping Settings</CardTitle>
+                  <CardDescription>Configure courier shipping rates and free delivery districts.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="deliveryChargeInsideDhaka"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Inside Dhaka Charge (TK)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="60" 
+                              value={field.value ?? ''} 
+                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="deliveryChargeOutsideDhaka"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Outside Dhaka Charge (TK)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="120" 
+                              value={field.value ?? ''} 
+                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="freeDeliveryDistricts"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Free Delivery District</FormLabel>
+                        <Select 
+                          onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
+                          value={field.value || 'none'}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-12 rounded-xl">
+                              <SelectValue placeholder="Select a free delivery district" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[300px]">
+                            <SelectItem value="none">None (No free delivery district)</SelectItem>
+                            {districts.map((district) => (
+                              <SelectItem key={district} value={district}>
+                                {district}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Select the district that qualifies for free delivery.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

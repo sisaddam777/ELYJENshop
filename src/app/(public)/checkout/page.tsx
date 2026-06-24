@@ -46,9 +46,7 @@ const checkoutSchema = z.object({
   fullName: z.string().min(2, 'আপনার নাম লিখুন'),
   phone: z.string().min(11, 'সঠিক মোবাইল নম্বর লিখুন'),
   street: z.string().min(5, 'আপনার সম্পূর্ণ ঠিকানা লিখুন'),
-  shippingRegion: z.enum(['Inside Dhaka', 'Outside Dhaka'], {
-    message: 'ডেলিভারি এলাকা সিলেক্ট করুন',
-  }),
+  shippingRegion: z.string().min(1, 'ডেলিভারি এলাকা সিলেক্ট করুন'),
   paymentMethod: z.enum(['COD', 'Online', 'Manual'], {
     message: 'পেমেন্ট মেথড সিলেক্ট করুন'
   }),
@@ -275,11 +273,11 @@ export default function CheckoutPage() {
             phone: values.phone,
             email: profile?.email || `${values.phone}@store.com`, // Email is hidden now, use fallback
             street: values.street,
-            city: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
-            state: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
-            division: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
-            district: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
-            thana: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            city: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : (values.shippingRegion === 'Outside Dhaka' ? 'Outside Dhaka' : values.shippingRegion),
+            state: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : (values.shippingRegion === 'Outside Dhaka' ? 'Outside Dhaka' : values.shippingRegion),
+            division: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : (values.shippingRegion === 'Outside Dhaka' ? 'Outside Dhaka' : values.shippingRegion),
+            district: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : (values.shippingRegion === 'Outside Dhaka' ? 'Outside Dhaka' : values.shippingRegion),
+            thana: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : (values.shippingRegion === 'Outside Dhaka' ? 'Outside Dhaka' : values.shippingRegion),
             zipCode: '0000',
             country: 'Bangladesh'
         },
@@ -402,8 +400,16 @@ export default function CheckoutPage() {
     return sum + Math.max(0, itemBasePrice - item.price) * item.quantity;
   }, 0);
 
+  const selectedRegion = form.watch('shippingRegion');
+  const freeDistricts = (settings?.freeDeliveryDistricts || '')
+    .split(',')
+    .map((d: string) => d.trim())
+    .filter(Boolean);
+
+  const isFreeDistrictSelected = selectedRegion && freeDistricts.includes(selectedRegion);
+
   const deliveryCharge = items.length > 0 ? (
-    isFreeDelivery ? 0 : (form.watch('shippingRegion') === 'Inside Dhaka' ? chargeInsideDhaka : chargeOutsideDhaka)
+    (isFreeDelivery || isFreeDistrictSelected) ? 0 : (selectedRegion === 'Inside Dhaka' ? chargeInsideDhaka : chargeOutsideDhaka)
   ) : 0;
 
   const totalAfterCoupon = Math.max(0, totalAmount + deliveryCharge - couponDiscount);
@@ -591,7 +597,7 @@ export default function CheckoutPage() {
                           <RadioGroup
                             onValueChange={field.onChange}
                             value={field.value}
-                            className="flex gap-4"
+                            className="flex flex-wrap gap-4"
                           >
                             <FormItem className="flex items-center space-x-2 space-y-0">
                               <FormControl>
@@ -609,6 +615,16 @@ export default function CheckoutPage() {
                                 ঢাকার বাইরে
                               </FormLabel>
                             </FormItem>
+                            {freeDistricts.map((district) => (
+                              <FormItem key={district} className="flex items-center space-x-2 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value={district} />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">
+                                  {district} (ফ্রি ডেলিভারি)
+                                </FormLabel>
+                              </FormItem>
+                            ))}
                           </RadioGroup>
                         </FormControl>
                         <FormMessage />

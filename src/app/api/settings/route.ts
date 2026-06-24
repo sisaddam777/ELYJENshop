@@ -66,6 +66,7 @@ export async function GET() {
         freeDeliveryThreshold: 0,
         deliveryChargeInsideDhaka: 60,
         deliveryChargeOutsideDhaka: 120,
+        freeDeliveryDistricts: "",
         uiTemplates: {
           theme: 'green',
           logoFont: 'orbitron',
@@ -108,6 +109,7 @@ export async function POST(req: NextRequest) {
       'freeDeliveryThreshold',
       'deliveryChargeInsideDhaka',
       'deliveryChargeOutsideDhaka',
+      'freeDeliveryDistricts',
       'theme',
       'logoUrl',
       'footerNavigation',

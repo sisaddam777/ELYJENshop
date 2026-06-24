@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { ImageUpload } from '@/components/ui/image-upload';
 import Swal from 'sweetalert2';
+import { districts } from '@/lib/bd-locations';
 
 
 
@@ -493,6 +494,18 @@ export default function SuperConfigPage() {
                   <div className="space-y-2">
                     <Label htmlFor="outside-dhaka" className="font-bold">Outside Dhaka (TK)</Label>
                     <input id="outside-dhaka" type="number" value={settings?.deliveryChargeOutsideDhaka || 0} onChange={(e) => setSettings({...settings, deliveryChargeOutsideDhaka: Number(e.target.value)})} className="w-full h-12 rounded-xl border px-4" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-bold">Free Delivery District</Label>
+                    <Select value={settings?.freeDeliveryDistricts || 'none'} onValueChange={(v) => setSettings({...settings, freeDeliveryDistricts: v === 'none' ? '' : v})}>
+                      <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {districts.map((d) => (
+                          <SelectItem key={d} value={d}>{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
               </div>
 
