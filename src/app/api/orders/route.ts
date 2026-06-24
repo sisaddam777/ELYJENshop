@@ -306,10 +306,20 @@ export async function POST(req: NextRequest) {
     const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
     const isFreeDelivery = freeDeliveryThreshold > 0 && serverComputedTotal >= freeDeliveryThreshold;
 
+    const freeDistricts = (settings?.freeDeliveryDistricts || '')
+      .split(',')
+      .map((d: string) => d.trim().toLowerCase())
+      .filter(Boolean);
+
+    const isFreeDistrictSelected = 
+      freeDistricts.includes(city) || 
+      freeDistricts.includes(state) || 
+      freeDistricts.includes(division);
+
     const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka || 60;
     const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka || 120;
 
-    const serverComputedDeliveryCharge = isFreeDelivery ? 0 : (isDhaka ? chargeInsideDhaka : chargeOutsideDhaka);
+    const serverComputedDeliveryCharge = (isFreeDelivery || isFreeDistrictSelected) ? 0 : (isDhaka ? chargeInsideDhaka : chargeOutsideDhaka);
 
     // 4. Verify Delivery Charge (if provided by client)
     if (clientProvidedDeliveryCharge !== undefined && clientProvidedDeliveryCharge !== null && clientProvidedDeliveryCharge !== serverComputedDeliveryCharge) {
