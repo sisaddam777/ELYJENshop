@@ -138,48 +138,7 @@ export function ComboOfferBanner({ activeCoupon, settings }: ComboOfferBannerPro
     );
   }
 
-  // Fallback: Loyalty Promo
-  const threshold = settings?.subscriptionConfig?.activationThreshold || 5000;
-  const percentage = settings?.subscriptionConfig?.rewardPercentage || 5;
-
-  return (
-    <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-primary/5 border-y border-primary/10 overflow-hidden relative">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="container px-4 md:px-6 relative z-10">
-        <div className="flex flex-col items-center text-center space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter">
-              DOUBLE YOUR <span className="text-primary italic">SAVINGS!</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Combine your loyalty benefits with seasonal offers. Spend{' '}
-              <span className="text-foreground font-bold">৳{threshold}</span> to unlock{' '}
-              <span className="text-primary font-bold">{percentage}% lifetime rewards!</span>
-            </p>
-          </div>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full max-w-4xl">
-            <div className="flex-1 bg-background border rounded-3xl p-8 shadow-sm">
-              <Ticket className="h-10 w-10 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Apply Coupons</h3>
-              <p className="text-sm text-muted-foreground">Use any active promo code during checkout for instant cuts.</p>
-            </div>
-            <div className="flex items-center justify-center bg-primary text-black h-12 w-12 rounded-full font-black text-2xl shadow-lg">
-              <Plus />
-            </div>
-            <div className="flex-1 bg-background border rounded-3xl p-8 shadow-sm">
-              <Wallet className="h-10 w-10 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Use Tokens</h3>
-              <p className="text-sm text-muted-foreground">Check the &quot;Use Token Balance&quot; box to pay even less.</p>
-            </div>
-          </div>
-          <div className="pt-6">
-            <Button asChild size="lg" className="rounded-full px-12 h-14 bg-black hover:bg-black/90 text-white font-bold">
-              <Link href="/shop">START SAVING NOW</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  // Return null if no active coupon to hide the banner entirely
+  return null;
 }
 
