@@ -615,7 +615,7 @@ export default function CheckoutPage() {
                                 ঢাকার বাইরে
                               </FormLabel>
                             </FormItem>
-                            {freeDistricts.map((district) => (
+                            {freeDistricts.map((district: string) => (
                               <FormItem key={district} className="flex items-center space-x-2 space-y-0">
                                 <FormControl>
                                   <RadioGroupItem value={district} />
