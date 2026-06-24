@@ -79,8 +79,8 @@ export async function generateInvoicePDF(order: any, settings: any) {
     index + 1,
     `${item.name}${item.color || item.size ? `\n(${[item.color, item.size].filter(Boolean).join(' / ')})` : ''}`,
     item.quantity,
-    `\u09f3 ${Math.round(item.price)}`,
-    `\u09f3 ${Math.round(item.price * item.quantity)}`,
+    `${Math.round(item.price)}`,
+    `${Math.round(item.price * item.quantity)}`,
   ]);
 
   // Use autoTable as a standalone function (correct API for Next.js bundling)
@@ -131,23 +131,23 @@ export async function generateInvoicePDF(order: any, settings: any) {
   const walletUsed = Number(order.walletAmountUsed) || 0;
 
   doc.text("Subtotal:", 140, finalY);
-  doc.text(`\u09f3 ${Math.round(subtotal)}`, 190, finalY, { align: "right" });
+  doc.text(`${Math.round(subtotal)}`, 190, finalY, { align: "right" });
 
   doc.text("Shipping Charge:", 140, finalY + 6);
-  doc.text(`\u09f3 ${Math.round(deliveryCharge)}`, 190, finalY + 6, { align: "right" });
+  doc.text(`${Math.round(deliveryCharge)}`, 190, finalY + 6, { align: "right" });
 
   // Coupon Discount (Always show even if 0)
   const couponColor = couponDiscount > 0 ? [0, 150, 80] : secondaryColor;
   doc.setTextColor(couponColor[0], couponColor[1], couponColor[2]);
   doc.text("Coupon Discount:", 140, finalY + 12);
-  doc.text(`${couponDiscount > 0 ? "- " : ""}\u09f3 ${Math.round(couponDiscount)}`, 190, finalY + 12, { align: "right" });
+  doc.text(`${couponDiscount > 0 ? "- " : ""}${Math.round(couponDiscount)}`, 190, finalY + 12, { align: "right" });
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
 
   // Loyalty Discount (Always show even if 0)
   const loyaltyColor = walletUsed > 0 ? [0, 150, 80] : secondaryColor;
   doc.setTextColor(loyaltyColor[0], loyaltyColor[1], loyaltyColor[2]);
   doc.text("Loyalty Discount:", 140, finalY + 18);
-  doc.text(`${walletUsed > 0 ? "- " : ""}\u09f3 ${Math.round(walletUsed)}`, 190, finalY + 18, { align: "right" });
+  doc.text(`${walletUsed > 0 ? "- " : ""}${Math.round(walletUsed)}`, 190, finalY + 18, { align: "right" });
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
 
   doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
@@ -158,7 +158,7 @@ export async function generateInvoicePDF(order: any, settings: any) {
   doc.setTextColor(0, 0, 0);
   doc.text("Total Amount:", 140, finalY + 28);
   // Final total is Gross Total minus discounts. verified that order.totalAmount is Gross (pre-discount).
-  doc.text(`\u09f3 ${Math.round(order.totalAmount - couponDiscount - walletUsed)}`, 190, finalY + 28, { align: "right" });
+  doc.text(`${Math.round(order.totalAmount - couponDiscount - walletUsed)}`, 190, finalY + 28, { align: "right" });
 
   // Footer
   const pageHeight = doc.internal.pageSize.height;
