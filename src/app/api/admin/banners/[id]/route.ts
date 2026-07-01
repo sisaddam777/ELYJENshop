@@ -21,12 +21,8 @@ export async function PUT(
 
     const body = await req.json();
     await connectToDatabase();
-    const domain = await (await import('@/lib/tenant')).getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
-    const banner = await Banner.findOneAndUpdate({ _id: id, domain }, body, { new: true });
+    const banner = await Banner.findOneAndUpdate({ _id: id }, body, { new: true });
     
     if (!banner) {
       return NextResponse.json({ message: 'Banner not found' }, { status: 404 });
@@ -55,11 +51,7 @@ export async function DELETE(
     }
 
     await connectToDatabase();
-    const domain = await (await import('@/lib/tenant')).getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const banner = await Banner.findOneAndDelete({ _id: id, domain });
+    const banner = await Banner.findOneAndDelete({ _id: id });
 
     if (!banner) {
       return NextResponse.json({ message: 'Banner not found' }, { status: 404 });

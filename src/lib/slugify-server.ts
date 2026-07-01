@@ -8,30 +8,15 @@ import mongoose from 'mongoose';
 export async function generateUniqueSlug(
   Model: any, 
   baseSlug: string, 
-  domainOrId?: string, 
   idToExclude?: string
 ): Promise<string> {
   let slug = baseSlug;
   let counter = 1;
   
-  let domain: string | undefined;
-  let excludeId: string | undefined;
-  
-  if (domainOrId) {
-    if (mongoose.Types.ObjectId.isValid(domainOrId)) {
-      excludeId = domainOrId;
-    } else {
-      domain = domainOrId;
-    }
-  }
-  
-  if (idToExclude) {
-    excludeId = idToExclude;
-  }
+  let excludeId: string | undefined = idToExclude;
 
   while (true) {
     const query: any = { slug };
-    if (domain) query.domain = domain;
     if (excludeId) query._id = { $ne: excludeId };
     
     const existing = await Model.findOne(query);

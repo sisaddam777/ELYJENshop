@@ -30,12 +30,13 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
+
+    const sessionUser = session.user as any;
+    if (!sessionUser.id) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await User.findOne({ email: session.user.email, domain }).select('+password');
+    const user = await User.findById(sessionUser.id).select('+password');
 
     if (!user) {
       return NextResponse.json({ message: 'User not found.' }, { status: 404 });

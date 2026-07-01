@@ -3,7 +3,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IBlog extends Document {
   title: string;
   slug: string;
-  domain: string;
   metaTitle: string;
   metaDescription: string;
   content: string;
@@ -26,15 +25,8 @@ const BlogSchema: Schema = new Schema(
       required: [true, 'Slug is required'], 
       maxlength: [100, 'Slug cannot exceed 100 characters'],
       lowercase: true,
-      trim: true 
-    },
-    domain: { 
-      type: String, 
-      required: [true, 'Domain is required'], 
-      index: true,
       trim: true,
-      lowercase: true,
-      default: 'elyjen.shop' // Safe default for existing docs
+      unique: true
     },
     metaTitle: { 
       type: String, 
@@ -69,9 +61,6 @@ const BlogSchema: Schema = new Schema(
     timestamps: true 
   }
 );
-
-// Ensure slug is unique per domain
-BlogSchema.index({ slug: 1, domain: 1 }, { unique: true });
 
 export default mongoose.models.Blog || mongoose.model<IBlog>('Blog', BlogSchema);
 

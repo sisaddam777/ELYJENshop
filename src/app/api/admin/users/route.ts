@@ -15,13 +15,11 @@ export async function GET(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
 
     // Aggregate users with their order stats
     const users = await User.aggregate([
       { 
         $match: { 
-          domain,
           role: { $ne: 'super_admin' } // Hide super admins
         } 
       },

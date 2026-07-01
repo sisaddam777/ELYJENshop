@@ -1,5 +1,4 @@
 import type { MetadataRoute } from 'next';
-import { getTenantDomain } from '@/lib/tenant';
 import { getCachedSettings } from '@/lib/data-fetching';
 
 export const dynamic = 'force-dynamic';
@@ -22,8 +21,7 @@ const THEME_COLORS: Record<string, string> = {
 };
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
-  const domain = await getTenantDomain();
-  const settings = await getCachedSettings(domain);
+  const settings = await getCachedSettings();
 
   const brandName = settings?.brandName || 'ELYJEN';
   const themeName = settings?.uiTemplates?.theme?.toLowerCase() || 'default';

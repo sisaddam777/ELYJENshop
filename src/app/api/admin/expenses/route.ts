@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import connectToDatabase from '@/lib/db';
 import Expense from '@/models/Expense';
-import { getTenantDomain } from '@/lib/tenant';
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,11 +17,7 @@ export async function GET(req: NextRequest) {
     const from = searchParams.get('from');
     const to = searchParams.get('to');
 
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const query: any = { domain };
+    const query: any = {};
     if (category) query.category = category;
     
     if (from || to) {
@@ -80,14 +75,8 @@ export async function POST(req: NextRequest) {
     };
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    
     const expense = await Expense.create({
         ...safePayload,
-        domain
     });
     return NextResponse.json(expense, { status: 201 });
   } catch (error) {

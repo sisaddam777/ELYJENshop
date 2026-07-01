@@ -15,11 +15,11 @@ export async function POST(req: NextRequest) {
     const settings = await getCachedSettings(domain);
     const aiConfig = settings?.aiConfig || {};
     
-    const apiKey = aiConfig.openRouterApiKey || process.env.OPENROUTER_API_KEY;
+    const apiKey = aiConfig.openRouterApiKey || aiConfig.geminiApiKey;
     const systemPrompt = aiConfig.systemPrompt || 'You are a helpful e-commerce assistant for ELYJEN.';
 
     if (!apiKey) {
-      console.error('OPENROUTER_API_KEY is missing');
+      console.error('API key is missing in database settings');
       return NextResponse.json({ error: 'AI Service Unavailable' }, { status: 503 });
     }
 

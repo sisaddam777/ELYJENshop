@@ -12,7 +12,6 @@ import { auth } from '@/auth';
 import { z } from 'zod';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
-import { getTenantDomain } from '@/lib/tenant';
 import { CACHE_TAGS } from '@/lib/data-fetching';
 
 class StockError extends Error {
@@ -85,15 +84,10 @@ export async function POST(req: NextRequest) {
     const { items, shippingAddress, paymentMethod, useWallet, couponCode, manualPaymentDetails } = validation.data;
     const clientProvidedDeliveryCharge = validation.data.deliveryCharge;
 
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-
     const conn = await connectToDatabase();
 
-    // Fetch Settings for the current domain
-    const settings = await GlobalSettings.findOne({ domain });
+    // Fetch Settings
+    const settings = await GlobalSettings.findOne({});
     const subConfig = {
       activationThreshold: settings?.subscriptionConfig?.activationThreshold ?? 5000,
       rewardPercentage: settings?.subscriptionConfig?.rewardPercentage ?? 5
@@ -107,51 +101,25 @@ export async function POST(req: NextRequest) {
 
     let user = null;
     if (sessionUser?.user?.id) {
-      user = await User.findOne({ _id: sessionUser.user.id, domain }).session(session);
+      user = await User.findOne({ _id: sessionUser.user.id }).session(session);
     } else {
-      // Guest Checkout: Find or Create User by Email within the current domain
-      user = await User.findOne({ email: shippingAddress.email.toLowerCase(), domain }).session(session);
-
-      if (user) {
-        // If user exists but lacks phone or address, update it
-        let needsUpdate = false;
-        if (!user.phone && shippingAddress.phone) {
-          user.phone = shippingAddress.phone;
-          needsUpdate = true;
-        }
-        if ((!user.addresses || user.addresses.length === 0) && shippingAddress.street) {
-          user.addresses = [{
-            street: shippingAddress.street,
-            city: shippingAddress.city,
-            state: shippingAddress.state,
-            division: shippingAddress.division,
-            country: shippingAddress.country,
-            isDefault: true
-          }];
-          needsUpdate = true;
-        }
-        if (needsUpdate) {
-          await user.save({ session });
-        }
-      } else {
-        // Create a new user for this guest
-        const [newUser] = await User.create([{
-          name: shippingAddress.fullName,
-          email: shippingAddress.email.toLowerCase(),
-          phone: shippingAddress.phone,
-          domain,
-          role: 'user',
-          addresses: [{
-            street: shippingAddress.street,
-            city: shippingAddress.city,
-            state: shippingAddress.state,
-            division: shippingAddress.division,
-            country: shippingAddress.country,
-            isDefault: true
-          }]
-        }], { session });
-        user = newUser;
-      }
+      // Guest Checkout: Always create a new, isolated guest user identity to prevent account merging
+      const guestEmail = `${shippingAddress.email.toLowerCase()}-guest-${crypto.randomBytes(4).toString('hex')}`;
+      const [newUser] = await User.create([{
+        name: shippingAddress.fullName,
+        email: guestEmail,
+        phone: shippingAddress.phone,
+        role: 'user',
+        addresses: [{
+          street: shippingAddress.street,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          division: shippingAddress.division,
+          country: shippingAddress.country,
+          isDefault: true
+        }]
+      }], { session });
+      user = newUser;
     }
 
     let serverComputedTotal = 0;
@@ -173,7 +141,7 @@ export async function POST(req: NextRequest) {
 
       // 2b. Pre-check loop (ensure all items exist and have combined stock before any deductions)
       for (const item of uniqueItems) {
-        const product = await Product.findOne({ _id: item.product, domain, isPublished: true }).session(session);
+        const product = await Product.findOne({ _id: item.product, isPublished: true }).session(session);
         if (!product) {
           throw new StockError(`Product not found: ${item.name}`);
         }
@@ -204,7 +172,6 @@ export async function POST(req: NextRequest) {
         if (hasVariant) {
           const variantQuery: any = {
             _id: item.product,
-            domain,
             isPublished: true,
             variants: {
               $elemMatch: {
@@ -236,7 +203,6 @@ export async function POST(req: NextRequest) {
           product = await Product.findOneAndUpdate(
             {
               _id: item.product,
-              domain,
               stock: { $gte: item.quantity },
               isPublished: true
             },
@@ -259,7 +225,7 @@ export async function POST(req: NextRequest) {
 
       // 2d. Price Verification and Validated Items List (using ORIGINAL items for order structure)
       for (const item of items) {
-        const product = await Product.findOne({ _id: item.product, domain }).session(session);
+        const product = await Product.findOne({ _id: item.product }).session(session);
         if (!product) throw new Error('Product not found during price verification');
 
         const hasVariant = !!(item.color || item.size);
@@ -349,7 +315,6 @@ export async function POST(req: NextRequest) {
       const coupon = await Coupon.findOneAndUpdate(
         {
           code: couponCode.toUpperCase(),
-          domain, // Filter by domain
           isActive: true,
           expiryDate: { $gt: new Date() },
           minPurchase: { $lte: baseTotal },
@@ -396,7 +361,6 @@ export async function POST(req: NextRequest) {
           type: 'spent',
           status: 'completed',
           description: `Used tokens for order payment`,
-          domain, // Add domain to transaction
         }], { session });
 
         walletTxId = walletTx._id.toString();
@@ -437,7 +401,6 @@ export async function POST(req: NextRequest) {
           status: 'Order Placed',
           transactionId: paymentMethod === 'Online' ? `ORDER-${crypto.randomUUID().replace(/-/g, '').toUpperCase().slice(0, 16)}` : undefined,
           shortId: crypto.randomBytes(4).toString('hex').toUpperCase(),
-          domain, // MUST set the domain
           manualPaymentDetails,
         },
       ],
@@ -447,7 +410,7 @@ export async function POST(req: NextRequest) {
     // Link transaction to order ID if we had one
     if (walletTxId) {
       await WalletTransaction.findOneAndUpdate(
-        { _id: walletTxId, domain },
+        { _id: walletTxId },
         { orderId: newOrder._id },
         { session }
       );
@@ -520,21 +483,15 @@ export async function GET(req: NextRequest) {
 
     await connectToDatabase();
 
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    let query: any = { domain, deletedAt: null };
+    let query: any = { deletedAt: null };
     if (fetchAll && isAdmin) {
-      // Admins can see all orders for their domain
-      query = { domain, deletedAt: null };
+      query = { deletedAt: null };
     } else {
-      // Normal users (or admins without ?all=true) see their own orders on this domain
       const userId = (session.user as any).id;
       if (!userId) {
         return NextResponse.json({ message: 'User ID missing from session' }, { status: 400 });
       }
-      query = { user: userId, domain, deletedAt: null };
+      query = { user: userId, deletedAt: null };
     }
 
     const orders = await Order.find(query)

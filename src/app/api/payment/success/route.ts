@@ -23,16 +23,11 @@ export async function POST(req: NextRequest) {
 
     if (response?.status === 'VALID' || response?.status === 'VALIDATED') {
       await connectToDatabase();
-      const { getTenantDomain } = await import('@/lib/tenant');
-      const domain = await getTenantDomain();
-      if (!domain) {
-        return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-      }
       
       // Atomic update to mark as paid and sales-counted in one go
       // This prevents multiple SSLCommerz callbacks from double-counting sales
       const order = await Order.findOneAndUpdate(
-        { _id: orderId, domain, isSalesCounted: { $ne: true } },
+        { _id: orderId, isSalesCounted: { $ne: true } },
         { 
           $set: { 
             paymentStatus: 'Paid', 
@@ -50,7 +45,7 @@ export async function POST(req: NextRequest) {
           const Product = (await import('@/models/Product')).default;
           for (const item of order.items) {
             await Product.updateOne(
-              { _id: item.product, domain: order.domain },
+              { _id: item.product },
               { $inc: { totalSales: item.quantity } }
             );
           }
@@ -62,7 +57,7 @@ export async function POST(req: NextRequest) {
       } else {
         // If findOneAndUpdate returns null, it means isSalesCounted was already true 
         // OR the order ID is invalid. Check if order exists for redirection.
-        const existingOrder = await Order.findOne({ _id: orderId, domain });
+        const existingOrder = await Order.findOne({ _id: orderId });
         if (!existingOrder) {
           return NextResponse.json({ message: 'Order not found' }, { status: 404 });
         }

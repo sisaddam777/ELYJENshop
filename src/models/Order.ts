@@ -43,7 +43,6 @@ export interface IOrder extends Document {
     trackingUrl?: string;
     courierStatus?: string;
   };
-  domain: string;
   isSalesCounted?: boolean;
   manualPaymentDetails?: {
     methodName?: string;
@@ -105,14 +104,6 @@ const OrderSchema: Schema<IOrder> = new Schema(
       consignmentId: { type: String },
       trackingUrl: { type: String },
       courierStatus: { type: String },
-    },
-    domain: { 
-      type: String, 
-      required: [true, 'Domain is required'], 
-      index: true,
-      trim: true,
-      lowercase: true,
-      default: 'elyjen.shop'
     },
     isSalesCounted: { type: Boolean, default: false },
     manualPaymentDetails: {

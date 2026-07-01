@@ -94,14 +94,14 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
   // Sync state to URL without full reload
   const setPageAndUrl = useCallback((page: number) => {
     setCurrentPage(page);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     if (page > 1) {
       params.set('page', page.toString());
     } else {
       params.delete('page');
     }
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router, searchParams]);
+  }, [pathname, router]);
 
   useEffect(() => {
     skipClampRef.current = true;
@@ -163,7 +163,8 @@ export default function ShopClient({ initialProducts, initialCategories }: ShopC
 
   const clearFilters = () => {
     setSelectedCategories([]);
-    setPriceRange([0, 50000]);
+    setMinPrice('');
+    setMaxPrice('');
     setSearchTerm('');
     setShowOnlyNew(false);
     setShowOnlySale(false);

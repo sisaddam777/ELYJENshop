@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
         // Fetch settings for logging/context, but prioritize ENV for credentials as requested
         const settings = await getCachedSettings(hostname);
 
-        const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
-        const accessToken = process.env.FACEBOOK_ACCESS_TOKEN;
-        const testEventCode = settings?.facebookTestEventCode || process.env.NEXT_PUBLIC_FACEBOOK_TEST_EVENT_CODE || process.env.FACEBOOK_TEST_EVENT_CODE;
+        const pixelId = settings?.metaPixelId;
+        const accessToken = settings?.facebookAccessToken;
+        const testEventCode = settings?.facebookTestEventCode;
 
         if (!pixelId || !accessToken) {
             console.error('[FB CAPI] Missing configuration for', hostname, { 

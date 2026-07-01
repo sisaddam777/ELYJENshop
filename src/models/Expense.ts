@@ -6,7 +6,6 @@ export interface IExpense extends Document {
   category: 'Ads' | 'Salary' | 'Rent' | 'Utility' | 'Others';
   date: Date;
   description?: string;
-  domain: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,14 +22,6 @@ const ExpenseSchema: Schema<IExpense> = new Schema(
     },
     date: { type: Date, required: true, default: Date.now },
     description: { type: String },
-    domain: { 
-      type: String, 
-      required: [true, 'Domain is required'], 
-      index: true,
-      trim: true,
-      lowercase: true,
-      default: 'elyjen.shop'
-    },
   },
   { timestamps: true }
 );

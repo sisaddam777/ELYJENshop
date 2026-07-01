@@ -25,26 +25,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Valid Order IDs are required' }, { status: 400 });
     }
 
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain context not found' }, { status: 400 });
-    }
-
     await connectToDatabase();
 
     // Fetch Global Settings for Courier Config
-    const settingsDoc = await GlobalSettings.findOne({ domain });
+    const settingsDoc = await GlobalSettings.findOne({});
     if (!settingsDoc) {
       return NextResponse.json({ message: 'Global settings not found.' }, { status: 404 });
     }
     const settings = settingsDoc.toObject({ getters: true });
 
-    const apiKey = process.env.STEADFAST_API_KEY;
-    const secretKey = process.env.STEADFAST_SECRET_KEY;
+    const apiKey = settings?.courierConfig?.steadfast?.apiKey;
+    const secretKey = settings?.courierConfig?.steadfast?.secretKey;
 
     if (!apiKey || !secretKey) {
       return NextResponse.json({
-        message: 'Steadfast API credentials are not configured in your .env file.'
+        message: 'Steadfast API credentials are not configured in your database settings.'
       }, { status: 400 });
     }
 
@@ -58,7 +53,7 @@ export async function POST(req: NextRequest) {
     // Process each order
     for (const orderId of orderIds) {
       try {
-        const order = await Order.findOne({ _id: orderId, domain });
+        const order = await Order.findOne({ _id: orderId });
 
         if (!order) {
           results.push({ id: orderId, success: false, message: 'Order record not found' });

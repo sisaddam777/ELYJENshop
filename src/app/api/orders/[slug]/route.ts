@@ -7,7 +7,6 @@ import User from '@/models/User';
 import GlobalSettings from '@/models/GlobalSettings';
 import WalletTransaction from '@/models/WalletTransaction';
 import { auth } from '@/auth';
-import { getTenantDomain } from '@/lib/tenant';
 
 // GET single order details
 export async function GET(
@@ -26,8 +25,7 @@ export async function GET(
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    const order = await Order.findOne({ _id: slug, domain })
+    const order = await Order.findOne({ _id: slug })
       .populate('user', 'name email image')
       .populate('items.product', 'name price images slug');
 
@@ -74,7 +72,6 @@ export async function PATCH(
     const { status, paymentStatus } = body;
 
     const conn = await connectToDatabase();
-    const domain = await getTenantDomain();
 
     if (!mongoose.Types.ObjectId.isValid(slug)) {
       return NextResponse.json({ message: 'Invalid order id' }, { status: 400 });
@@ -85,7 +82,7 @@ export async function PATCH(
 
     try {
       // Fetch the order within the session
-      const order = await Order.findOne({ _id: slug, domain }).session(dbSession);
+      const order = await Order.findOne({ _id: slug }).session(dbSession);
 
       if (!order) {
         await dbSession.abortTransaction();
@@ -122,7 +119,7 @@ export async function PATCH(
         const Product = (await import('@/models/Product')).default;
         for (const item of order.items) {
           await Product.updateOne(
-            { _id: item.product, domain },
+            { _id: item.product },
             { $inc: { totalSales: item.quantity } },
             { session: dbSession }
           );
@@ -133,8 +130,8 @@ export async function PATCH(
       // 2. Loyalty System: Award Tokens on Success
       const isOrderSuccessful = (status || order.status) === 'Delivered';
       if (isOrderSuccessful && !order.isRewarded && order.user) {
-        const user = await User.findOne({ _id: order.user, domain }).session(dbSession);
-        const settings = await GlobalSettings.findOne({ domain }).session(dbSession);
+        const user = await User.findOne({ _id: order.user }).session(dbSession);
+        const settings = await GlobalSettings.findOne({}).session(dbSession);
         const subConfig = {
           activationThreshold: settings?.subscriptionConfig?.activationThreshold ?? 5000,
           rewardPercentage: settings?.subscriptionConfig?.rewardPercentage ?? 5
@@ -157,7 +154,6 @@ export async function PATCH(
               type: 'earned',
               status: 'completed',
               orderId: order._id,
-              domain: domain,
               description: `Tokens earned from order #${order._id.toString().slice(-6).toUpperCase()}`
             }], { session: dbSession });
           }
@@ -172,7 +168,7 @@ export async function PATCH(
 
       // Final update
       const updatedOrder = await Order.findOneAndUpdate(
-        { _id: slug, domain },
+        { _id: slug },
         { $set: updateData },
         { session: dbSession, new: true }
       );
@@ -209,8 +205,7 @@ export async function DELETE(
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    const deletedOrder = await Order.findOneAndDelete({ _id: slug, domain });
+    const deletedOrder = await Order.findOneAndDelete({ _id: slug });
 
     if (!deletedOrder) {
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });

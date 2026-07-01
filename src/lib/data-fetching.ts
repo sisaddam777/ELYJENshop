@@ -27,37 +27,37 @@ export const CACHE_TAGS = {
 
 // --- PRODUCTS ---
 
-export const getCachedProducts = (domain: string, query = {}, limit = 10, sort: any = { createdAt: -1 }) => {
+export const getCachedProducts = (_domain?: string, query = {}, limit = 10, sort: any = { createdAt: -1 }) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const products = await Product.find({ isPublished: true, domain, ...query })
+      const products = await Product.find({ isPublished: true, ...query })
         .populate('categories')
         .sort(sort as any)
         .limit(limit)
         .lean();
       return serialize(products);
     },
-    ['products-list', domain, JSON.stringify(query), limit.toString(), JSON.stringify(sort)],
+    ['products-list', JSON.stringify(query), limit.toString(), JSON.stringify(sort)],
     { revalidate: 31536000, tags: [CACHE_TAGS.products] }
   )();
 };
 
-export const getCachedProductBySlug = (domain: string, slug: string) => {
+export const getCachedProductBySlug = (_domain: string | undefined, slug: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const product = await Product.findOne({ slug, domain, isPublished: true })
+      const product = await Product.findOne({ slug, isPublished: true })
         .populate('categories')
         .lean();
       return serialize(product);
     },
-    ['product-detail', domain, slug],
+    ['product-detail', slug],
     { revalidate: 31536000, tags: [CACHE_TAGS.products] }
   )();
 };
 
-export const getTrendingProducts = (domain: string, limit = 10) => {
+export const getTrendingProducts = (_domain?: string, limit = 10) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
@@ -67,7 +67,7 @@ export const getTrendingProducts = (domain: string, limit = 10) => {
 
       // 1. Get Top Selling products in last 30 days
       const topSellingItems = await Order.aggregate([
-        { $match: { domain, createdAt: { $gte: thirtyDaysAgo }, status: { $ne: 'Cancelled' } } },
+        { $match: { createdAt: { $gte: thirtyDaysAgo }, status: { $ne: 'Cancelled' } } },
         { $unwind: '$items' },
         { $group: { _id: '$items.product', totalSales: { $sum: '$items.quantity' } } },
         { $sort: { totalSales: -1 } },
@@ -78,8 +78,7 @@ export const getTrendingProducts = (domain: string, limit = 10) => {
 
       let trendingProducts = await Product.find({
         _id: { $in: topSellingIds },
-        isPublished: true,
-        domain
+        isPublished: true
       }).populate('categories').lean();
 
       // Ensure they are in the order of totalSales
@@ -95,7 +94,6 @@ export const getTrendingProducts = (domain: string, limit = 10) => {
         const topRated = await Product.find({
           _id: { $nin: trendingProducts.map(p => p._id) },
           isPublished: true,
-          domain,
           ratings: { $gt: 0 }
         })
           .populate('categories')
@@ -111,7 +109,6 @@ export const getTrendingProducts = (domain: string, limit = 10) => {
         const topViewed = await Product.find({
           _id: { $nin: trendingProducts.map(p => p._id) },
           isPublished: true,
-          domain,
           views: { $gt: 0 }
         })
           .populate('categories')
@@ -126,8 +123,7 @@ export const getTrendingProducts = (domain: string, limit = 10) => {
         const remaining = limit - trendingProducts.length;
         const latest = await Product.find({
           _id: { $nin: trendingProducts.map(p => p._id) },
-          isPublished: true,
-          domain
+          isPublished: true
         })
           .populate('categories')
           .sort({ createdAt: -1 } as any)
@@ -138,133 +134,114 @@ export const getTrendingProducts = (domain: string, limit = 10) => {
 
       return serialize(trendingProducts);
     },
-    ['trending-products', domain, limit.toString()],
+    ['trending-products', limit.toString()],
     { revalidate: 3600, tags: [CACHE_TAGS.products] }
   )();
 };
 
 // --- CATEGORIES ---
 
-export const getCachedCategories = (domain: string) => {
+export const getCachedCategories = (_domain?: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const categories = await Category.find({ isActive: true, domain })
+      const categories = await Category.find({ isActive: true })
         .populate('parentCategory', 'name')
         .sort({ createdAt: -1 })
         .lean();
       return serialize(categories);
     },
-    ['categories-list', domain],
+    ['categories-list'],
     { revalidate: 31536000, tags: [CACHE_TAGS.categories] }
   )();
 };
 
 // --- BANNERS ---
 
-export const getCachedBanners = (domain: string) => {
+export const getCachedBanners = (_domain?: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const banners = await Banner.find({ isActive: true, domain })
+      const banners = await Banner.find({ isActive: true })
         .sort({ order: 1 })
         .lean();
       return serialize(banners);
     },
-    ['banners-list', domain],
+    ['banners-list'],
     { revalidate: 60, tags: [CACHE_TAGS.banners] }
   )();
 };
 
 // --- BLOGS ---
 
-export const getCachedBlogs = (domain: string, limit = 10) => {
+export const getCachedBlogs = (_domain?: string, limit = 10) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const blogs = await Blog.find({ isPublished: true, domain })
+      const blogs = await Blog.find({ isPublished: true })
         .sort({ createdAt: -1 })
         .limit(limit)
         .lean();
       return serialize(blogs);
     },
-    ['blogs-list', domain, limit.toString()],
+    ['blogs-list', limit.toString()],
     { revalidate: 31536000, tags: [CACHE_TAGS.blogs] }
   )();
 };
 
-export const getCachedBlogBySlug = (domain: string, slug: string) => {
+export const getCachedBlogBySlug = (_domain: string | undefined, slug: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const blog = await Blog.findOne({ slug, isPublished: true, domain }).lean();
+      const blog = await Blog.findOne({ slug, isPublished: true }).lean();
       return serialize(blog);
     },
-    ['blog-detail', domain, slug],
+    ['blog-detail', slug],
     { revalidate: 31536000, tags: [CACHE_TAGS.blogs] }
   )();
 };
 
 // --- FAQs ---
 
-export const getCachedFAQs = (domain: string) => {
+export const getCachedFAQs = (_domain?: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-      const faqs = await FAQ.find({ isActive: true, domain }).sort({ order: 1 }).lean();
+      const faqs = await FAQ.find({ isActive: true }).sort({ order: 1 }).lean();
       return serialize(faqs);
     },
-    ['faqs-list', domain],
+    ['faqs-list'],
     { revalidate: 31536000, tags: [CACHE_TAGS.faqs] }
   )();
 };
 
 // --- SETTINGS ---
 
-/**
- * Fetches global settings for the storefront.
- * In a multi-tenant environment, this resolves settings based on the domain (hostname).
- */
-export const getCachedSettings = (hostname: string = 'localhost') => {
-  // Normalize hostname: strip port and 'www.'
-  let domain = hostname.split(':')[0].toLowerCase();
-  if (domain.startsWith('www.')) {
-    domain = domain.replace('www.', '');
-  }
-
+export const getCachedSettings = (_hostname?: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-
-      // Find settings for this specific domain
-      // If not found, fallback to the 'main' store or first record
-      let settings = await GlobalSettings.findOne({ domain }).lean();
-
-      if (!settings) {
-        settings = await GlobalSettings.findOne({ storeId: 'main' }).lean() || await GlobalSettings.findOne().lean();
-      }
-
+      const settings = await GlobalSettings.findOne().lean();
       return serialize(settings);
     },
-    ['settings-by-domain', domain], // Use normalized domain as cache key
+    ['settings-global'],
     { tags: [CACHE_TAGS.settings], revalidate: 3600 }
   )();
 };
 
 // --- COUPONS ---
 
-export const getCachedActiveCoupon = (domain: string) => {
+export const getCachedActiveCoupon = (_domain?: string) => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
       const coupon = await Coupon.findOne({
         isActive: true,
-        domain,
         expiryDate: { $gt: new Date() }
       }).sort({ createdAt: -1 }).lean();
       return serialize(coupon);
     },
-    ['active-coupon', domain],
+    ['active-coupon'],
     { revalidate: 3600, tags: [CACHE_TAGS.coupons] }
   )();
 };

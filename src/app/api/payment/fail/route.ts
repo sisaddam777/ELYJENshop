@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import connectToDatabase from '@/lib/db';
 import Order from '@/models/Order';
+import GlobalSettings from '@/models/GlobalSettings';
 
 // FAIL ROUTE
 export async function POST(req: NextRequest) {
   try {
+    await connectToDatabase();
+    const settings = await GlobalSettings.findOne({}).lean() as any;
+    const secret = settings?.paymentConfig?.sslcommerz?.storePassword;
     const signature = req.headers.get('x-signature');
-    const secret = process.env.SSLCOMMERZ_STORE_PASSWORD;
     const rawBody = await req.text();
 
     if (!signature || !secret) {
@@ -26,9 +29,7 @@ export async function POST(req: NextRequest) {
     
     if (orderId) {
       await connectToDatabase();
-      const { getTenantDomain } = await import('@/lib/tenant');
-      const domain = await getTenantDomain();
-      const order = await Order.findOne({ _id: orderId, domain });
+      const order = await Order.findOne({ _id: orderId });
       if (order) {
         console.info(`Marking order ${orderId} as Failed. Previous status: ${order.paymentStatus}, User: ${order.user}`);
         try {

@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Eye,
   Globe,
+  Database,
   CreditCard,
   BarChart3,
   Truck,
@@ -151,34 +152,6 @@ export default function SuperConfigPage() {
     });
   };
 
-  const handleRepair = async () => {
-    const result = await Swal.fire({
-      title: 'Repair Database?',
-      text: 'This will sync all orphaned data (products, orders, etc.) to the current domain. This action is intensive. Continue?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#2563eb',
-      confirmButtonText: 'Yes, repair now'
-    });
-
-    if (!result.isConfirmed) return;
-    
-    setSaving(true);
-    try {
-      const res = await fetch('/api/admin/seed/repair-tenants', { method: 'POST' });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(`Repair Complete! ${data.results.products} products and ${data.results.orders} orders synced.`);
-        router.refresh();
-      } else {
-        throw new Error(data.message || 'Repair failed');
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to repair database');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -194,26 +167,18 @@ export default function SuperConfigPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b pb-8">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px] md:text-xs">
-            <ShieldCheck className="h-4 w-4" /> Global Infrastructure Control
+            <ShieldCheck className="h-4 w-4" /> System Infrastructure Control
           </div>
-          <h1 className="text-2xl md:text-4xl font-black tracking-tighter">Tenant Deep Config</h1>
-          <p className="text-muted-foreground text-sm">Manage keys, tracking, and logistics for this specific domain.</p>
+          <h1 className="text-2xl md:text-4xl font-black tracking-tighter">Global Config</h1>
+          <p className="text-muted-foreground text-sm">Manage keys, tracking, and design orchestration for the entire platform.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <Button 
-            variant="outline"
-            onClick={handleRepair} 
-            disabled={saving || !settings}
-            className="h-11 md:h-12 px-4 md:px-6 rounded-xl font-bold gap-2 border-2 text-sm"
-          >
-            {saving ? 'Repairing...' : 'Repair Database'}
-          </Button>
           <Button 
             onClick={handleUpdate} 
             disabled={saving || !settings}
             className="h-11 md:h-12 px-6 md:px-8 rounded-xl font-bold gap-2 shadow-lg shadow-primary/20 text-sm"
           >
-            {saving ? 'Applying...' : <><Save className="h-5 w-5" /> Save SaaS Config</>}
+            {saving ? 'Applying...' : <><Save className="h-5 w-5" /> Save Configuration</>}
           </Button>
         </div>
       </div>
@@ -320,7 +285,7 @@ export default function SuperConfigPage() {
                     }} 
                     className="w-full h-12 rounded-xl border-2 bg-white px-4 text-sm focus:border-red-500 outline-none transition-all" 
                   />
-                  <p className="text-[10px] text-muted-foreground italic">Set when the tenant's access will automatically expire.</p>
+                  <p className="text-[10px] text-muted-foreground italic">Set when the project's access will automatically expire.</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs text-gray-600">Access Status</Label>
@@ -351,32 +316,14 @@ export default function SuperConfigPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-        {/* 1. Tenant Identification */}
+        {/* 1. System Identification */}
         <Card className="lg:col-span-3 border-2 border-primary/20 shadow-none overflow-hidden rounded-3xl">
             <CardHeader className="bg-primary/5 border-b p-5 md:px-6">
               <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                 <Globe className="h-5 w-5 text-primary" /> Core Identity
+                 <Globe className="h-5 w-5 text-primary" /> Tracking & SEO Core
               </CardTitle>
            </CardHeader>
-           <CardContent className="p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               <div className="space-y-2">
-                <Label htmlFor="store-domain" className="font-bold">Store Domain</Label>
-                <input 
-                  id="store-domain"
-                  value={settings?.domain || ''} 
-                  onChange={(e) => setSettings({...(settings ?? {}), domain: e.target.value})}
-                  className="w-full h-12 rounded-xl border px-4 focus:ring-2 focus:ring-primary outline-none text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tenant-store-id" className="font-bold">Tenant Store ID</Label>
-                <input 
-                  id="tenant-store-id"
-                  value={settings?.storeId || ''} 
-                  onChange={(e) => setSettings({...(settings ?? {}), storeId: e.target.value})}
-                  className="w-full h-12 rounded-xl border px-4 focus:ring-2 focus:ring-primary outline-none text-sm"
-                />
-              </div>
+           <CardContent className="p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="gtm-id" className="font-bold">GTM ID (Tag Manager)</Label>
                 <input 
@@ -424,7 +371,7 @@ export default function SuperConfigPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="fb-access-token" className="font-bold text-xs">Facebook Access Token</Label>
-                <input id="fb-access-token" type="password" value={settings?.facebookAccessToken || ''} onChange={(e) => setSettings({...settings, facebookAccessToken: e.target.value})} className="w-full h-12 rounded-xl border px-4 text-sm" />
+                <input id="fb-access-token" type="text" value={settings?.facebookAccessToken || ''} onChange={(e) => setSettings({...settings, facebookAccessToken: e.target.value})} className="w-full h-12 rounded-xl border px-4 text-sm" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -457,7 +404,7 @@ export default function SuperConfigPage() {
            <CardContent className="p-6 space-y-6">
                <div className="space-y-2">
                 <Label htmlFor="openrouter-api-key" className="font-bold text-xs">OpenRouter API Key</Label>
-                <input id="openrouter-api-key" type="password" value={settings?.aiConfig?.openRouterApiKey || ''} onChange={(e) => setSettings({...settings, aiConfig: {...(settings?.aiConfig || {}), openRouterApiKey: e.target.value}})} className="w-full h-12 rounded-xl border px-4 text-sm" />
+                <input id="openrouter-api-key" type="text" value={settings?.aiConfig?.openRouterApiKey || ''} onChange={(e) => setSettings({...settings, aiConfig: {...(settings?.aiConfig || {}), openRouterApiKey: e.target.value}})} className="w-full h-12 rounded-xl border px-4 text-sm" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="system-prompt" className="font-bold text-xs">System Training Prompt</Label>
@@ -513,11 +460,11 @@ export default function SuperConfigPage() {
                  <div className="md:col-span-2 font-black text-xs uppercase opacity-50 mb-2">Provider Credentials</div>
                   <div className="space-y-2">
                     <Label htmlFor="steadfast-api-key" className="font-bold text-xs">Steadfast API Key</Label>
-                    <input id="steadfast-api-key" type="password" value={settings?.courierConfig?.steadfast?.apiKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), steadfast: {...(settings?.courierConfig?.steadfast || {}), apiKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
+                    <input id="steadfast-api-key" type="text" value={settings?.courierConfig?.steadfast?.apiKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), steadfast: {...(settings?.courierConfig?.steadfast || {}), apiKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="steadfast-secret-key" className="font-bold text-xs">Steadfast Secret Key</Label>
-                    <input id="steadfast-secret-key" type="password" value={settings?.courierConfig?.steadfast?.secretKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), steadfast: {...(settings?.courierConfig?.steadfast || {}), secretKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
+                    <input id="steadfast-secret-key" type="text" value={settings?.courierConfig?.steadfast?.secretKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), steadfast: {...(settings?.courierConfig?.steadfast || {}), secretKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="pathao-store-id" className="font-bold text-xs">Pathao Store ID</Label>
@@ -525,7 +472,7 @@ export default function SuperConfigPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="redx-api-key" className="font-bold text-xs">RedX API Key</Label>
-                    <input id="redx-api-key" type="password" value={settings?.courierConfig?.redx?.apiKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), redx: {...(settings?.courierConfig?.redx || {}), apiKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
+                    <input id="redx-api-key" type="text" value={settings?.courierConfig?.redx?.apiKey || ''} onChange={(e) => setSettings({...settings, courierConfig: {...(settings?.courierConfig || {}), redx: {...(settings?.courierConfig?.redx || {}), apiKey: e.target.value}}})} className="w-full h-10 rounded-lg border px-3 text-xs" />
                   </div>
               </div>
            </CardContent>
@@ -604,7 +551,7 @@ export default function SuperConfigPage() {
                     <Label htmlFor="ssl-store-passwd" className="font-bold text-xs">Store Password</Label>
                     <input 
                       id="ssl-store-passwd" 
-                      type="password"
+                      type="text"
                       value={settings?.paymentConfig?.sslcommerz?.storePassword || ''} 
                       onChange={(e) => setSettings({
                         ...settings, 
@@ -870,6 +817,39 @@ export default function SuperConfigPage() {
                   </Select>
                 </div>
            </CardContent>
+        </Card>
+
+        {/* Super Admin Note */}
+        <Card className="lg:col-span-3 border-2 border-indigo-500/20 shadow-none overflow-hidden rounded-3xl">
+          <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-5 md:p-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg shrink-0">
+                <Database className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div>
+                <CardTitle className="text-xl md:text-2xl font-bold leading-tight">Super Admin Note</CardTitle>
+                <CardDescription className="text-indigo-100 text-xs md:text-sm mt-1">
+                  Save project credentials, API keys, and system notes securely.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-5 md:p-8">
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                Credentials & System Notes
+              </Label>
+              <textarea
+                value={settings?.superAdminNote || ''}
+                onChange={(e) => setSettings({
+                  ...(settings ?? {}),
+                  superAdminNote: e.target.value
+                })}
+                placeholder="Enter database URLs, credentials, courier secrets, or private dev notes..."
+                className="w-full min-h-[200px] p-4 rounded-xl border-2 border-gray-100 bg-gray-50 focus:border-indigo-500 focus:bg-white outline-none transition-all resize-y font-mono text-sm shadow-inner"
+              />
+            </div>
+          </CardContent>
         </Card>
 
       </div>

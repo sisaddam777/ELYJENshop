@@ -14,11 +14,7 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const user = await User.findOne({ email: session.user.email, domain }).populate('wishlist');
+    const user = await User.findOne({ email: session.user.email }).populate('wishlist');
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -45,11 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const user = await User.findOne({ email: session.user.email, domain });
+    const user = await User.findOne({ email: session.user.email });
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

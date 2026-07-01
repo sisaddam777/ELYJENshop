@@ -17,12 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const { getTenantDomain } = await import('@/lib/tenant');
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const order = await Order.findOne({ _id: orderId, domain });
+    const order = await Order.findOne({ _id: orderId });
 
     if (!order) {
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });
@@ -34,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const transactionId = order.transactionId || `TRANS-${orderId}-${Date.now()}`;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
     const { shippingAddress } = order;
     if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.street || !shippingAddress.city || !shippingAddress.phone) {

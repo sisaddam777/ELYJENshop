@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import User from '@/models/User';
-import { getTenantDomain } from '@/lib/tenant';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,14 +21,10 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const existingUser = await User.findOne({ email: normalizedEmail, domain });
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return NextResponse.json(
@@ -52,7 +47,6 @@ export async function POST(req: NextRequest) {
         isDefault: true
       }],
       role: 'user',
-      domain: domain, // MUST set domain
     });
 
     return NextResponse.json(

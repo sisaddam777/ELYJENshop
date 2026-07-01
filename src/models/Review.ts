@@ -6,7 +6,6 @@ export interface IReview extends Document {
   name: string; // From the reviewer
   rating: number; // 1-5
   comment: string;
-  domain: string;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
   updatedAt: Date;
@@ -19,14 +18,6 @@ const ReviewSchema: Schema<IReview> = new Schema(
     name: { type: String, required: true },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true },
-    domain: { 
-      type: String, 
-      required: [true, 'Domain is required'], 
-      index: true,
-      trim: true,
-      lowercase: true,
-      default: 'elyjen.shop'
-    },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   },
   { timestamps: true }

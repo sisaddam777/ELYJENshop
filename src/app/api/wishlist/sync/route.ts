@@ -38,14 +38,9 @@ export async function POST(req: NextRequest) {
 
     console.log('[Wishlist Sync] Connecting to database...');
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      console.error('[Wishlist Sync] Tenant domain is missing');
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    console.log(`[Wishlist Sync] Database connected and domain fetched in ${Date.now() - startTime}ms`);
+    console.log(`[Wishlist Sync] Database connected in ${Date.now() - startTime}ms`);
 
-    const user = await User.findOne({ email: session.user.email, domain });
+    const user = await User.findOne({ email: session.user.email });
     
     if (!user) {
       console.warn('[Wishlist Sync] User not found for session');

@@ -13,12 +13,8 @@ export async function GET(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
-    const user = await User.findOne({ _id: session.user.id, domain }).select('-password').lean();
+    const user = await User.findOne({ _id: session.user.id }).select('-password').lean();
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -47,12 +43,8 @@ export async function PUT(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
-    const user = await User.findOne({ _id: session.user.id, domain });
+    const user = await User.findOne({ _id: session.user.id });
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

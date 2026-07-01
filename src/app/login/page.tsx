@@ -41,8 +41,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  const remoteTenant = searchParams.get('remote_tenant');
-  const hubDomain = process.env.NEXT_PUBLIC_HUB_DOMAIN || 'www.elyjen.shop';
 
   // Force WWW in production for consistency and to avoid Auth mismatch
   useEffect(() => {
@@ -57,52 +55,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
-
-  // If already logged in and trying to access a tenant, redirect to callback immediately
-  useEffect(() => {
-    if (status === 'authenticated' && remoteTenant) {
-      router.push(`/api/auth/hub-callback?target=${encodeURIComponent(remoteTenant)}`);
-    }
-  }, [status, remoteTenant, router]);
-
-  // Auto-trigger Google login if coming from a tenant with the auto_google flag
-  useEffect(() => {
-    const autoGoogle = searchParams.get('auto_google');
-    if (autoGoogle === 'true' && !hasAutoTriggered) {
-      setHasAutoTriggered(true);
-      setTimeout(() => {
-        loginWithGoogle();
-      }, 500);
-    }
-  }, [searchParams, hasAutoTriggered]);
 
   async function loginWithGoogle() {
     setIsGoogleLoading(true);
     try {
-      const host = window.location.host;
-      const currentHost = window.location.hostname.replace(/^www\./, '');
-      const isHub = currentHost === 'elyjen.shop' ||
-        currentHost.endsWith('.elyjen.shop') ||
-        currentHost === 'localhost';
-
-      if (!isHub) {
-        const isProd = process.env.NODE_ENV === 'production';
-        const protocol = (isProd && !currentHost.includes('localhost')) ? 'https' : 'http';
-        window.location.href = `${protocol}://${hubDomain}/login?remote_tenant=${currentHost}&auto_google=true`;
-        return;
-      }
-
-      const isProd = process.env.NODE_ENV === 'production';
-      const protocol = (isProd && !currentHost.includes('localhost')) ? 'https' : 'http';
-      // Use the hub's absolute base URL for the callbackUrl
-      const hubBase = `${protocol}://${hubDomain}`;
-
-      const finalCallback = remoteTenant
-        ? `${hubBase}/api/auth/hub-callback?target=${encodeURIComponent(remoteTenant)}`
-        : `${hubBase}/dashboard`;
-
-      await signIn('google', { callbackUrl: finalCallback });
+      await signIn('google', { callbackUrl: '/login' });
     } catch (error) {
       setIsGoogleLoading(false);
       toast.error('Failed to log in with Google.');
@@ -130,12 +87,11 @@ export default function LoginPage() {
         toast.error(response.error);
       } else {
         toast.success('Logged in successfully!');
-
-        const remoteTenant = searchParams.get('remote_tenant');
-        const isValidTenant = remoteTenant && !remoteTenant.includes('://') && (remoteTenant.includes('.') || remoteTenant === 'localhost');
-
-        if (remoteTenant && isValidTenant) {
-          router.push(`/api/auth/hub-callback?target=${encodeURIComponent(remoteTenant)}`);
+        const { getSession } = await import('next-auth/react');
+        const sess = await getSession();
+        const role = (sess?.user as any)?.role;
+        if (role === 'admin' || role === 'super_admin') {
+          router.push('/admin/dashboard');
         } else {
           router.push('/dashboard');
         }

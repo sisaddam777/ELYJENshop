@@ -2,7 +2,6 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface ICoupon extends Document {
   code: string;
-  domain: string;
   discountType: 'fixed' | 'percentage';
   discountValue: number;
   minPurchase: number;
@@ -21,14 +20,6 @@ const CouponSchema: Schema<ICoupon> = new Schema(
       required: true, 
       uppercase: true, 
       trim: true 
-    },
-    domain: { 
-      type: String, 
-      required: [true, 'Domain is required'], 
-      index: true,
-      trim: true,
-      lowercase: true,
-      default: 'elyjen.shop'
     },
     discountType: { 
       type: String, 
@@ -58,8 +49,8 @@ const CouponSchema: Schema<ICoupon> = new Schema(
   { timestamps: true }
 );
 
-// Ensure coupon code is unique per domain
-CouponSchema.index({ code: 1, domain: 1 }, { unique: true });
+// Ensure coupon code is unique globally
+CouponSchema.index({ code: 1 }, { unique: true });
 
 const Coupon: Model<ICoupon> = mongoose.models.Coupon || mongoose.model<ICoupon>('Coupon', CouponSchema);
 

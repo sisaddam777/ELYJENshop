@@ -7,18 +7,13 @@ import { auth } from '@/auth';
 export async function GET() {
   try {
     const session = await auth();
-    if (!session || !session.user || typeof session.user.email !== 'string' || session.user.email.trim() === '') {
+    if (!session || !session.user || !(session.user as any).id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     await connectToDatabase();
-    const { getTenantDomain } = await import('@/lib/tenant');
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
     
-    const user = await User.findOne({ email: session.user.email.trim(), domain });
+    const user = await User.findById((session.user as any).id);
     
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

@@ -23,14 +23,8 @@ export async function POST(
 
     // Connect to DB and fetch order and settings
     await connectToDatabase();
-    const { getTenantDomain } = await import('@/lib/tenant');
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    
-    const order = await Order.findOne({ _id: id, domain }).populate('user');
-    const settings = await GlobalSettings.findOne({ domain });
+    const order = await Order.findOne({ _id: id }).populate('user');
+    const settings = await GlobalSettings.findOne({});
 
     if (!order) {
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });
@@ -75,8 +69,8 @@ export async function POST(
       area_id: body.area_id,
     };
 
-    const sApiKey = steadfast?.apiKey || process.env.STEADFAST_API_KEY;
-    const sSecretKey = steadfast?.secretKey || process.env.STEADFAST_SECRET_KEY;
+    const sApiKey = steadfast?.apiKey;
+    const sSecretKey = steadfast?.secretKey;
 
     console.log('[Courier Booking] Using Provider:', activeProvider);
     console.log('[Courier Booking] API Key exists:', !!sApiKey);

@@ -6,7 +6,6 @@ export interface ISlider extends Document {
   image: string;
   ctaText?: string;
   ctaLink?: string;
-  domain: string;
   order: number;
   isActive: boolean;
   createdAt: Date;
@@ -20,7 +19,6 @@ const SliderSchema: Schema<ISlider> = new Schema(
     image: { type: String, required: true },
     ctaText: { type: String },
     ctaLink: { type: String },
-    domain: { type: String, required: true, index: true },
     order: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
   },

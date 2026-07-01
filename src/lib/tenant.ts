@@ -1,21 +1,5 @@
-import { headers } from 'next/headers';
-
-/**
- * Gets the current tenant domain from the request headers.
- * Fallback to 'localhost' for local development.
- */
 export async function getTenantDomain(): Promise<string> {
-  const headersList = await headers();
-  const host = headersList.get('host') || 'localhost';
-  // Strip port if present (e.g., localhost:3000 -> localhost)
-  let domain = host.split(':')[0];
-  
-  // Strip 'www.' if present for consistency (e.g., www.elyjen.shop -> elyjen.shop)
-  if (domain.startsWith('www.')) {
-    domain = domain.replace('www.', '');
-  }
-  
-  return domain;
+  return 'elyjen.shop';
 }
 
 /**

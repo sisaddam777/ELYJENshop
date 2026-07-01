@@ -3,33 +3,25 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/db';
 import GlobalSettings from '@/models/GlobalSettings';
 import { auth } from '@/auth';
-import { getTenantDomain } from '@/lib/tenant';
 
+// Helper to return settings without masking sensitive data or fallback to environment variables
 const getMaskedSettings = (raw: any, masked: any) => ({
   ...masked,
+  facebookAccessToken: masked.facebookAccessToken || null,
+  tiktokAccessToken: masked.tiktokAccessToken || null,
   courierConfig: masked.courierConfig ? {
     ...masked.courierConfig,
-    steadfast: process.env.STEADFAST_API_KEY ? {
-      apiKey: "********************",
-      secretKey: "********************"
-    } : null,
-    pathao: raw.courierConfig?.pathao?.clientId ? {
-      clientId: "********************",
-      clientSecret: "********************",
-      storeId: "********************"
-    } : masked.courierConfig.pathao,
-    redx: raw.courierConfig?.redx?.apiKey ? { apiKey: "********************" } : masked.courierConfig.redx,
+    steadfast: masked.courierConfig.steadfast || null,
+    pathao: masked.courierConfig.pathao || null,
+    redx: masked.courierConfig.redx || null,
   } : masked.courierConfig,
   paymentConfig: masked.paymentConfig ? {
     ...masked.paymentConfig,
-    sslcommerz: raw.paymentConfig?.sslcommerz?.storePassword ? {
-      ...masked.paymentConfig.sslcommerz,
-      storePassword: "********************"
-    } : masked.paymentConfig.sslcommerz
+    sslcommerz: masked.paymentConfig.sslcommerz || null,
   } : masked.paymentConfig,
   aiConfig: masked.aiConfig ? {
     ...masked.aiConfig,
-    openRouterApiKey: raw.aiConfig?.openRouterApiKey ? "********************" : null
+    geminiApiKey: masked.aiConfig.geminiApiKey || null,
   } : masked.aiConfig
 });
 
@@ -37,11 +29,7 @@ const getMaskedSettings = (raw: any, masked: any) => ({
 export async function GET() {
   try {
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const settings = await GlobalSettings.findOne({ domain }).sort({ updatedAt: -1 });
+    const settings = await GlobalSettings.findOne().sort({ updatedAt: -1 });
     if (!settings) {
       return NextResponse.json({
         brandName: process.env.NEXT_PUBLIC_STORE_NAME || "ELYJEN",
@@ -62,11 +50,10 @@ export async function GET() {
         marqueeText: "Welcome to ELYJEN!",
         metaTitle: process.env.NEXT_PUBLIC_STORE_NAME || "ELYJEN",
         metaDescription: "The most popular online shop in Bangladesh.",
-        logoUrl: "/logo.png",
+        logoUrl: "/logo.webp",
         freeDeliveryThreshold: 0,
         deliveryChargeInsideDhaka: 60,
         deliveryChargeOutsideDhaka: 120,
-        freeDeliveryDistricts: "",
         uiTemplates: {
           theme: 'green',
           logoFont: 'orbitron',
@@ -75,10 +62,22 @@ export async function GET() {
       });
     }
 
+    const session = await auth();
+    const isAdmin = session?.user && ['admin', 'super_admin'].includes((session.user as any).role);
+
     const rawSettings = settings.toObject({ getters: false });
     const maskedSettings = settings.toObject({ getters: true });
+    const responseSettings = getMaskedSettings(rawSettings, maskedSettings);
 
-    return NextResponse.json(getMaskedSettings(rawSettings, maskedSettings));
+    if (!isAdmin) {
+      delete responseSettings.superAdminNote;
+      delete responseSettings.saasSubscription;
+      delete responseSettings.uiTemplates;
+      delete responseSettings.googleAnalyticsPropertyId;
+      delete responseSettings.googleSearchConsoleId;
+    }
+
+    return NextResponse.json(responseSettings);
   } catch (error) {
     console.error('Error fetching settings:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
@@ -109,30 +108,33 @@ export async function POST(req: NextRequest) {
       'freeDeliveryThreshold',
       'deliveryChargeInsideDhaka',
       'deliveryChargeOutsideDhaka',
-      'freeDeliveryDistricts',
       'theme',
       'logoUrl',
       'footerNavigation',
-      'testimonials'
+      'testimonials',
+      'paymentConfig',
+      'manualPaymentConfig',
+      'courierConfig',
+      'facebookDomainVerification',
+      'metaPixelId',
+      'facebookAccessToken',
+      'facebookTestEventCode',
+      'tiktokPixelId',
+      'tiktokAccessToken',
+      'googleTagManagerId'
     ];
 
     // Restricted fields - ONLY for super_admin
     const superAdminFields = [
       'uiTemplates',
-      'domain',
       'storeId',
-      'paymentConfig',
       'googleAnalyticsId',
       'googleAnalyticsPropertyId',
       'googleSearchConsoleId',
       'aiConfig',
-      'courierConfig',
-      'googleTagManagerId',
       'searchConsoleMeta',
-      'facebookDomainVerification',
-      'facebookTestEventCode',
       'saasSubscription',
-      'manualPaymentConfig'
+      'superAdminNote'
     ];
 
     const isSuperAdmin = (session.user as any).role === 'super_admin';
@@ -151,15 +153,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'No valid fields provided for update' }, { status: 400 });
     }
 
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-
     await connectToDatabase();
 
-    // Check if settings already exist for this domain
-    let settings = await GlobalSettings.findOne({ domain }).sort({ updatedAt: -1 });
+    // Check if settings already exist
+    let settings = await GlobalSettings.findOne().sort({ updatedAt: -1 });
     if (settings) {
       // Helper to recursively remove masked values ('********************')
       const removeMasked = (obj: any): any => {
@@ -212,8 +209,8 @@ export async function POST(req: NextRequest) {
       });
       await settings.save({ validateBeforeSave: false });
     } else {
-      // Create new settings record for this domain
-      settings = await GlobalSettings.create({ ...allowedBody, domain });
+      // Create new settings record
+      settings = await GlobalSettings.create({ ...allowedBody });
     }
 
     revalidateTag('settings', 'max');
@@ -242,4 +239,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
-

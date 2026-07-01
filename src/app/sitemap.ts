@@ -12,19 +12,19 @@ const getDynamicRoutes = async (domain: string, baseUrl: string): Promise<Metada
   try {
     await connectToDatabase();
 
-    // Use safety limits and filter by domain for multi-tenant support
+    // Use safety limits
     const [products, categories, blogs] = await Promise.all([
-      Product.find({ domain, isPublished: true }, "slug updatedAt")
+      Product.find({ isPublished: true }, "slug updatedAt")
         .sort({ updatedAt: -1 })
         .limit(40000)
         .lean()
         .exec(),
-      Category.find({ domain, isActive: true }, "slug updatedAt")
+      Category.find({ isActive: true }, "slug updatedAt")
         .sort({ updatedAt: -1 })
         .limit(5000)
         .lean()
         .exec(),
-      Blog.find({ domain, isPublished: true }, "slug updatedAt")
+      Blog.find({ isPublished: true }, "slug updatedAt")
         .sort({ updatedAt: -1 })
         .limit(4000)
         .lean()

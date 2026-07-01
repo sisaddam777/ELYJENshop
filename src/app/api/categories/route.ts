@@ -3,17 +3,16 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/db';
 import Category from '@/models/Category';
 import { auth } from '@/auth';
-import { getTenantDomain } from '@/lib/tenant';
 
 // GET all categories
 export async function GET() {
   try {
+    const session = await auth();
+    const isAdmin = session?.user && ['admin', 'super_admin'].includes((session.user as any).role);
+
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const categories = await Category.find({ domain }).populate('parentCategory', 'name').sort({ createdAt: -1 });
+    const query = isAdmin ? {} : { isActive: true };
+    const categories = await Category.find(query).populate('parentCategory', 'name').sort({ createdAt: -1 });
     return NextResponse.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -39,14 +38,9 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-
-    // Check if slug already exists (if provided) within the domain
+    // Check if slug already exists (if provided)
     if (slug) {
-      const existingCategory = await Category.findOne({ slug, domain });
+      const existingCategory = await Category.findOne({ slug });
       if (existingCategory) {
         return NextResponse.json({ message: 'Category with this slug already exists' }, { status: 400 });
       }
@@ -55,7 +49,6 @@ export async function POST(req: NextRequest) {
     const newCategory = await Category.create({
       name,
       slug,
-      domain, // MUST set domain
       image,
       parentCategory: parentCategory || null,
       isActive: isActive !== undefined ? isActive : true,

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Subscriber from '@/models/Subscriber';
-import { getTenantDomain } from '@/lib/tenant';
 
 export async function POST(req: Request) {
   try {
@@ -12,21 +11,15 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const domain = await getTenantDomain();
 
-    if (!domain) {
-      return NextResponse.json({ message: 'Domain context missing' }, { status: 400 });
-    }
-
-    // Check if already subscribed for this domain
-    const existing = await Subscriber.findOne({ email, domain });
+    // Check if already subscribed
+    const existing = await Subscriber.findOne({ email });
     if (existing) {
       return NextResponse.json({ message: 'You are already subscribed!' }, { status: 200 });
     }
 
     await Subscriber.create({
       email,
-      domain
     });
 
     return NextResponse.json({ message: 'Successfully subscribed!' }, { status: 201 });

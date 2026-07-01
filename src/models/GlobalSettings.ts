@@ -27,7 +27,11 @@ export interface IGlobalSettings extends Document {
   googleTagManagerId?: string;
   searchConsoleMeta?: string;
   facebookDomainVerification?: string;
+  metaPixelId?: string;
+  facebookAccessToken?: string;
   facebookTestEventCode?: string;
+  tiktokPixelId?: string;
+  tiktokAccessToken?: string;
   courierConfig?: {
     activeProvider?: 'steadfast' | 'pathao' | 'redx' | 'none';
     steadfast?: {
@@ -47,8 +51,6 @@ export interface IGlobalSettings extends Document {
     activationThreshold?: number;
     rewardPercentage?: number;
   };
-  domain: string;
-  storeId?: string;
   paymentConfig?: {
     activeMethod?: 'sslcommerz' | 'none';
     sslcommerz?: {
@@ -67,9 +69,9 @@ export interface IGlobalSettings extends Document {
   googleAnalyticsId?: string; // GA4 Measurement ID (G-XXXXXX)
   googleAnalyticsPropertyId?: string; // GA4 Property ID (Numeric)
   googleSearchConsoleId?: string; // Search Console Site URL (e.g. https://www.example.com/ or sc-domain:example.com)
+  superAdminNote?: string;
   aiConfig?: {
-    openRouterApiKey?: string;
-    systemPrompt?: string;
+    geminiApiKey?: string;
   };
   uiTemplates?: {
     layout?: string;
@@ -111,7 +113,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
   {
     brandName: { type: String },
     contact: { type: Object, default: {} },
-    logoUrl: { type: String, default: '/logo.png' },
+    logoUrl: { type: String, default: '/logo.webp' },
     socialLinks: { type: Object, default: {} },
     marqueeText: { type: String },
     freeDeliveryThreshold: { type: Number, default: 0 },
@@ -123,27 +125,21 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     googleTagManagerId: { type: String },
     searchConsoleMeta: { type: String },
     facebookDomainVerification: { type: String },
+    metaPixelId: { type: String },
+    facebookAccessToken: { type: String },
     facebookTestEventCode: { type: String },
+    tiktokPixelId: { type: String },
+    tiktokAccessToken: { type: String },
     courierConfig: { type: Object, default: { activeProvider: 'none' } },
     subscriptionConfig: { type: Object, default: { activationThreshold: 5000, rewardPercentage: 5 } },
-    domain: {
-      type: String,
-      required: [true, 'Domain is required'],
-      index: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      default: 'elyjen.shop'
-    },
-    storeId: { type: String, required: false, unique: false }, // Will be set to required: true, unique: true after migration
     paymentConfig: { type: Object, default: { activeMethod: 'none' } },
     manualPaymentConfig: { type: Object, default: {} },
     googleAnalyticsId: { type: String },
     googleAnalyticsPropertyId: { type: String },
     googleSearchConsoleId: { type: String },
+    superAdminNote: { type: String },
     aiConfig: {
-      openRouterApiKey: { type: String, get: decrypt, set: encrypt },
-      systemPrompt: { type: String, default: 'You are a helpful e-commerce assistant.' }
+      geminiApiKey: { type: String }
     },
     uiTemplates: { type: Object, default: {} },
     saasSubscription: {
@@ -170,7 +166,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
     timestamps: true,
     toJSON: {
       getters: false, // Prevent automatic decryption and exposure in API responses
-      transform: (doc: any, ret: any) => {
+      transform: (doc, ret) => {
         // Security: Explicitly remove sensitive courier credentials from serialized output
         if (ret.courierConfig) {
           delete ret.courierConfig.steadfast;
@@ -180,10 +176,6 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
         // Security: Remove sensitive Payment credentials
         if (ret.paymentConfig) {
           delete ret.paymentConfig.sslcommerz;
-        }
-        // Security: Remove sensitive AI API Key
-        if (ret.aiConfig) {
-          delete ret.aiConfig.openRouterApiKey;
         }
         return ret;
       }
@@ -196,4 +188,3 @@ const GlobalSettings: Model<IGlobalSettings> =
   mongoose.models.GlobalSettings || mongoose.model<IGlobalSettings>('GlobalSettings', GlobalSettingsSchema);
 
 export default GlobalSettings;
-

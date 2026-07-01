@@ -6,7 +6,6 @@ import Product from '@/models/Product';
 import { auth } from '@/auth';
 import { z } from 'zod';
 import mongoose from 'mongoose';
-import { getTenantDomain } from '@/lib/tenant';
 
 const reviewSchema = z.object({
   productId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid product ID'),
@@ -34,17 +33,12 @@ export async function POST(req: NextRequest) {
     const userId = (session.user as any).id;
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
     // 1. STRICT VERIFICATION: Check if user has a DELIVERED or PAID order for this product
     const deliveredOrder = await Order.findOne({
       user: userId,
       'items.product': productId,
       status: { $in: ['Delivered', 'Paid'] },
-      domain, 
     });
 
     if (!deliveredOrder) {
@@ -53,8 +47,8 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // 2. Check if user already reviewed this product on this domain
-    const existingReview = await Review.findOne({ user: userId, product: productId, domain });
+    // 2. Check if user already reviewed this product
+    const existingReview = await Review.findOne({ user: userId, product: productId });
     if (existingReview) {
       return NextResponse.json({ message: 'You have already reviewed this product' }, { status: 400 });
     }
@@ -66,7 +60,6 @@ export async function POST(req: NextRequest) {
       name: session.user.name || 'Anonymous',
       rating,
       comment,
-      domain, 
       status: 'approved',
     });
 
@@ -76,7 +69,6 @@ export async function POST(req: NextRequest) {
         $match: {
           product: new mongoose.Types.ObjectId(productId),
           status: 'approved',
-          domain
         }
       },
       {
@@ -90,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     const { ratings = 0, numReviews = 0 } = stats[0] || {};
 
-    await Product.findOneAndUpdate({ _id: productId, domain }, {
+    await Product.findOneAndUpdate({ _id: productId }, {
       ratings: Number(ratings.toFixed(1)),
       numReviews
     });
@@ -114,16 +106,11 @@ export async function GET(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
     const userId = (session?.user as any)?.id;
 
     const reviews = await Review.find({ 
       product: productId, 
-      domain,
       $or: [
         { status: 'approved' },
         ...(userId ? [{ user: userId, status: 'pending' }] : [])

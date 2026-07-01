@@ -4,7 +4,6 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import connectToDatabase from './lib/db';
 import User from './models/User';
 import bcrypt from 'bcryptjs';
-import { getTenantDomain } from './lib/tenant';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -23,13 +22,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error('Please provide both email and password.');
         }
 
-        const domain = await getTenantDomain();
-
         await connectToDatabase();
-        const user = await User.findOne({ email: credentials.email, domain }).select('+password');
+        const normalizedEmail = (credentials.email as string).toLowerCase().trim();
+        const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
         if (!user || !user.password) {
-          throw new Error('No user found with this email on this store.');
+          throw new Error('No user found with this email.');
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password);
@@ -65,7 +63,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
              if (dbUser) {
                token.id = dbUser._id.toString();
                token.role = dbUser.role ?? 'user';
-               token.domain = dbUser.domain;
                token.phone = dbUser.phone;
                token.image = dbUser.image || user.image || token.picture;
              } else {
@@ -104,7 +101,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session.user as any).role = token.role ?? 'user';
-        (session.user as any).domain = token.domain as string;
         (session.user as any).phone = token.phone as string;
         if (token.image) {
           session.user.image = token.image as string;
@@ -121,13 +117,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         try {
           await connectToDatabase();
+          const normalizedEmail = user.email.toLowerCase().trim();
           
-          // Use a safer way to get the hub domain without using headers() in OAuth callback
-          const hubDomain = process.env.NEXT_PUBLIC_HUB_DOMAIN || 'elyjen.shop';
-          const domain = hubDomain.replace('www.', '');
-
           const savedUser = await User.findOneAndUpdate(
-            { email: user.email, domain },
+            { email: normalizedEmail },
             { 
               $set: {
                 name: user.name || 'Unknown',
@@ -137,7 +130,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               $setOnInsert: {
                 role: 'user',
                 status: 'active',
-                domain,
               }
             },
             { upsert: true, new: true }

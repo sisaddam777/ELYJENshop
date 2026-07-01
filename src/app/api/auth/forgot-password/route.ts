@@ -52,12 +52,8 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
 
-    const user = await User.findOne({ email: normalizedEmail, domain });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       // Timing parity delay

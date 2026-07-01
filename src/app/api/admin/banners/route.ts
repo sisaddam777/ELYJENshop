@@ -12,11 +12,7 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
-    const banners = await Banner.find({ domain }).sort({ order: 1 });
+    const banners = await Banner.find({}).sort({ order: 1 });
     return NextResponse.json(banners);
   } catch (error) {
     console.error('Fetch Banners Error:', error);
@@ -33,12 +29,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     await connectToDatabase();
-    const domain = await getTenantDomain();
-    if (!domain) {
-      return NextResponse.json({ message: 'Tenant domain is missing' }, { status: 400 });
-    }
     
-    const banner = await Banner.create({ ...body, domain });
+    const banner = await Banner.create(body);
     return NextResponse.json(banner, { status: 201 });
   } catch (error) {
     console.error('Create Banner Error:', error);
