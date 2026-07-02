@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Product from '@/models/Product';
-import { getTenantDomain } from '@/lib/tenant';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +11,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Invalid items array' }, { status: 400 });
     }
 
-    const domain = await getTenantDomain();
     await connectToDatabase();
 
     const validItems = [];
@@ -21,7 +19,6 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       const product = await Product.findOne({ 
         _id: item.productId, 
-        domain, 
         isPublished: true 
       });
 

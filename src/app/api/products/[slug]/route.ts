@@ -6,7 +6,6 @@ import connectToDatabase from '@/lib/db';
 import Product from '@/models/Product';
 import { auth } from '@/auth';
 import { generateUniqueSlug } from '@/lib/slugify-server';
-import { getTenantDomain } from '@/lib/tenant';
 import { CACHE_TAGS } from '@/lib/data-fetching';
 
 // GET a single product
@@ -18,10 +17,9 @@ export async function GET(
     const { slug } = await params;
     await connectToDatabase();
 
-    const domain = await getTenantDomain();
     const query = mongoose.Types.ObjectId.isValid(slug)
-      ? { _id: slug, domain }
-      : { slug: slug, domain };
+      ? { _id: slug }
+      : { slug: slug };
 
     const product = await Product.findOne(query).populate('categories');
 
@@ -98,10 +96,9 @@ export async function PUT(
 
     await connectToDatabase();
 
-    const domain = await getTenantDomain();
     const query = mongoose.Types.ObjectId.isValid(slug)
-      ? { _id: slug, domain }
-      : { slug: slug, domain };
+      ? { _id: slug }
+      : { slug: slug };
 
     if (safeUpdate.slug) {
       const maxRetries = 3;
@@ -114,7 +111,7 @@ export async function PUT(
 
         let actualId = slug;
         if (!mongoose.Types.ObjectId.isValid(slug)) {
-          const existingProduct = await Product.findOne({ slug: slug, domain });
+          const existingProduct = await Product.findOne({ slug: slug });
           if (existingProduct) actualId = existingProduct._id.toString();
         }
 
@@ -187,10 +184,9 @@ export async function DELETE(
 
     await connectToDatabase();
 
-    const domain = await getTenantDomain();
     const query = mongoose.Types.ObjectId.isValid(slug)
-      ? { _id: slug, domain }
-      : { slug: slug, domain };
+      ? { _id: slug }
+      : { slug: slug };
 
     const deletedProduct = await Product.findOneAndDelete(query);
 
