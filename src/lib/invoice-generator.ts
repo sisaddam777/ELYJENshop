@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, isValid } from 'date-fns';
 
-export async function generateInvoicePDF(order: any, settings: any) {
+export async function generateInvoicePDF(order: any, settings: any, action: 'download' | 'print' = 'download') {
   const doc = new jsPDF();
 
   const brandName = settings?.brandName || "ELYJEN";
@@ -169,7 +169,19 @@ export async function generateInvoicePDF(order: any, settings: any) {
   doc.setFont("helvetica", "normal");
   doc.text("This is a computer generated invoice and does not require a physical signature.", 105, pageHeight - 15, { align: "center" });
 
-  // Save PDF
-  doc.save(`invoice-${String(order._id).slice(-8).toUpperCase()}.pdf`);
+  // Save or Print PDF
+  if (action === 'print') {
+    doc.autoPrint();
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (win) {
+      win.onload = () => setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } else {
+      URL.revokeObjectURL(url);
+    }
+  } else {
+    doc.save(`invoice-${String(order._id).slice(-8).toUpperCase()}.pdf`);
+  }
 }
 

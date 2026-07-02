@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { districts } from '@/lib/bd-locations';
+import { PasswordChangeForm } from '@/components/user/PasswordChangeForm';
 
 
 const FONT_OPTIONS = [
@@ -248,16 +249,17 @@ export default function SettingsPage() {
         </Button>
       </div>
 
-      <Form {...form}>
-        <form id="settings-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="contact">Contact</TabsTrigger>
-              <TabsTrigger value="social">Social</TabsTrigger>
-              <TabsTrigger value="loyalty">Loyalty</TabsTrigger>
-              <TabsTrigger value="appearance">Appearance</TabsTrigger>
-            </TabsList>
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
+          <TabsTrigger value="social">Social</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+
+        <Form {...form}>
+          <form id="settings-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
 
             <TabsContent value="general" className="space-y-4">
               <Card>
@@ -584,67 +586,6 @@ export default function SettingsPage() {
             </TabsContent>
 
 
-            <TabsContent value="loyalty" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Loyalty & Rewards System</CardTitle>
-                  <CardDescription>Configure how customers activate their lifetime rewards and the percentage they earn.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="subscriptionConfig.activationThreshold"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Activation Threshold (TK)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="5000"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormDescription>Minimum single order amount to activate lifetime rewards for a user.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="subscriptionConfig.rewardPercentage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Reward Percentage (%)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="5"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormDescription>Percentage of purchase total awarded as tokens to active users.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="rounded-lg border p-4 bg-primary/5">
-                    <h4 className="text-sm font-bold mb-2">How it works:</h4>
-                    <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                      <li>All registered users are enrolled in the loyalty program automatically.</li>
-                      <li>Users become <strong>Active</strong> after a single purchase ≥ {form.watch('subscriptionConfig.activationThreshold')} TK.</li>
-                      <li>Active users earn <strong>{form.watch('subscriptionConfig.rewardPercentage')}%</strong> of every purchase as wallet tokens.</li>
-                      <li>Tokens can be used for discounts on any future purchase.</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
             <TabsContent value="appearance" className="space-y-4">
               <Card className="border-2 border-primary/10 shadow-none overflow-hidden rounded-3xl">
                 <CardHeader className="bg-primary/5 border-b">
@@ -788,9 +729,13 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
-        </form>
-      </Form>
+          </form>
+        </Form>
+
+        <TabsContent value="security" className="space-y-4">
+          <PasswordChangeForm />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

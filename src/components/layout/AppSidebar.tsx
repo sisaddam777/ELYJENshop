@@ -147,6 +147,10 @@ const data = {
           url: "/admin/settings",
         },
         {
+          title: "Marketing Settings",
+          url: "/admin/marketing",
+        },
+        {
           title: "Subscribers",
           url: "/admin/subscribers",
           icon: Mail,

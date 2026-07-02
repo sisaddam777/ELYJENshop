@@ -101,15 +101,293 @@ export default function OrdersPage() {
       if (!res.ok) {
         throw new Error(`Failed to load orders: ${res.status} ${res.statusText}`);
       }
-            const data = await res.json();
+      const data = await res.json();
+      setOrders(data);
+
+      // Also fetch settings for the invoice generator
+      const settingsRes = await fetch('/api/settings');
+      if (settingsRes.ok) {
+        setSettings(await settingsRes.json());
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const filteredOrders = orders.filter((order) => {
+    const search = searchTerm.toLowerCase();
+
+    // 1. Search matching
+    const matchesSearch =
+      (order._id?.toLowerCase() || '').includes(search) ||
+      (order.user?.email?.toLowerCase() || '').includes(search) ||
+      (order.user?.name?.toLowerCase() || '').includes(search) ||
+      (order.shippingAddress?.fullName?.toLowerCase() || '').includes(search) ||
+      (order.shippingAddress?.phone?.toLowerCase() || '').includes(search);
+
+    // 2. Status matching
+    const matchesStatus = statusFilter === 'All' || order.status === statusFilter;
+
+    // 3. Date matching
+    let matchesDate = true;
+    if (dateFilter.from && dateFilter.to) {
+      const orderDate = new Date(order.createdAt);
+      const fromDate = new Date(dateFilter.from);
+      const toDate = new Date(dateFilter.to);
+      toDate.setHours(23, 59, 59, 999);
+      matchesDate = orderDate >= fromDate && orderDate <= toDate;
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  const toggleSelectAll = () => {
+    const filteredIds = filteredOrders.map(o => o._id);
+    const areAllSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+
+    if (areAllSelected) {
+      // Unselect only the filtered ones
+      setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
+    } else {
+      // Add missing filtered ones to selection
+      setSelectedIds(prev => [...prev, ...filteredIds.filter(id => !prev.includes(id))]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const updateStatus = async (id: string, status: string, extraData: any = {}) => {
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, ...extraData }),
+      });
+
       if (res.ok) {
-        const hasFailures = data.results && data.results.some((r) => !r.success);
-        if (hasFailures) {
-          const firstFail = data.results.find((r) => !r.success);
-          toast.error(`${data.message}. Reason: ${firstFail?.message || 'Unknown error'}`);
+        toast.success(`Order updated successfully`);
+        fetchOrders();
+      } else {
+        toast.error('Failed to update order');
+      }
+    } catch (error) {
+      toast.error('Error updating order');
+    }
+  };
+
+  const handleBulkUpdate = async (status: string) => {
+    if (selectedIds.length === 0) return;
+
+    const result = await Swal.fire({
+      title: 'Bulk Update?',
+      text: `Are you sure you want to update ${selectedIds.length} orders to "${status}"?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#00D1B2',
+      confirmButtonText: 'Yes, update them!'
+    });
+
+    if (!result.isConfirmed) return;
+
+    setBulkActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/orders/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, status }),
+      });
+
+      if (res.ok) {
+        toast.success(`Bulk update completed successfully`);
+        setSelectedIds([]);
+        fetchOrders();
+      } else {
+        toast.error('Bulk update failed');
+      }
+    } catch (error) {
+      toast.error('Error in bulk update');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    const result = await Swal.fire({
+      title: 'Bulk Delete?',
+      text: `Are you sure you want to permanently delete ${selectedIds.length} orders? This cannot be undone!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete all!'
+    });
+
+    if (!result.isConfirmed) return;
+
+    setBulkActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/orders/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+
+      if (res.ok) {
+        toast.success(`Orders deleted successfully`);
+        setSelectedIds([]);
+        fetchOrders();
+      } else {
+        toast.error('Bulk delete failed');
+      }
+    } catch (error) {
+      toast.error('Error in bulk delete');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const exportToCSV = () => {
+    const ordersToExport = selectedIds.length > 0
+      ? orders.filter(o => selectedIds.includes(o._id))
+      : filteredOrders;
+
+    if (ordersToExport.length === 0) {
+      toast.error('No orders to export');
+      return;
+    }
+
+    const headers = [
+      'Order ID',
+      'Date',
+      'Customer',
+      'Email',
+      'Phone',
+      'Address',
+      'Division/State',
+      'Items',
+      'Shipping Charge',
+      'Discount',
+      'Total Amount',
+      'Purchase Cost',
+      'Profit',
+      'Payment Status',
+      'Order Status'
+    ];
+
+    const rows = ordersToExport.map(o => {
+      const shipping = o.shippingAddress || {};
+      const fullAddress = `${shipping.street || ''}, ${shipping.city || ''}`;
+      const itemsList = o.items.map((i: any) => {
+        const variantDesc = [i.color, i.size].filter(Boolean).join('/');
+        return `• ${i.quantity} x ${i.name}${variantDesc ? ` [${variantDesc}]` : ''} (@৳${i.price})`;
+      }).join('\n');
+
+      // Profit Calculation: Total - COGS - DeliveryCharge
+      const totalPurchaseCost = o.items.reduce((acc: number, i: any) => acc + ((i.purchasePrice || 0) * i.quantity), 0);
+      const profit = o.totalAmount - totalPurchaseCost - (o.deliveryCharge || 0);
+
+      return [
+        o._id.toUpperCase(),
+        format(new Date(o.createdAt), 'yyyy-MM-dd HH:mm'),
+        shipping.fullName || o.user?.name || 'Guest',
+        o.user?.email || 'Guest',
+        shipping.phone || 'N/A',
+        fullAddress,
+        shipping.division || shipping.state || 'N/A',
+        itemsList,
+        o.deliveryCharge || 0,
+        o.couponDiscountAmount || 0,
+        o.totalAmount,
+        totalPurchaseCost,
+        Math.round(profit),
+        o.paymentStatus,
+        o.status
+      ];
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders_export_${format(new Date(), 'yyyyMMdd_HHmm')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success('Excel/CSV export started');
+  };
+
+  const deleteOrder = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "This order will be permanently deleted from the database!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#00D1B2',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`/api/orders/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (res.ok) {
+          toast.success('Order deleted successfully');
+          fetchOrders();
         } else {
-          toast.success(data.message);
+          toast.error('Failed to delete order');
         }
+      } catch (error) {
+        toast.error('Error deleting order');
+      }
+    }
+  };
+
+  const handleSendToSteadfast = async (ids: string[]) => {
+    if (ids.length === 0) return;
+
+    const result = await Swal.fire({
+      title: 'Send to Steadfast?',
+      text: `Are you sure you want to send ${ids.length} order(s) to Steadfast Courier?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      confirmButtonText: 'Yes, send now!'
+    });
+
+    if (!result.isConfirmed) return;
+
+    setBulkActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/courier/steadfast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIds: ids }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message);
         if (ids.length > 1) setSelectedIds([]);
         fetchOrders();
       } else {

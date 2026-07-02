@@ -54,6 +54,13 @@ export default function AdminSidebar() {
             CMS Manager
           </Link>
           <Link
+            href="/admin/marketing"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+          >
+            <Settings className="h-4 w-4" />
+            Marketing Settings
+          </Link>
+          <Link
             href="/admin/settings"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
           >
