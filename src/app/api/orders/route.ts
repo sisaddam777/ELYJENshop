@@ -104,7 +104,8 @@ export async function POST(req: NextRequest) {
       user = await User.findOne({ _id: sessionUser.user.id }).session(session);
     } else {
       // Guest Checkout: Always create a new, isolated guest user identity to prevent account merging
-      const guestEmail = `${shippingAddress.email.toLowerCase()}-guest-${crypto.randomBytes(4).toString('hex')}`;
+      const [localPart, domainPart] = shippingAddress.email.split('@');
+      const guestEmail = `${localPart.toLowerCase()}-guest-${crypto.randomBytes(4).toString('hex')}@${domainPart.toLowerCase()}`;
       const [newUser] = await User.create([{
         name: shippingAddress.fullName,
         email: guestEmail,

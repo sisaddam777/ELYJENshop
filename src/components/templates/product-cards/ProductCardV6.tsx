@@ -128,7 +128,7 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
       return;
     }
     dispatch(toggleWishlist(product._id));
-    
+
     if (!isInWishlist) {
       // Track AddToWishlist
       fbEvent('AddToWishlist', {
@@ -167,18 +167,17 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
         {/* Unified Ribbon Badge (Top Left) */}
         {(isFlashSale || discount > 0 || product.isNewArrival || product.isTrending || product.isFeatured) && (
           <div className="absolute top-0 left-0 overflow-hidden w-24 h-24 z-10 pointer-events-none">
-            <div className={`absolute top-0 left-0 text-white text-[10px] font-black py-1 w-32 text-center -rotate-45 -translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest ${
-              isFlashSale ? 'bg-orange-500 animate-pulse' :
-              discount > 0 ? 'bg-primary' :
-              product.isNewArrival ? 'bg-emerald-500' :
-              product.isTrending ? 'bg-rose-500 animate-pulse' :
-              'bg-amber-500'
-            }`}>
+            <div className={`absolute top-0 left-0 text-white text-[10px] font-black py-1 w-32 text-center -rotate-45 -translate-x-10 translate-y-4 shadow-lg uppercase tracking-widest ${isFlashSale ? 'bg-orange-500 animate-pulse' :
+                discount > 0 ? 'bg-primary' :
+                  product.isNewArrival ? 'bg-emerald-500' :
+                    product.isTrending ? 'bg-rose-500 animate-pulse' :
+                      'bg-amber-500'
+              }`}>
               {isFlashSale ? 'Flash' :
-               discount > 0 ? `${discount}% OFF` :
-               product.isNewArrival ? 'New' :
-               product.isTrending ? 'Trending' :
-               'Featured'}
+                discount > 0 ? `${discount}% OFF` :
+                  product.isNewArrival ? 'New' :
+                    product.isTrending ? 'Trending' :
+                      'Featured'}
             </div>
           </div>
         )}
@@ -224,37 +223,37 @@ export default function ProductCardV6({ product, isFlashSale }: ProductCardProps
       {/* Product Info */}
       <div className="mt-4 text-center space-y-4 px-2 pb-2 flex-1 flex flex-col justify-between">
         <div className="min-h-[4.5rem] flex flex-col justify-center">
-            <Link 
+          <Link
             href={`/product/${product.slug}`}
             className="text-sm sm:text-base font-semibold text-foreground hover:text-primary transition-colors block leading-tight px-2 line-clamp-2"
             title={product.name}
-            >
+          >
             {product.name}
-            </Link>
-            <div className="flex items-center justify-center gap-2 mt-2">
+          </Link>
+          <div className="flex items-center justify-center gap-2 mt-2">
             {product.salePrice ? (
-                <>
+              <>
                 <span className="text-primary font-bold text-sm sm:text-[16px]">৳{Math.round(product.salePrice)}</span>
                 <span className="text-muted-foreground line-through text-[11px] sm:text-[13px] font-normal">৳{Math.round(product.price)}</span>
-                </>
+              </>
             ) : (
-                <span className="text-primary font-bold text-sm sm:text-[16px]">৳{Math.round(product.price)}</span>
+              <span className="text-primary font-bold text-sm sm:text-[16px]">৳{Math.round(product.price)}</span>
             )}
-            </div>
+          </div>
         </div>
 
         {/* Action Buttons - Visible on hover for Desktop, Always for Mobile */}
         <div className="flex flex-col sm:flex-row gap-2 pt-2 transition-all duration-300 sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="flex-1 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold text-[10px] sm:text-xs h-11 sm:h-10 transition-all active:scale-95 py-2"
             onClick={handleAddToCart}
           >
             <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" /> Cart
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[10px] sm:text-xs h-11 sm:h-10 shadow-lg shadow-primary/20 transition-all active:scale-95 py-2"
             onClick={handleBuyNow}
           >
