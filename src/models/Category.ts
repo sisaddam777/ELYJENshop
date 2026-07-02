@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface ICategory extends Document {
+  domain: string;
   name: string;
   slug?: string;
   image?: string;
@@ -12,6 +13,7 @@ export interface ICategory extends Document {
 
 const CategorySchema: Schema<ICategory> = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     name: { type: String, required: true },
     slug: { type: String },
     image: { type: String },

@@ -12,6 +12,7 @@ export interface IOrderItem {
 }
 
 export interface IOrder extends Document {
+  domain: string;
   user?: mongoose.Types.ObjectId;
   items: IOrderItem[];
   shortId: string;
@@ -56,6 +57,7 @@ export interface IOrder extends Document {
 
 const OrderSchema: Schema<IOrder> = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     shortId: { type: String, unique: true, sparse: true, index: true },
     items: [

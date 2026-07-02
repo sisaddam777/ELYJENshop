@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IFAQ extends Document {
+  domain: string;
   question: string;
   answer: string;
   order: number;
@@ -11,6 +12,7 @@ export interface IFAQ extends Document {
 
 const FAQSchema: Schema<IFAQ> = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     question: { type: String, required: true },
     answer: { type: String, required: true },
     order: { type: Number, default: 0 },

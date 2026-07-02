@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IBlog extends Document {
+  domain: string;
   title: string;
   slug: string;
   metaTitle: string;
@@ -15,6 +16,7 @@ export interface IBlog extends Document {
 
 const BlogSchema: Schema = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     title: { 
       type: String, 
       required: [true, 'Title is required'],

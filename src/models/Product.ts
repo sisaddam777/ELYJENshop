@@ -2,6 +2,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IProduct extends Document {
+  domain: string;
   name: string;
   slug: string;
   description: string;
@@ -44,6 +45,7 @@ export interface IProduct extends Document {
 
 const ProductSchema: Schema<IProduct> = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     name: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     description: { type: String, required: true },

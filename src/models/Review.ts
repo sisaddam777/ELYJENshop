@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IReview extends Document {
+  domain: string;
   product: mongoose.Types.ObjectId;
   user: mongoose.Types.ObjectId;
   name: string; // From the reviewer
@@ -13,6 +14,7 @@ export interface IReview extends Document {
 
 const ReviewSchema: Schema<IReview> = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },

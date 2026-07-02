@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IWalletTransaction extends Document {
+  domain: string;
   userId: mongoose.Types.ObjectId;
   amount: number;
   type: 'earned' | 'spent' | 'refund' | 'admin_adjustment';
@@ -13,6 +14,7 @@ export interface IWalletTransaction extends Document {
 
 const WalletTransactionSchema: Schema<IWalletTransaction> = new Schema(
   {
+    domain: { type: String, required: true, default: 'elyjen.shop' },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     amount: { type: Number, required: true },
     type: { 
