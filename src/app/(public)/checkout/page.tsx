@@ -301,6 +301,12 @@ export default function CheckoutPage() {
       if (response.ok) {
         const order = await response.json();
         submissionSucceededRef.current = true;
+
+        try {
+          localStorage.setItem(`guest_order_${order._id}`, JSON.stringify(order));
+        } catch (storageError) {
+          console.warn('Failed to store order in localStorage:', storageError);
+        }
         
         if (values.paymentMethod === 'Online') {
           // Initialize SSLCommerz Payment

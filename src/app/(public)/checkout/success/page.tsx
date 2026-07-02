@@ -21,17 +21,32 @@ function SuccessContent() {
 
     async function fetchOrderAndTrack() {
       try {
-        const res = await fetch(`/api/orders/${id}`);
-        if (res.ok) {
-          const orderData = await res.json();
+        let orderData = null;
+        
+        try {
+          const cached = localStorage.getItem(`guest_order_${id}`);
+          if (cached) {
+            orderData = JSON.parse(cached);
+            // Don't remove immediately just in case of double render/strict mode, but we can keep it
+          }
+        } catch (e) {
+          console.warn('Failed to retrieve order from localStorage:', e);
+        }
+
+        if (!orderData) {
+          const res = await fetch(`/api/orders/${id}`);
+          if (res.ok) {
+            orderData = await res.json();
+          }
+        }
+
+        if (orderData) {
           setOrder(orderData);
 
           // Track Purchase Event
           const { fbEvent } = await import('@/lib/fpixel');
           
           const safeItems = Array.isArray(orderData.items) ? orderData.items : [];
-          const fullName = orderData.shippingAddress?.fullName || '';
-          const nameParts = fullName ? fullName.trim().split(/\s+/) : [];
 
           fbEvent('Purchase', {
             value: orderData.totalAmount,
