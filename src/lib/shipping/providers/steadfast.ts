@@ -3,7 +3,7 @@ import { ShippingOrderData, ShippingOrderResponse, ShippingProvider } from '../i
 export class SteadfastProvider implements ShippingProvider {
   private apiKey: string;
   private secretKey: string;
-  private baseUrl = 'https://portal.steadfast.com.bd/api/v1';
+  private baseUrl = 'https://portal.packzy.com/api/v1';
 
   constructor(apiKey: string, secretKey: string) {
     this.apiKey = apiKey;
@@ -54,8 +54,8 @@ export class SteadfastProvider implements ShippingProvider {
           tracking_code,
           consignment_id,
           status,
-          tracking_url: `https://portal.steadfast.com.bd/tracking/${tracking_code}`,
-          url: `https://portal.steadfast.com.bd/tracking/${tracking_code}`,
+          tracking_url: `https://steadfast.com.bd/t/${tracking_code}`,
+          url: `https://steadfast.com.bd/t/${tracking_code}`,
         };
       }
 
@@ -72,7 +72,7 @@ export class SteadfastProvider implements ShippingProvider {
   }
 
   async trackOrder(trackingId: string): Promise<any> {
-    const trackingUrl = `https://portal.steadfast.com.bd/tracking/${trackingId}`;
+    const trackingUrl = `https://steadfast.com.bd/t/${trackingId}`;
     return { 
         status: 'check_portal', 
         tracking_url: trackingUrl,

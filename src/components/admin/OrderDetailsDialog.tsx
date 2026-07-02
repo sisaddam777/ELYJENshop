@@ -10,11 +10,13 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, Phone, MapPin, CreditCard, Calendar, Truck, ExternalLink, FileText } from 'lucide-react';
+import { Loader2, Mail, Phone, MapPin, CreditCard, Calendar, Truck, ExternalLink, FileText, Printer } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { toast } from 'sonner';
 import { generateInvoicePDF } from '@/lib/invoice-generator';
+import { printStickerInvoice } from '@/lib/sticker-generator';
 import Swal from 'sweetalert2';
+import { Button } from '@/components/ui/button';
 
 interface OrderDetailsDialogProps {
   orderId: string | null;
@@ -33,6 +35,15 @@ export default function OrderDetailsDialog({
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const handleLocalPrint = async (type: 'invoice' | 'sticker') => {
+    if (type === 'invoice') {
+      toast.info('Generating PDF invoice...');
+      await generateInvoicePDF(order, settings, 'print');
+    } else {
+      toast.info('Preparing sticker invoice...');
+      await printStickerInvoice(order, settings);
+    }
+  };
 
   // Additional Shipping Fields
   const [cityId, setCityId] = useState('');
@@ -118,6 +129,21 @@ export default function OrderDetailsDialog({
                     title="Download PDF Invoice"
                   >
                     <FileText className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleLocalPrint('invoice')}
+                    className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    title="Print A4 Invoice"
+                  >
+                    <Printer className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleLocalPrint('sticker')}
+                    className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center gap-1 px-2.5 py-1"
+                    title="Print Sticker Invoice"
+                  >
+                    <Printer className="h-4 w-4" />
+                    <span className="text-[10px] font-bold">Sticker</span>
                   </button>
                </div>
             )}
@@ -343,13 +369,19 @@ export default function OrderDetailsDialog({
                                 body: JSON.stringify(payload)
                             });
                             
-                            const data = await res.json();
-                            if (res.ok) {
-                              toast.success(data.message || `${settings?.courierConfig?.activeProvider} booked successfully!`);
-                              onUpdate();
-                              const updateRes = await fetch(`/api/orders/${orderId}`);
-                              if (updateRes.ok) setOrder(await updateRes.json());
-                            } else {
+                                                         const data = await res.json();
+                             if (res.ok) {
+                               const hasFailures = data.results && data.results.some((r) => !r.success);
+                               if (hasFailures) {
+                                 const firstFail = data.results.find((r) => !r.success);
+                                 toast.error(`${data.message}. Reason: ${firstFail?.message || 'Unknown error'}`);
+                               } else {
+                                 toast.success(data.message || `${settings?.courierConfig?.activeProvider} booked successfully!`);
+                               }
+                               onUpdate();
+                               const updateRes = await fetch(`/api/orders/${orderId}`);
+                               if (updateRes.ok) setOrder(await updateRes.json());
+                             } else {
                               toast.error(data.message || 'Courier booking failed');
                             }
                           } catch (e) {
@@ -406,6 +438,80 @@ export default function OrderDetailsDialog({
                 <span className="font-black text-primary">৳{Math.round(Number(order.totalAmount) || 0)}</span>
               </div>
             </div>
+
+            {/* Quick Actions for Manual Payments */}
+            {order.paymentMethod === 'Manual' && order.paymentStatus === 'Pending' && order.status !== 'Cancelled' && (
+              <div className="mt-6 pt-4 border-t flex flex-col sm:flex-row gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={async () => {
+                    const result = await Swal.fire({
+                      title: 'Cancel Order?',
+                      text: "Are you sure you want to cancel this order?",
+                      icon: 'question',
+                      showCancelButton: true,
+                      confirmButtonColor: '#d33',
+                      cancelButtonColor: '#aaa',
+                      confirmButtonText: 'Yes, cancel it!',
+                    });
+                    if (result.isConfirmed) {
+                      try {
+                        const res = await fetch(`/api/orders/${order._id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'Cancelled' }),
+                        });
+                        if (res.ok) {
+                          toast.success('Order cancelled successfully');
+                          onUpdate();
+                          onOpenChange(false);
+                        } else {
+                          toast.error('Failed to update order');
+                        }
+                      } catch (e) {
+                        toast.error('Error updating order');
+                      }
+                    }
+                  }}
+                  className="rounded-xl h-11 flex-1 font-bold text-destructive hover:bg-destructive/5"
+                >
+                  Reject & Cancel Order
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    const result = await Swal.fire({
+                      title: 'Approve Payment & Order?',
+                      text: `Confirm manual payment and mark order #${order._id.slice(-8).toUpperCase()} as Confirmed & Paid?`,
+                      icon: 'question',
+                      showCancelButton: true,
+                      confirmButtonColor: '#00D1B2',
+                      confirmButtonText: 'Yes, Approve!'
+                    });
+                    if (result.isConfirmed) {
+                      try {
+                        const res = await fetch(`/api/orders/${order._id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'Confirmed', paymentStatus: 'Paid' }),
+                        });
+                        if (res.ok) {
+                          toast.success('Order approved successfully');
+                          onUpdate();
+                          onOpenChange(false);
+                        } else {
+                          toast.error('Failed to approve order');
+                        }
+                      } catch (e) {
+                        toast.error('Error approving order');
+                      }
+                    }
+                  }}
+                  className="rounded-xl h-11 flex-1 font-black uppercase tracking-wider text-xs shadow-md shadow-primary/10"
+                >
+                  Approve Manual Payment
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="py-10 text-center text-muted-foreground">
@@ -413,7 +519,7 @@ export default function OrderDetailsDialog({
           </div>
         )}
       </DialogContent>
+
     </Dialog>
   );
 }
-

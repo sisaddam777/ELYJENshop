@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
           courierName: 'Steadfast',
           consignmentId: response.consignment_id?.toString(),
           trackingId: response.tracking_code?.toString(),
-          trackingUrl: response.tracking_code ? `https://portal.steadfast.com.bd/tracking/${response.tracking_code}` : undefined,
+          trackingUrl: response.tracking_code ? `https://steadfast.com.bd/t/${response.tracking_code}` : undefined,
           courierStatus: response.status
         };
 

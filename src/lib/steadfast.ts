@@ -12,7 +12,7 @@ export interface SteadfastConfig {
   secretKey: string;
 }
 
-const BASE_URL = 'https://portal.steadfast.com.bd/api/v1';
+const BASE_URL = 'https://portal.packzy.com/api/v1';
 
 /**
  * Creates an order in Steadfast Courier system
