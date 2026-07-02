@@ -192,7 +192,7 @@ export async function printStickerInvoice(order: any, settings: any): Promise<vo
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
-  doc.text(`৳${Math.round(order.totalAmount)}`, 100 - margin, cy, { align: 'right' });
+  doc.text(`${Math.round(order.totalAmount)}`, 100 - margin, cy, { align: 'right' });
   cy += 2;
 
   // Divider
