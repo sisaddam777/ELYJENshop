@@ -42,6 +42,42 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+const detectDistrict = (address: string): string | undefined => {
+  const addrLower = address.toLowerCase();
+  const districts = [
+    { name: 'Dhaka', keys: ['dhaka', 'ঢাকা'] },
+    { name: 'Chittagong', keys: ['chittagong', 'chattogram', 'চট্টগ্রাম', 'ctg'] },
+    { name: 'Sylhet', keys: ['sylhet', 'সিলেট'] },
+    { name: 'Rajshahi', keys: ['rajshahi', 'রাজশাহী'] },
+    { name: 'Khulna', keys: ['khulna', 'খুলনা'] },
+    { name: 'Barisal', keys: ['barisal', 'barishal', 'বরিশাল'] },
+    { name: 'Rangpur', keys: ['rangpur', 'রংপুর'] },
+    { name: 'Mymensingh', keys: ['mymensingh', 'ময়মনসিংহ'] },
+    { name: 'Comilla', keys: ['comilla', 'cumilla', 'কুমিল্লা'] },
+    { name: 'Gazipur', keys: ['gazipur', 'গাজীপুর'] },
+    { name: 'Narayanganj', keys: ['narayanganj', 'নারায়ণগঞ্জ'] },
+    { name: 'Bogra', keys: ['bogura', 'bogra', 'বগুড়া'] },
+    { name: 'Jessore', keys: ['jashore', 'jessore', 'যশোর'] },
+    { name: 'Feni', keys: ['feni', 'ফেনী'] },
+    { name: 'Noakhali', keys: ['noakhali', 'নোয়াখালী'] },
+    { name: 'Tangail', keys: ['tangail', 'টাঙ্গাইল'] },
+    { name: 'Pabna', keys: ['pabna', 'পাবনা'] },
+    { name: 'Sirajganj', keys: ['sirajganj', 'সিরাজগঞ্জ'] },
+    { name: 'Dinajpur', keys: ['dinajpur', 'দিনাজপুর'] },
+    { name: 'Kushtia', keys: ['kushtia', 'কুষ্টিয়া'] },
+    { name: 'Cox\'s Bazar', keys: ['cox', 'কক্সবাজার'] }
+  ];
+
+  for (const dist of districts) {
+    for (const key of dist.keys) {
+      if (addrLower.includes(key)) {
+        return dist.name;
+      }
+    }
+  }
+  return undefined;
+};
+
 const checkoutSchema = z.object({
   fullName: z.string().min(2, 'আপনার নাম লিখুন'),
   phone: z.string().min(11, 'সঠিক মোবাইল নম্বর লিখুন'),
@@ -331,13 +367,15 @@ function CheckoutContent() {
             })),
           };
 
+          const detectedCity = detectDistrict(values.street) || (values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : undefined);
+
           const purchaseUserData = {
             em: profile?.email || `${values.phone}@store.com`,
             ph: values.phone,
             fn: nameParts[0] || '',
             ln: nameParts.slice(1).join(' ') || '',
-            ct: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
-            st: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            ct: detectedCity,
+            st: detectedCity,
             country: 'bd',
           };
 
