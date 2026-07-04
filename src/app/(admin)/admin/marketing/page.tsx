@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { districts } from '@/lib/bd-locations';
 
 const marketingSettingsSchema = z.object({
   subscriptionConfig: z.object({
@@ -34,6 +35,7 @@ const marketingSettingsSchema = z.object({
   }).optional(),
   deliveryChargeInsideDhaka: z.number().min(0, 'Charge cannot be negative').optional(),
   deliveryChargeOutsideDhaka: z.number().min(0, 'Charge cannot be negative').optional(),
+  freeDeliveryDistricts: z.string().nullish().transform(val => val ?? ''),
   paymentConfig: z.object({
     activeMethod: z.string().default('none'),
     sslcommerz: z.object({
@@ -101,8 +103,9 @@ export default function MarketingSettingsPage() {
         activationThreshold: 5000,
         rewardPercentage: 5,
       },
-      deliveryChargeInsideDhaka: 60,
-      deliveryChargeOutsideDhaka: 120,
+      deliveryChargeInsideDhaka: 0,
+      deliveryChargeOutsideDhaka: 0,
+      freeDeliveryDistricts: '',
       paymentConfig: {
         activeMethod: 'none',
         sslcommerz: {
@@ -151,8 +154,9 @@ export default function MarketingSettingsPage() {
                   activationThreshold: result.data.subscriptionConfig?.activationThreshold ?? 5000,
                   rewardPercentage: result.data.subscriptionConfig?.rewardPercentage ?? 5,
                 },
-                deliveryChargeInsideDhaka: result.data.deliveryChargeInsideDhaka ?? 60,
-                deliveryChargeOutsideDhaka: result.data.deliveryChargeOutsideDhaka ?? 120,
+                deliveryChargeInsideDhaka: result.data.deliveryChargeInsideDhaka ?? 0,
+                deliveryChargeOutsideDhaka: result.data.deliveryChargeOutsideDhaka ?? 0,
+                freeDeliveryDistricts: result.data.freeDeliveryDistricts || '',
                 paymentConfig: {
                   activeMethod: result.data.paymentConfig?.activeMethod || 'none',
                   sslcommerz: {
@@ -547,6 +551,34 @@ export default function MarketingSettingsPage() {
                               className="h-12 rounded-xl"
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="freeDeliveryDistricts"
+                      render={({ field }) => (
+                        <FormItem className="space-y-2">
+                          <FormLabel className="font-bold">Free Delivery District</FormLabel>
+                          <Select 
+                            onValueChange={(val) => field.onChange(val === 'none' ? '' : val)} 
+                            value={field.value || 'none'}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-12 rounded-xl">
+                                <SelectValue placeholder="Select a free delivery district" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectItem value="none">None (No free delivery district)</SelectItem>
+                              {districts.map((district) => (
+                                <SelectItem key={district} value={district}>
+                                  {district}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}

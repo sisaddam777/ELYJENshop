@@ -63,13 +63,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Redirect to success page on the same domain
+      // Redirect to checkout page with success state (modal will show)
       const origin = req.nextUrl.origin;
-      return NextResponse.redirect(`${origin}/checkout/success?id=${orderId}`, 303);
+      return NextResponse.redirect(`${origin}/checkout?order=success&id=${orderId}`, 303);
     } else {
       console.error('SSLCommerz Validation Failed:', response);
       const origin = req.nextUrl.origin;
-      return NextResponse.redirect(`${origin}/checkout/fail?id=${orderId}&reason=ValidationFailed`, 303);
+      return NextResponse.redirect(`${origin}/checkout?order=failed&id=${orderId}`, 303);
     }
   } catch (error) {
     console.error('Payment Success Error:', error);

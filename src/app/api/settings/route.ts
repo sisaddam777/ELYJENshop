@@ -52,8 +52,8 @@ export async function GET() {
         metaDescription: "The most popular online shop in Bangladesh.",
         logoUrl: "/logo.webp",
         freeDeliveryThreshold: 0,
-        deliveryChargeInsideDhaka: 60,
-        deliveryChargeOutsideDhaka: 120,
+        deliveryChargeInsideDhaka: 0,
+        deliveryChargeOutsideDhaka: 0,
         uiTemplates: {
           theme: 'green',
           logoFont: 'orbitron',
@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
       'freeDeliveryThreshold',
       'deliveryChargeInsideDhaka',
       'deliveryChargeOutsideDhaka',
+      'freeDeliveryDistricts',
       'theme',
       'logoUrl',
       'footerNavigation',

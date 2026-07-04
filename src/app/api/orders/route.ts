@@ -283,8 +283,8 @@ export async function POST(req: NextRequest) {
       freeDistricts.includes(state) || 
       freeDistricts.includes(division);
 
-    const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka || 60;
-    const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka || 120;
+    const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka ?? 0;
+    const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka ?? 0;
 
     const serverComputedDeliveryCharge = (isFreeDelivery || isFreeDistrictSelected) ? 0 : (isDhaka ? chargeInsideDhaka : chargeOutsideDhaka);
 

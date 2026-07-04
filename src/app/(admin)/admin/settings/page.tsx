@@ -122,8 +122,8 @@ export default function SettingsPage() {
         rewardPercentage: 5,
       },
       freeDeliveryThreshold: 0,
-      deliveryChargeInsideDhaka: 60,
-      deliveryChargeOutsideDhaka: 120,
+      deliveryChargeInsideDhaka: 0,
+      deliveryChargeOutsideDhaka: 0,
       freeDeliveryDistricts: '',
       logoUrl: '',
       uiTemplates: {
@@ -167,8 +167,8 @@ export default function SettingsPage() {
                 metaTitle: result.data.metaTitle || '',
                 metaDescription: result.data.metaDescription || '',
                 freeDeliveryThreshold: result.data.freeDeliveryThreshold ?? 0,
-                deliveryChargeInsideDhaka: result.data.deliveryChargeInsideDhaka ?? 60,
-                deliveryChargeOutsideDhaka: result.data.deliveryChargeOutsideDhaka ?? 120,
+                deliveryChargeInsideDhaka: result.data.deliveryChargeInsideDhaka ?? 0,
+                deliveryChargeOutsideDhaka: result.data.deliveryChargeOutsideDhaka ?? 0,
                 freeDeliveryDistricts: result.data.freeDeliveryDistricts || '',
                 subscriptionConfig: {
                   activationThreshold: result.data.subscriptionConfig?.activationThreshold ?? 5000,

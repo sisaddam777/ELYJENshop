@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,9 +21,9 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, CreditCard, Truck, ShoppingBag, CheckCircle2, Plus, Minus, X, Globe } from 'lucide-react';
+import { Loader2, CreditCard, Truck, ShoppingBag, CheckCircle2, Plus, Minus, X, Globe, PartyPopper, XCircle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -54,8 +54,9 @@ const checkoutSchema = z.object({
 
 type CheckoutValues = z.infer<typeof checkoutSchema>;
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const { items, totalAmount, isHydrated } = useAppSelector((state) => state.cart);
   const [loading, setLoading] = useState(false);
@@ -72,8 +73,13 @@ export default function CheckoutPage() {
     senderNumber: '',
     transactionId: ''
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFailModal, setShowFailModal] = useState(false);
+  const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
+
   const form = useForm<CheckoutValues>({
     resolver: zodResolver(checkoutSchema),
+    mode: 'onChange',
     defaultValues: {
       fullName: '',
       phone: '',
@@ -91,6 +97,21 @@ export default function CheckoutPage() {
       setManualDetails({ senderNumber: '', transactionId: '' });
     }
   }, [form.watch('paymentMethod')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle SSLCommerz redirect back — show modal based on ?order= param
+  useEffect(() => {
+    const orderStatus = searchParams.get('order');
+    const orderId = searchParams.get('id');
+    if (orderStatus === 'success') {
+      setSuccessOrderId(orderId);
+      setShowSuccessModal(true);
+      // Clean URL without reload
+      window.history.replaceState({}, '', '/checkout');
+    } else if (orderStatus === 'failed') {
+      setShowFailModal(true);
+      window.history.replaceState({}, '', '/checkout');
+    }
+  }, [searchParams]);
 
 
 
@@ -237,24 +258,6 @@ export default function CheckoutPage() {
 
   const submissionSucceededRef = useRef(false);
 
-  const [canRedirect, setCanRedirect] = useState(false);
-
-  // Delay the redirect permission to allow Redux state to fully settle
-  useEffect(() => {
-    if (isHydrated) {
-      const timer = setTimeout(() => setCanRedirect(true), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isHydrated]);
-
-  useEffect(() => {
-    // Only redirect if hydration is complete, the grace period (canRedirect) has passed, 
-    // and the cart is still truly empty.
-    if (canRedirect && isHydrated && items.length === 0 && !loading && !submissionSucceededRef.current) {
-      router.push('/shop');
-    }
-  }, [canRedirect, isHydrated, items.length, router, loading]);
-
   const onSubmit = async (values: CheckoutValues) => {
     setLoading(true);
     try {
@@ -307,6 +310,41 @@ export default function CheckoutPage() {
         } catch (storageError) {
           console.warn('Failed to store order in localStorage:', storageError);
         }
+
+        // Track Purchase event immediately on API success
+        try {
+          const safeItems = Array.isArray(order.items) ? order.items : items;
+          const fullName = values.fullName || '';
+          const nameParts = fullName.trim().split(/\s+/);
+
+          const purchaseEventData = {
+            value: order.totalAmount ?? totalAmount,
+            currency: 'BDT',
+            content_ids: safeItems.map((i: any) => i.product?._id || i.product || i.productId),
+            content_type: 'product',
+            num_items: safeItems.length,
+            contents: safeItems.map((i: any) => ({
+              id: i.product?._id || i.product || i.productId,
+              quantity: i.quantity,
+              price: i.price,
+              item_price: i.price,
+            })),
+          };
+
+          const purchaseUserData = {
+            em: profile?.email || `${values.phone}@store.com`,
+            ph: values.phone,
+            fn: nameParts[0] || '',
+            ln: nameParts.slice(1).join(' ') || '',
+            ct: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            st: values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : 'Outside Dhaka',
+            country: 'bd',
+          };
+
+          fbEvent('Purchase', purchaseEventData, purchaseUserData, order._id);
+        } catch (trackingError) {
+          console.error('Tracking error:', trackingError);
+        }
         
         if (values.paymentMethod === 'Online') {
           // Initialize SSLCommerz Payment
@@ -328,13 +366,14 @@ export default function CheckoutPage() {
             toast.error(initError.message || 'Failed to initialize payment gateway. Please try paying from your dashboard.');
             // Still clear cart if the order was created successfully
             dispatch(clearCart());
-            router.push(`/checkout/success?id=${order._id}`);
+            setSuccessOrderId(order._id);
+            setShowSuccessModal(true);
           }
         } else {
-          // COD Success - Clear cart and redirect
+          // COD Success - Clear cart and show success modal
           dispatch(clearCart());
-          toast.success('Order placed successfully!');
-          router.push(`/checkout/success?id=${order._id}`);
+          setSuccessOrderId(order._id);
+          setShowSuccessModal(true);
         }
       } else {
         const error = await response.json();
@@ -398,8 +437,8 @@ export default function CheckoutPage() {
   const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
   const isFreeDelivery = freeDeliveryThreshold > 0 && totalAmount >= freeDeliveryThreshold;
   
-  const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka || 60;
-  const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka || 120;
+  const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka ?? 0;
+  const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka ?? 0;
   
   const totalProductDiscount = items.reduce((sum, item) => {
     const itemBasePrice = item.basePrice || item.price;
@@ -428,10 +467,13 @@ export default function CheckoutPage() {
 
   // Validation check for mandatory fields to show/hide the order button
   const watchedFields = form.watch();
+  const isPhoneValid = /^(?:01)[3-9]\d{8}$/.test(watchedFields.phone || '');
+  const isAddressValid = (watchedFields.street || '').trim().length >= 5;
+  const isNameValid = (watchedFields.fullName || '').trim().length >= 2;
   const isFormValid = !!(
-    watchedFields.fullName?.trim() && 
-    watchedFields.phone?.trim() && 
-    watchedFields.street?.trim() && 
+    isNameValid &&
+    isPhoneValid && 
+    isAddressValid && 
     watchedFields.shippingRegion &&
     (watchedFields.paymentMethod !== 'Manual' || (selectedMethod?.id && manualDetails.senderNumber && manualDetails.transactionId))
   );
@@ -456,7 +498,26 @@ export default function CheckoutPage() {
     </div>
   );
 
-  if (items.length === 0) return null;
+  // Show empty cart UI instead of returning null / redirecting
+  if (items.length === 0 && !showSuccessModal && !showFailModal) return (
+    <div className="container min-h-[70vh] flex flex-col items-center justify-center gap-6 py-20 text-center">
+      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
+        <ShoppingBag className="w-12 h-12 text-muted-foreground" />
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-black tracking-tight">আপনার কার্ট খালি!</h2>
+        <p className="text-muted-foreground text-sm max-w-xs">
+          চেকআউট করতে আগে কিছু পণ্য কার্টে যোগ করুন।
+        </p>
+      </div>
+      <Button
+        onClick={() => router.push('/shop')}
+        className="rounded-full px-8 h-11 font-bold"
+      >
+        শপে যান <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+    </div>
+  );
 
   return (
     <div className="container px-4 md:px-6 py-12">
@@ -1001,7 +1062,105 @@ export default function CheckoutPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ✅ Order Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="flex flex-col items-center text-center p-8 gap-6">
+            {/* Animated icon */}
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center border-4 border-green-500/20 shadow-xl shadow-green-500/20 animate-in zoom-in-50 duration-500">
+                <PartyPopper className="w-12 h-12 text-green-500" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-white" />
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black tracking-tight">অর্ডার সফল হয়েছে!</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করবো।
+              </p>
+              {successOrderId && (
+                <p className="text-xs font-mono bg-muted px-3 py-1.5 rounded-full inline-block text-muted-foreground">
+                  Order ID: <span className="font-bold text-foreground">#{successOrderId.slice(-8).toUpperCase()}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-col gap-3 w-full pt-2">
+              <Button
+                onClick={() => { setShowSuccessModal(false); router.push('/shop'); }}
+                className="w-full h-11 rounded-full font-bold shadow-lg shadow-primary/20"
+              >
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                শপিং চালিয়ে যান
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { setShowSuccessModal(false); router.push('/dashboard'); }}
+                className="w-full h-11 rounded-full font-bold"
+              >
+                আমার অর্ডার দেখুন
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ❌ Payment Failed Modal */}
+      <Dialog open={showFailModal} onOpenChange={setShowFailModal}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="flex flex-col items-center text-center p-8 gap-6">
+            {/* Icon */}
+            <div className="w-24 h-24 rounded-full bg-destructive/10 flex items-center justify-center border-4 border-destructive/20 shadow-xl shadow-destructive/20 animate-in zoom-in-50 duration-500">
+              <XCircle className="w-12 h-12 text-destructive" />
+            </div>
+
+            {/* Text */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black tracking-tight text-destructive">পেমেন্ট ব্যর্থ হয়েছে</h2>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                আপনার পেমেন্ট সম্পন্ন হয়নি। পুনরায় চেষ্টা করুন অথবা COD পেমেন্ট বেছে নিন।
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-col gap-3 w-full pt-2">
+              <Button
+                onClick={() => setShowFailModal(false)}
+                className="w-full h-11 rounded-full font-bold"
+              >
+                পুনরায় চেষ্টা করুন
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => { setShowFailModal(false); router.push('/shop'); }}
+                className="w-full h-11 rounded-full font-bold"
+              >
+                শপে ফিরে যান
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="container py-24 flex justify-center items-center h-[50vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }
 

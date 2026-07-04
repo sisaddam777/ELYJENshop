@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
 
     const origin = req.nextUrl.origin;
     const redirectUrl = orderId 
-      ? `${origin}/checkout/fail?id=${orderId}`
-      : `${origin}/checkout/fail`;
+      ? `${origin}/checkout?order=failed&id=${orderId}`
+      : `${origin}/checkout?order=failed`;
       
     return NextResponse.redirect(redirectUrl, 303);
   } catch (error: any) {
