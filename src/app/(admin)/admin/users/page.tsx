@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Pagination } from '@/components/ui/pagination';
 import { useSession } from 'next-auth/react';
 import {
   Table,
@@ -62,7 +64,9 @@ interface UserData {
   lastOrderDate?: string;
 }
 
-export default function UsersPage() {
+function UsersContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
@@ -70,6 +74,11 @@ export default function UsersPage() {
   const [isAssignAdminOpen, setIsAssignAdminOpen] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+  const limit = 10;
+
+  const totalPages = Math.ceil(users.length / limit);
+  const paginatedUsers = users.slice((currentPage - 1) * limit, currentPage * limit);
 
   const { data: session } = useSession();
   const isSuperAdmin = (session?.user as any)?.role === 'super_admin';
@@ -252,7 +261,7 @@ export default function UsersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              paginatedUsers.map((user) => (
                 <TableRow key={user._id} className="hover:bg-muted/30 transition-colors">
                   <TableCell>
                     {user.image && user.image !== '' ? (
@@ -361,6 +370,21 @@ export default function UsersPage() {
           </TableBody>
         </Table>
       </div>
+
+      {!loading && totalPages > 1 && (
+        <div className="py-4">
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', page.toString());
+              router.push(`?${params.toString()}`);
+            }}
+          />
+        </div>
+      )}
 
       {/* User Details Modal */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
@@ -541,6 +565,18 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[300px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <UsersContent />
+    </Suspense>
   );
 }
 

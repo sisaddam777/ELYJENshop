@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Pagination } from '@/components/ui/pagination';
 import {
   Table,
   TableBody,
@@ -45,7 +47,9 @@ import PrintableInvoice from '@/components/admin/PrintableInvoice';
 import { generateInvoicePDF } from '@/lib/invoice-generator';
 
 
-export default function OrdersPage() {
+function OrdersContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,6 +60,8 @@ export default function OrdersPage() {
   });
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+  const limit = 10;
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -120,6 +126,14 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
+  // Reset page when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('page');
+    router.push(`?${params.toString()}`);
+  }, [searchTerm, statusFilter, dateFilter.from, dateFilter.to]);
+
   const filteredOrders = orders.filter((order) => {
     const search = searchTerm.toLowerCase();
 
@@ -146,6 +160,9 @@ export default function OrdersPage() {
 
     return matchesSearch && matchesStatus && matchesDate;
   });
+
+  const totalPages = Math.ceil(filteredOrders.length / limit);
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * limit, currentPage * limit);
 
   const toggleSelectAll = () => {
     const filteredIds = filteredOrders.map(o => o._id);
@@ -625,7 +642,7 @@ export default function OrdersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow key={order._id} className={selectedIds.includes(order._id) ? "bg-muted/50" : ""}>
                   <TableCell>
                     <Checkbox
@@ -722,6 +739,21 @@ export default function OrdersPage() {
         </Table>
       </div>
 
+      {!loading && totalPages > 1 && (
+        <div className="py-4">
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', page.toString());
+              router.push(`?${params.toString()}`);
+            }}
+          />
+        </div>
+      )}
+
       <OrderDetailsDialog
         orderId={selectedOrderId}
         open={isDetailsOpen}
@@ -746,6 +778,18 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[300px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <OrdersContent />
+    </Suspense>
   );
 }
 

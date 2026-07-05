@@ -16,10 +16,6 @@ export async function GET(
   try {
     const { slug } = await params;
     const session = await auth();
-    if (!session || !session.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
     if (!mongoose.isValidObjectId(slug)) {
       return NextResponse.json({ message: 'Invalid order ID' }, { status: 400 });
     }
@@ -33,11 +29,12 @@ export async function GET(
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });
     }
 
-    // Authorization: Must be an admin OR the owner of the order
-    const isAdmin = ['admin', 'super_admin'].includes((session.user as any)?.role);
-    const isOwner = order.user?._id?.toString() === (session.user as any).id;
+    // Authorization: Must be an admin OR the owner of the order OR it is a guest order
+    const isAdmin = session?.user && ['admin', 'super_admin'].includes((session.user as any)?.role);
+    const isOwner = session?.user && order.user?._id?.toString() === (session.user as any).id;
+    const isGuestOrder = !order.user;
 
-    if (!isAdmin && !isOwner) {
+    if (!isAdmin && !isOwner && !isGuestOrder) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
@@ -69,7 +66,17 @@ export async function PATCH(
     } catch (e) {
       return NextResponse.json({ message: 'Invalid JSON body' }, { status: 400 });
     }
-    const { status, paymentStatus } = body;
+    const {
+      status,
+      paymentStatus,
+      shippingAddress,
+      paymentMethod,
+      transactionId,
+      deliveryCharge,
+      couponDiscountAmount,
+      walletAmountUsed,
+      items
+    } = body;
 
     const conn = await connectToDatabase();
 
@@ -96,8 +103,8 @@ export async function PATCH(
       if (status) {
         if (!allowedStatuses.includes(status)) {
           await dbSession.abortTransaction();
-          return NextResponse.json({ 
-            message: `Invalid status. Allowed values: ${allowedStatuses.join(', ')}` 
+          return NextResponse.json({
+            message: `Invalid status. Allowed values: ${allowedStatuses.join(', ')}`
           }, { status: 400 });
         }
         updateData.status = status;
@@ -106,11 +113,58 @@ export async function PATCH(
       if (paymentStatus) {
         if (!allowedPaymentStatuses.includes(paymentStatus)) {
           await dbSession.abortTransaction();
-          return NextResponse.json({ 
-            message: `Invalid payment status. Allowed values: ${allowedPaymentStatuses.join(', ')}` 
+          return NextResponse.json({
+            message: `Invalid payment status. Allowed values: ${allowedPaymentStatuses.join(', ')}`
           }, { status: 400 });
         }
         updateData.paymentStatus = paymentStatus;
+      }
+
+      if (shippingAddress) {
+        const currentAddr = order.shippingAddress && typeof (order.shippingAddress as any).toObject === 'function'
+          ? (order.shippingAddress as any).toObject()
+          : (order.shippingAddress || {});
+        updateData.shippingAddress = {
+          fullName: shippingAddress.fullName !== undefined ? shippingAddress.fullName : currentAddr.fullName,
+          phone: shippingAddress.phone !== undefined ? shippingAddress.phone : currentAddr.phone,
+          street: shippingAddress.street !== undefined ? shippingAddress.street : currentAddr.street,
+          city: shippingAddress.city !== undefined ? shippingAddress.city : currentAddr.city,
+          state: shippingAddress.state !== undefined ? shippingAddress.state : currentAddr.state,
+          division: shippingAddress.division !== undefined ? shippingAddress.division : currentAddr.division,
+          zipCode: shippingAddress.zipCode !== undefined ? shippingAddress.zipCode : currentAddr.zipCode,
+          country: shippingAddress.country !== undefined ? shippingAddress.country : currentAddr.country,
+        };
+      }
+
+      if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
+      if (transactionId !== undefined) updateData.transactionId = transactionId;
+      if (couponDiscountAmount !== undefined) updateData.couponDiscountAmount = Number(couponDiscountAmount) || 0;
+      if (walletAmountUsed !== undefined) updateData.walletAmountUsed = Number(walletAmountUsed) || 0;
+
+      if (deliveryCharge !== undefined) {
+        updateData.deliveryCharge = Number(deliveryCharge) || 0;
+      }
+
+      if (items !== undefined && Array.isArray(items)) {
+        updateData.items = items.map((item: any) => ({
+          product: item.product?._id || item.product,
+          name: item.name,
+          price: Number(item.price) || 0,
+          quantity: Number(item.quantity) || 1,
+          color: item.color,
+          size: item.size,
+          image: item.image,
+          purchasePrice: Number(item.purchasePrice) || 0
+        }));
+      }
+
+      // Recalculate totalAmount if items or deliveryCharge are updated
+      if (updateData.items !== undefined || updateData.deliveryCharge !== undefined) {
+        const finalItems = updateData.items !== undefined ? updateData.items : order.items;
+        const finalDeliveryCharge = updateData.deliveryCharge !== undefined ? updateData.deliveryCharge : (order.deliveryCharge || 0);
+        
+        const itemsTotal = finalItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+        updateData.totalAmount = itemsTotal + finalDeliveryCharge;
       }
 
       // 1. Handle Sales Counting logic (Atomic-like within transaction)
@@ -131,7 +185,7 @@ export async function PATCH(
       const isOrderSuccessful = (status || order.status) === 'Delivered';
       if (isOrderSuccessful && !order.isRewarded && order.user) {
         const user = await User.findOne({ _id: order.user }).session(dbSession);
-        const settings = await GlobalSettings.findOne({}).session(dbSession);
+        const settings = await GlobalSettings.findOne().session(dbSession);
         const subConfig = {
           activationThreshold: settings?.subscriptionConfig?.activationThreshold ?? 5000,
           rewardPercentage: settings?.subscriptionConfig?.rewardPercentage ?? 5
@@ -141,13 +195,13 @@ export async function PATCH(
           if (!user.isSubscriptionActive && order.totalAmount >= subConfig.activationThreshold) {
             user.isSubscriptionActive = true;
             await user.save({ session: dbSession });
-          } 
-          
+          }
+
           const rewardAmount = order.earnedRewardAmount || 0;
           if ((user.isSubscriptionActive || order.totalAmount >= subConfig.activationThreshold) && rewardAmount > 0) {
             user.walletBalance = (user.walletBalance || 0) + rewardAmount;
             await user.save({ session: dbSession });
-            
+
             await WalletTransaction.create([{
               userId: user._id,
               amount: rewardAmount,
@@ -217,4 +271,3 @@ export async function DELETE(
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
-
