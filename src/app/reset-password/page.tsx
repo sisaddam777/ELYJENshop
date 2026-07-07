@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, Suspense } from 'react';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -255,9 +256,10 @@ export default function ResetPasswordPage() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="fixed inset-y-0 left-0 hidden w-1/2 bg-muted lg:block"
       >
-        <img
+        <Image
           src="/assets/login_banner.jpg"
           alt="Reset Password Banner"
+          fill
           className="absolute inset-0 h-full w-full object-cover brightness-[0.8] contrast-[1.1]"
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex flex-col justify-end p-12">

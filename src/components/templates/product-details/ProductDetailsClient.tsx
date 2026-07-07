@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import {
   ShoppingCart,
   Heart,
@@ -410,9 +411,10 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           >
             {product.images && product.images.length > 0 && selectedImage < product.images.length ? (
               <>
-                <img
+                <Image
                   src={product.images[selectedImage]}
                   alt={product.name}
+                  fill
                   className="h-full w-full object-contain p-4"
                 />
 
@@ -473,7 +475,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                 }`}
               onClick={() => setSelectedImage(i)}
             >
-              <img src={img} alt="" className="h-full w-full object-cover" />
+              <Image src={img} alt="" width={80} height={80} className="h-full w-full object-cover" />
             </button>
           ))}
         </div>

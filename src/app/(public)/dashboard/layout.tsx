@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { signOut } from 'next-auth/react';
 import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import { buttonVariants } from '@/components/ui/button';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -53,12 +54,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <CardHeader className="flex flex-col items-center text-center">
               <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center border-4 border-background shadow-lg mb-4 overflow-hidden relative">
                   {session?.user?.image ? (
-                     <img 
-                       src={session.user.image} 
-                       alt={session?.user?.name || "Profile"} 
-                       className="h-full w-full object-cover" 
-                       referrerPolicy="no-referrer"
-                     />
+                      <Image 
+                        src={session.user.image} 
+                        alt={session?.user?.name || "Profile"} 
+                        width={80}
+                        height={80}
+                        className="h-full w-full object-cover" 
+                        referrerPolicy="no-referrer"
+                      />
                   ) : (
                      <UserIcon className="h-10 w-10 text-primary" />
                   )}

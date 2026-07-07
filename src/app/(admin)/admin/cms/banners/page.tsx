@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -148,9 +149,10 @@ export default function BannersPage() {
                 <TableRow key={banner._id} className="group hover:bg-muted/30 transition-colors">
                   <TableCell>
                     <div className="aspect-[21/9] w-full overflow-hidden rounded-md border bg-muted relative">
-                      <img 
+                      <Image 
                         src={banner.image} 
                         alt={banner.title} 
+                        fill
                         className="absolute inset-0 h-full w-full object-cover" 
                       />
                     </div>

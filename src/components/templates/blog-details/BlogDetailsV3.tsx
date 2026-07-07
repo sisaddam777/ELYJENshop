@@ -130,7 +130,7 @@ export default function BlogDetailsV3({ blog, readingTime }: BlogDetailsV3Props)
                 <div className="flex items-center gap-6">
                    <div className="h-20 w-20 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-3xl overflow-hidden shadow-xl shadow-primary/20 rotate-3">
                       {blog.author?.avatar ? (
-                        <img src={blog.author.avatar} alt="Author" className="h-full w-full object-cover" />
+                        <Image src={blog.author.avatar} alt="Author" width={80} height={80} className="h-full w-full object-cover" />
                       ) : (
                         <span className="font-mono">JE</span>
                       )}

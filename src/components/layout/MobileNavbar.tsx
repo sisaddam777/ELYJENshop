@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, ShoppingCart, User, LogOut, LayoutDashboard, Truck, Settings, Package } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
@@ -112,9 +113,11 @@ export function MobileNavbar({ navItems, categories }: MobileNavbarProps) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center cursor-pointer outline-none" aria-label="Account menu">
                   <div className="h-8 w-8 rounded-full border-2 border-primary/20 overflow-hidden hover:border-primary transition-all">
-                    <img
+                    <Image
                       src={session.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || 'U')}`}
                       alt={session.user?.name || 'User'}
+                      width={32}
+                      height={32}
                       className="h-full w-full object-cover"
                     />
                   </div>

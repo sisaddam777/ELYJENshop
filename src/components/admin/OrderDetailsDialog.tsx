@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -919,7 +920,7 @@ export default function OrderDetailsDialog({
                     <div className="flex items-center gap-3 flex-1">
                       <div className="h-12 w-12 rounded border overflow-hidden bg-muted flex-shrink-0">
                          {item.image ? (
-                             <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                             <Image src={item.image} alt={item.name} width={48} height={48} className="h-full w-full object-cover" />
                          ) : (
                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">No Img</div>
                          )}

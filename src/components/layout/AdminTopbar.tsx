@@ -9,6 +9,7 @@ import {
   Store
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -42,9 +43,11 @@ export default function AdminTopbar() {
             <DropdownMenuTrigger nativeButton={true} render={
               <Button variant="secondary" size="icon" className="rounded-full overflow-hidden border border-primary/20">
                 {session.user.image ? (
-                  <img 
+                  <Image 
                     src={session.user.image} 
                     alt={session.user.name || "Admin"} 
+                    width={36}
+                    height={36}
                     className="h-full w-full object-cover"
                     referrerPolicy="no-referrer"
                   />

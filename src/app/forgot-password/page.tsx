@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -68,9 +69,10 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="fixed inset-y-0 left-0 hidden w-1/2 bg-muted lg:block"
       >
-        <img
+        <Image
           src="/assets/forgetpassrod.webp"
           alt="Forgot Password Banner"
+          fill
           className="absolute inset-0 h-full w-full object-cover brightness-[0.8] contrast-[1.1]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-12">

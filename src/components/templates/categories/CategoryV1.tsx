@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Plus } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
@@ -79,12 +80,13 @@ export default function CategoryV1({ categories }: CategoryShowcaseProps) {
                     className="group block"
                   >
                     <div className="flex flex-col items-center gap-3 py-2 transition-all hover:-translate-y-1">
-                      <div className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full bg-background border border-muted shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <div className="relative h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-full bg-background border border-muted shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         {category.image ? (
-                          <img
+                          <Image
                             src={category.image}
                             alt={category.name}
-                            className="h-full w-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         ) : (
                           <Plus className="h-6 w-6 text-muted-foreground" />

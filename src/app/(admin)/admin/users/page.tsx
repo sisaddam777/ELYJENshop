@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { Pagination } from '@/components/ui/pagination';
 import { useSession } from 'next-auth/react';
 import {
@@ -40,7 +41,6 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
-import Image from 'next/image';
 import Swal from 'sweetalert2';
 import {
   Dialog,
@@ -266,10 +266,13 @@ function UsersContent() {
                   <TableCell>
                     {user.image && user.image !== '' ? (
                       <div className="relative h-10 w-10 rounded-full overflow-hidden border">
-                        <img 
+                        <Image 
                           src={user.image} 
                           alt={user.name} 
+                          width={40}
+                          height={40}
                           className="h-full w-full object-cover"
+                          unoptimized
                           onError={(e) => {
                             (e.target as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
                           }}
@@ -402,10 +405,13 @@ function UsersContent() {
               <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
                 <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-white shadow-xl flex-shrink-0 bg-primary/10 flex items-center justify-center">
                   {selectedUser.image ? (
-                    <img 
+                    <Image 
                       src={selectedUser.image} 
                       alt={selectedUser.name} 
+                      width={96}
+                      height={96}
                       className="h-full w-full object-cover"
+                      unoptimized
                       onError={(e) => { (e.target as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name)}&background=random`; }}
                     />
                   ) : (

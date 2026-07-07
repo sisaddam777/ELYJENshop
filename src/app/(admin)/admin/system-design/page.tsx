@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { 
@@ -584,7 +585,7 @@ export default function SuperConfigPage() {
                   <div key={method} className="space-y-4 p-4 rounded-2xl border bg-muted/10">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <img src={`/assets/${method}logo.webp`} alt={method} className="h-6 w-6 object-contain" />
+                        <Image src={`/assets/${method}logo.webp`} alt={method} width={24} height={24} className="h-6 w-6 object-contain" />
                         <Label className="font-bold capitalize">{method}</Label>
                       </div>
                       <input 
@@ -661,7 +662,7 @@ export default function SuperConfigPage() {
                     <div className="flex items-center gap-4">
                       {settings?.manualPaymentConfig?.banglaQr?.qrCode && (
                         <div className="h-16 w-16 rounded-xl border bg-white p-1 flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative group">
-                          <img src={settings.manualPaymentConfig.banglaQr.qrCode} alt="QR" className="max-h-full max-w-full object-contain" />
+                          <Image src={settings.manualPaymentConfig.banglaQr.qrCode} alt="QR" width={64} height={64} className="max-h-full max-w-full object-contain" />
                           <button 
                             onClick={() => setSettings({
                               ...settings,

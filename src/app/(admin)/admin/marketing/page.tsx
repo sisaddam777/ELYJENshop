@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -444,7 +445,7 @@ export default function MarketingSettingsPage() {
                       <div key={method} className="space-y-4 p-4 rounded-2xl border bg-muted/10">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <img src={`/assets/${method}logo.webp`} alt={method} className="h-6 w-6 object-contain" />
+                            <Image src={`/assets/${method}logo.webp`} alt={method} width={24} height={24} className="h-6 w-6 object-contain" />
                             <span className="font-bold capitalize">{method}</span>
                           </div>
                           <FormField

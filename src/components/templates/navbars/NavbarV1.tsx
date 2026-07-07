@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ShoppingCart,
   Heart,
@@ -355,9 +356,11 @@ export default function Navbar() {
                       aria-label="Account menu"
                     >
                       <div className="h-8 w-8 rounded-full border-2 border-primary/20 overflow-hidden group-hover:border-primary transition-all">
-                        <img
+                        <Image
                           src={session.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || 'U')}`}
                           alt={session.user?.name || 'User'}
+                          width={32}
+                          height={32}
                           className="h-full w-full object-cover"
                         />
                       </div>

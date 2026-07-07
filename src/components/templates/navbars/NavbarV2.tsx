@@ -256,9 +256,11 @@ export default function NavbarV2() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 group cursor-pointer outline-none">
                     <div className="h-9 w-9 rounded-full border-2 border-primary/50 overflow-hidden group-hover:scale-110 transition-transform">
-                      <img 
+                      <Image 
                         src={session.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || '')}`} 
                         alt={session.user?.name || 'User'} 
+                        width={36}
+                        height={36}
                         className="h-full w-full object-cover" 
                       />
                     </div>
