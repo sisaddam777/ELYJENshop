@@ -44,10 +44,11 @@ function ProductsContent() {
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
   const limit = 10;
 
-  const fetchProducts = async (signal?: AbortSignal, page = currentPage) => {
+  const fetchProducts = async (signal?: AbortSignal, page = currentPage, query = search) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/products?page=${page}&limit=${limit}`, { signal });
+      const url = `/api/products?page=${page}&limit=${limit}&search=${encodeURIComponent(query)}`;
+      const response = await fetch(url, { signal });
       if (!response.ok) {
         toast.error(`Failed to fetch products: ${response.status} ${response.statusText}`);
         return;
@@ -64,9 +65,15 @@ function ProductsContent() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchProducts(controller.signal);
-    return () => controller.abort();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetchProducts(controller.signal, currentPage, search);
+    }, 300);
+
+    return () => {
+      controller.abort();
+      clearTimeout(delayDebounceFn);
+    };
+  }, [search, currentPage]);
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
@@ -92,7 +99,7 @@ function ProductsContent() {
 
         if (response.ok) {
           toast.success('Product deleted successfully');
-          fetchProducts();
+          fetchProducts(undefined, currentPage, search);
         } else {
           toast.error('Failed to delete product');
         }
@@ -101,13 +108,6 @@ function ProductsContent() {
       }
     }
   };
-
-  const filteredProducts = products.filter(p => {
-    const searchLower = (search ?? '').toLowerCase();
-    const nameLower = (p.name ?? '').toLowerCase();
-    const skuLower = (p.sku ?? '').toLowerCase();
-    return nameLower.includes(searchLower) || skuLower.includes(searchLower);
-  });
 
   return (
     <div className="flex flex-col gap-4 pt-6">
@@ -129,7 +129,13 @@ function ProductsContent() {
             placeholder="Search products..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('page', '1');
+              router.push(`?${params.toString()}`);
+            }}
           />
         </div>
       </div>
@@ -152,18 +158,18 @@ function ProductsContent() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
                 </TableCell>
               </TableRow>
-            ) : filteredProducts.length === 0 ? (
+            ) : products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   No products found.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredProducts.map((product) => (
+              products.map((product) => (
                 <TableRow key={product._id}>
                   <TableCell>
                     <div className="h-12 w-12 overflow-hidden rounded-md border bg-muted">
