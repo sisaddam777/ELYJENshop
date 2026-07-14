@@ -135,12 +135,12 @@ function OrdersContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchParams.get('search') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'All');
   const [dateFilter, setDateFilter] = useState({
-    from: '',
-    to: '',
+    from: searchParams.get('from') || '',
+    to: searchParams.get('to') || '',
   });
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -158,14 +158,35 @@ function OrdersContent() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Reset page when filters change
+  // Sync state to URL search parameters when filters change
   useEffect(() => {
+    const params = new URLSearchParams();
     if (currentPage > 1) {
-      setCurrentPage(1);
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('page');
-      router.push(`/admin/orders?${params.toString()}`);
+      params.set('page', currentPage.toString());
     }
+    if (statusFilter !== 'All') {
+      params.set('status', statusFilter);
+    }
+    if (debouncedSearchTerm) {
+      params.set('search', debouncedSearchTerm);
+    }
+    if (dateFilter.from) {
+      params.set('from', dateFilter.from);
+    }
+    if (dateFilter.to) {
+      params.set('to', dateFilter.to);
+    }
+
+    const currentQuery = searchParams.toString();
+    const newQuery = params.toString();
+    if (currentQuery !== newQuery) {
+      router.push(`/admin/orders?${newQuery}`);
+    }
+  }, [currentPage, statusFilter, debouncedSearchTerm, dateFilter.from, dateFilter.to]);
+
+  // Reset page to 1 when search or status filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, [debouncedSearchTerm, statusFilter, dateFilter.from, dateFilter.to]);
 
   const handleDownloadInvoice = async (order: any) => {

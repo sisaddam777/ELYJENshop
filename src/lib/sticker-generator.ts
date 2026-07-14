@@ -28,7 +28,7 @@ function generateBarcodeHtml(value: string): string {
     totalWidth += 1; // Inter-character gap
   }
 
-  let svgHtml = `<svg viewBox="0 0 ${totalWidth} 45" width="100%" height="45" xmlns="http://www.w3.org/2000/svg" style="max-width: 320px; display: block; margin: 0 auto; shape-rendering: crispEdges;" shape-rendering="crispEdges">`;
+  let svgHtml = `<svg viewBox="0 0 ${totalWidth} 55" width="100%" height="55" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; display: block; margin: 0 auto; shape-rendering: crispEdges;" shape-rendering="crispEdges">`;
   let currentX = 0;
   for (const char of encoded) {
     const pat = CODE39_MAP[char] || CODE39_MAP['*'];
@@ -37,7 +37,7 @@ function generateBarcodeHtml(value: string): string {
       const isWide = pat[j] === '1';
       const width = isWide ? 3 : 1;
       if (isBar) {
-        svgHtml += `<rect x="${currentX}" y="0" width="${width}" height="45" fill="#000000" />`;
+        svgHtml += `<rect x="${currentX}" y="0" width="${width}" height="55" fill="#000000" />`;
       }
       currentX += width;
     }
@@ -89,7 +89,7 @@ export async function printStickerInvoice(orderOrOrders: any | any[], settings: 
 
     const codAmount = order.paymentStatus === 'Paid' ? 0 : Math.round(order.totalAmount);
     const trackingUrl = order.shippingDetails?.trackingUrl || `https://steadfast.com.bd/t/${consignmentId}`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(consignmentId)}`;
 
     return `
       <div class="sticker-container" style="${index < orders.length - 1 ? 'page-break-after: always; break-after: page;' : ''}">
@@ -112,35 +112,21 @@ export async function printStickerInvoice(orderOrOrders: any | any[], settings: 
             <div class="qr-box">
               ${consignmentId ? `<img src="${qrCodeUrl}" alt="QR Link" />` : `<div style="font-size: 8px; text-align: center; color: #888;">No QR Code</div>`}
             </div>
-            <div class="info-table">
-              <div class="table-header">${courierName} Courier</div>
-              <div class="table-row">
-                <div class="table-cell table-cell-bold">P: ${order.shippingAddress?.city || 'N/A'}</div>
-              </div>
-              <div class="table-row">
-                <div class="table-cell">D: ${order.shippingAddress?.state || order.shippingAddress?.city || 'N/A'}</div>
-              </div>
-              <div class="table-row">
-                <div class="table-cell table-cell-bold" style="background-color: #f3f4f6;">
-                  ${order.shippingAddress?.city || 'N/A'}
+            <div class="info-table" style="padding: 8px; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+              <div style="font-weight: 700; font-size: 13px; color: #000000; text-transform: uppercase;">${order.shippingAddress?.fullName || 'Customer'}</div>
+              <div style="font-weight: 700; font-size: 13px; color: #000000;">${order.shippingAddress?.phone || ''}</div>
+              <div style="font-size: 10px; color: #333333; line-height: 1.3;">${order.shippingAddress?.street || ''}, ${order.shippingAddress?.city || ''}</div>
+              ${codAmount > 0 ? `
+                <div style="font-weight: 700; font-size: 13px; margin-top: 4px; border-top: 1px dashed #000000; padding-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+                  <span>COD Amount:</span>
+                  <span>৳${codAmount}</span>
                 </div>
-              </div>
-              <div class="table-row">
-                <div class="table-cell table-cell-split">
-                  <span style="font-weight: 700;">COD</span>
-                  <span style="font-weight: 700;">৳${codAmount}</span>
+              ` : `
+                <div style="font-weight: 700; font-size: 11px; margin-top: 4px; border-top: 1px dashed #000000; padding-top: 4px; color: green;">
+                  Paid / No COD
                 </div>
-              </div>
-              <div class="table-row">
-                <div class="table-cell" style="font-size: 8px; color: #555;">WGT# 0.5 KG</div>
-              </div>
+              `}
             </div>
-          </div>
-
-          <div class="recipient-details">
-            <div class="recipient-name">${order.shippingAddress?.fullName || 'Customer'}</div>
-            <div class="recipient-phone">${order.shippingAddress?.phone || ''}</div>
-            <div>${order.shippingAddress?.street || ''}, ${order.shippingAddress?.city || ''}</div>
           </div>
         </div>
 
