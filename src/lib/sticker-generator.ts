@@ -28,7 +28,7 @@ function generateBarcodeHtml(value: string): string {
     totalWidth += 1; // Inter-character gap
   }
 
-  let svgHtml = `<svg viewBox="0 0 ${totalWidth} 45" width="100%" height="45" xmlns="http://www.w3.org/2000/svg" style="max-width: 320px; display: block; margin: 0 auto;">`;
+  let svgHtml = `<svg viewBox="0 0 ${totalWidth} 45" width="100%" height="45" xmlns="http://www.w3.org/2000/svg" style="max-width: 320px; display: block; margin: 0 auto; shape-rendering: crispEdges;" shape-rendering="crispEdges">`;
   let currentX = 0;
   for (const char of encoded) {
     const pat = CODE39_MAP[char] || CODE39_MAP['*'];

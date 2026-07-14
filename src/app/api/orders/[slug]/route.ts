@@ -75,7 +75,8 @@ export async function PATCH(
       deliveryCharge,
       couponDiscountAmount,
       walletAmountUsed,
-      items
+      items,
+      internalNote
     } = body;
 
     const conn = await connectToDatabase();
@@ -140,6 +141,7 @@ export async function PATCH(
       if (transactionId !== undefined) updateData.transactionId = transactionId;
       if (couponDiscountAmount !== undefined) updateData.couponDiscountAmount = Number(couponDiscountAmount) || 0;
       if (walletAmountUsed !== undefined) updateData.walletAmountUsed = Number(walletAmountUsed) || 0;
+      if (internalNote !== undefined) updateData.internalNote = internalNote;
 
       if (deliveryCharge !== undefined) {
         updateData.deliveryCharge = Number(deliveryCharge) || 0;

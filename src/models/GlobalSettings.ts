@@ -46,6 +46,9 @@ export interface IGlobalSettings extends Document {
     redx?: {
       apiKey?: string;
     };
+    bdCourier?: {
+      apiKey?: string;
+    };
   };
   subscriptionConfig?: {
     activationThreshold?: number;
@@ -172,6 +175,7 @@ const GlobalSettingsSchema: Schema<IGlobalSettings> = new Schema(
           delete ret.courierConfig.steadfast;
           delete ret.courierConfig.pathao;
           delete ret.courierConfig.redx;
+          delete ret.courierConfig.bdCourier;
         }
         // Security: Remove sensitive Payment credentials
         if (ret.paymentConfig) {

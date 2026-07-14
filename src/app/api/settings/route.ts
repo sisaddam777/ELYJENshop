@@ -14,6 +14,7 @@ const getMaskedSettings = (raw: any, masked: any) => ({
     steadfast: masked.courierConfig.steadfast || null,
     pathao: masked.courierConfig.pathao || null,
     redx: masked.courierConfig.redx || null,
+    bdCourier: masked.courierConfig.bdCourier || null,
   } : masked.courierConfig,
   paymentConfig: masked.paymentConfig ? {
     ...masked.paymentConfig,

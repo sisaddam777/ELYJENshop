@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +17,7 @@ import { generateInvoicePDF } from '@/lib/invoice-generator';
 import { printStickerInvoice } from '@/lib/sticker-generator';
 import Swal from 'sweetalert2';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface OrderDetailsDialogProps {
   orderId: string | null;
@@ -37,6 +37,24 @@ export default function OrderDetailsDialog({
   const [loading, setLoading] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   
+  const [fraudData, setFraudData] = useState<any>(null);
+  const [fraudLoading, setFraudLoading] = useState(false);
+
+  const fetchFraudData = async (phone: string) => {
+    setFraudLoading(true);
+    try {
+      const res = await fetch(`/api/admin/courier/fraud-check?phone=${phone}`);
+      if (res.ok) {
+        const json = await res.json();
+        setFraudData(json);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFraudLoading(false);
+    }
+  };
+
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>(null);
 
@@ -85,6 +103,9 @@ export default function OrderDetailsDialog({
         ]);
         
         setOrder(orderData);
+        if (orderData?.shippingAddress?.phone) {
+          fetchFraudData(orderData.shippingAddress.phone);
+        }
         setSettings(settingsData);
         setEditForm({
           shippingAddress: {
@@ -113,7 +134,8 @@ export default function OrderDetailsDialog({
             image: item.image || '',
             purchasePrice: item.purchasePrice || 0
           })) : [],
-          status: orderData.status || 'Order Placed'
+          status: orderData.status || 'Order Placed',
+          internalNote: orderData.internalNote || ''
         });
       } catch (error: any) {
         if (error.name !== 'AbortError') {
@@ -134,6 +156,8 @@ export default function OrderDetailsDialog({
       setSettings(null);
       setIsEditing(false);
       setEditForm(null);
+      setFraudData(null);
+      setFraudLoading(false);
       // Reset shipping fields when closing or switching orders
       setCityId('');
       setZoneId('');
@@ -181,7 +205,7 @@ export default function OrderDetailsDialog({
       text: 'Are you sure you want to save the modified order details?',
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#2563eb',
+      confirmButtonColor: 'var(--primary)',
       confirmButtonText: 'Yes, save changes'
     });
 
@@ -230,7 +254,8 @@ export default function OrderDetailsDialog({
               image: item.image || '',
               purchasePrice: item.purchasePrice || 0
             })) : [],
-            status: updatedData.status || 'Order Placed'
+            status: updatedData.status || 'Order Placed',
+            internalNote: updatedData.internalNote || ''
           });
         }
       } else {
@@ -248,42 +273,35 @@ export default function OrderDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto rounded-xl font-body">
         <DialogHeader>
           <div className="flex items-center justify-between pr-6">
-            <DialogTitle className="text-xl font-bold">
+            <DialogTitle className="text-xl font-bold font-logo text-primary">
               {isEditing ? 'Edit Order Details' : 'Order Details'}
             </DialogTitle>
             {order && (
                <div className="flex items-center gap-2">
                   <button 
                     onClick={() => setIsEditing(!isEditing)}
-                    className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center gap-1 px-2.5 py-1"
+                    className="p-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center gap-1 px-2.5 py-1"
                     title={isEditing ? "Cancel Edit" : "Edit Order"}
                   >
                     {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
                     <span className="text-[10px] font-bold">{isEditing ? 'Cancel' : 'Edit'}</span>
                   </button>
-                  <Badge variant={order.status === 'Delivered' ? 'default' : 'secondary'}>
+                  <Badge variant={order.status === 'Delivered' ? 'default' : 'secondary'} className="rounded-xl">
                     {order.status}
                   </Badge>
                   <button 
-                    onClick={() => generateInvoicePDF(order, settings)}
-                    className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                    title="Download PDF Invoice"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </button>
-                  <button 
                     onClick={() => handleLocalPrint('invoice')}
-                    className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    className="p-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                     title="Print A4 Invoice"
                   >
                     <Printer className="h-4 w-4" />
                   </button>
                   <button 
                     onClick={() => handleLocalPrint('sticker')}
-                    className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center gap-1 px-2.5 py-1"
+                    className="p-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center gap-1 px-2.5 py-1"
                     title="Print Sticker Invoice"
                   >
                     <Printer className="h-4 w-4" />
@@ -317,7 +335,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, fullName: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -329,7 +347,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, phone: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1 col-span-2">
@@ -341,7 +359,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, street: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -353,7 +371,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, city: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -365,7 +383,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, state: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -377,7 +395,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, division: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -389,7 +407,7 @@ export default function OrderDetailsDialog({
                           ...editForm,
                           shippingAddress: { ...editForm.shippingAddress, zipCode: e.target.value }
                         })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                   </div>
@@ -406,7 +424,7 @@ export default function OrderDetailsDialog({
                       <select 
                         value={editForm.paymentMethod} 
                         onChange={(e) => setEditForm({ ...editForm, paymentMethod: e.target.value })}
-                        className="w-full text-sm p-2 border rounded bg-white"
+                        className="w-full text-sm p-2 border rounded-xl bg-white"
                       >
                         <option value="COD">Cash on Delivery (COD)</option>
                         <option value="Online">Online Payment</option>
@@ -418,7 +436,7 @@ export default function OrderDetailsDialog({
                       <select 
                         value={editForm.paymentStatus} 
                         onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value })}
-                        className="w-full text-sm p-2 border rounded bg-white"
+                        className="w-full text-sm p-2 border rounded-xl bg-white"
                       >
                         <option value="Pending">Pending</option>
                         <option value="Paid">Paid</option>
@@ -430,7 +448,7 @@ export default function OrderDetailsDialog({
                       <select 
                         value={editForm.status} 
                         onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                        className="w-full text-sm p-2 border rounded bg-white"
+                        className="w-full text-sm p-2 border rounded-xl bg-white"
                       >
                         {['Order Placed', 'Confirmed', 'Paid', 'Ready for Delivery', 'Released for Delivery', 'Cancelled', 'Delivered'].map(s => (
                           <option key={s} value={s}>{s}</option>
@@ -443,7 +461,7 @@ export default function OrderDetailsDialog({
                         type="text" 
                         value={editForm.transactionId} 
                         onChange={(e) => setEditForm({ ...editForm, transactionId: e.target.value })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                   </div>
@@ -461,7 +479,7 @@ export default function OrderDetailsDialog({
                         type="number" 
                         value={editForm.deliveryCharge} 
                         onChange={(e) => setEditForm({ ...editForm, deliveryCharge: Number(e.target.value) || 0 })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -470,7 +488,7 @@ export default function OrderDetailsDialog({
                         type="number" 
                         value={editForm.couponDiscountAmount} 
                         onChange={(e) => setEditForm({ ...editForm, couponDiscountAmount: Number(e.target.value) || 0 })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -479,7 +497,7 @@ export default function OrderDetailsDialog({
                         type="number" 
                         value={editForm.walletAmountUsed} 
                         onChange={(e) => setEditForm({ ...editForm, walletAmountUsed: Number(e.target.value) || 0 })}
-                        className="w-full text-sm p-2 border rounded" 
+                        className="w-full text-sm p-2 border rounded-xl" 
                       />
                     </div>
                   </div>
@@ -495,7 +513,7 @@ export default function OrderDetailsDialog({
                       type="button" 
                       variant="outline" 
                       size="sm" 
-                      className="text-xs font-bold flex items-center gap-1"
+                      className="text-xs font-bold flex items-center gap-1 rounded-xl"
                       onClick={() => {
                         setEditForm({
                           ...editForm,
@@ -510,7 +528,7 @@ export default function OrderDetailsDialog({
                     </Button>
                   </div>
 
-                  <div className="space-y-3 max-h-[250px] overflow-y-auto border p-3 rounded bg-muted/20">
+                  <div className="space-y-3 max-h-[250px] overflow-y-auto border p-3 rounded-xl bg-muted/20">
                     {editForm.items.map((item: any, index: number) => (
                       <div key={index} className="border-b pb-3 mb-3 last:border-b-0 last:pb-0 last:mb-0 space-y-2">
                         <div className="grid grid-cols-12 gap-2 items-center">
@@ -525,7 +543,7 @@ export default function OrderDetailsDialog({
                                 newItems[index].product = e.target.value;
                                 setEditForm({ ...editForm, items: newItems });
                               }}
-                              className="w-full text-xs p-1.5 border rounded"
+                              className="w-full text-xs p-1.5 border rounded-xl"
                             />
                           </div>
                           <div className="col-span-12 sm:col-span-6 space-y-1">
@@ -539,7 +557,7 @@ export default function OrderDetailsDialog({
                                 newItems[index].name = e.target.value;
                                 setEditForm({ ...editForm, items: newItems });
                               }}
-                              className="w-full text-xs p-1.5 border rounded font-medium"
+                              className="w-full text-xs p-1.5 border rounded-xl font-medium"
                             />
                           </div>
                         </div>
@@ -556,7 +574,7 @@ export default function OrderDetailsDialog({
                                 newItems[index].quantity = Number(e.target.value) || 1;
                                 setEditForm({ ...editForm, items: newItems });
                               }}
-                              className="w-full text-xs p-1.5 border rounded text-center"
+                              className="w-full text-xs p-1.5 border rounded-xl text-center"
                             />
                           </div>
                           <div className="space-y-1 col-span-1">
@@ -569,7 +587,7 @@ export default function OrderDetailsDialog({
                                 newItems[index].price = Number(e.target.value) || 0;
                                 setEditForm({ ...editForm, items: newItems });
                               }}
-                              className="w-full text-xs p-1.5 border rounded text-center"
+                              className="w-full text-xs p-1.5 border rounded-xl text-center"
                             />
                           </div>
                           <div className="space-y-1 col-span-1">
@@ -583,7 +601,7 @@ export default function OrderDetailsDialog({
                                 newItems[index].color = e.target.value;
                                 setEditForm({ ...editForm, items: newItems });
                               }}
-                              className="w-full text-xs p-1.5 border rounded text-center"
+                              className="w-full text-xs p-1.5 border rounded-xl text-center"
                             />
                           </div>
                           <div className="space-y-1 col-span-1">
@@ -597,7 +615,7 @@ export default function OrderDetailsDialog({
                                 newItems[index].size = e.target.value;
                                 setEditForm({ ...editForm, items: newItems });
                               }}
-                              className="w-full text-xs p-1.5 border rounded text-center"
+                              className="w-full text-xs p-1.5 border rounded-xl text-center"
                             />
                           </div>
                           <div className="col-span-1 flex items-end justify-center pb-0.5">
@@ -605,7 +623,7 @@ export default function OrderDetailsDialog({
                               type="button" 
                               variant="destructive" 
                               size="icon" 
-                              className="h-8 w-8"
+                              className="h-8 w-8 rounded-xl"
                               onClick={() => {
                                 const newItems = editForm.items.filter((_: any, idx: number) => idx !== index);
                                 setEditForm({ ...editForm, items: newItems });
@@ -618,6 +636,19 @@ export default function OrderDetailsDialog({
                       </div>
                     ))}
                   </div>
+                </div>
+
+                <Separator />
+
+                {/* Internal Note */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-bold uppercase text-muted-foreground">Internal Note (Admin/Manager)</h3>
+                  <textarea 
+                    value={editForm.internalNote || ''} 
+                    onChange={(e) => setEditForm({ ...editForm, internalNote: e.target.value })}
+                    className="w-full text-sm p-2 border rounded-xl h-20 resize-y" 
+                    placeholder="Enter customer specific internal notes here..."
+                  />
                 </div>
 
                 <Separator />
@@ -718,9 +749,11 @@ export default function OrderDetailsDialog({
                     );
                   })()}
                   {order.shippingAddress?.phone && (
-                    <p className="flex items-center gap-1 mt-1 text-muted-foreground">
-                      <Phone className="h-3 w-3" /> {order.shippingAddress.phone}
-                    </p>
+                    <div className="space-y-2 mt-1">
+                      <p className="flex items-center gap-1 text-muted-foreground font-semibold">
+                        <Phone className="h-3 w-3" /> {order.shippingAddress.phone}
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -735,7 +768,7 @@ export default function OrderDetailsDialog({
                   </div>
                   <div className="flex justify-between font-medium">
                     <span>Status:</span>
-                    <Badge variant={order.paymentStatus === 'Paid' ? 'default' : 'outline'} className={order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : ''}>
+                    <Badge variant={order.paymentStatus === 'Paid' ? 'default' : 'outline'} className={order.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700 rounded-xl' : 'rounded-xl'}>
                       {order.paymentStatus}
                     </Badge>
                   </div>
@@ -748,7 +781,7 @@ export default function OrderDetailsDialog({
 
                   {order.paymentMethod === 'Manual' && order.manualPaymentDetails && (
                     <div className="mt-3 p-3 bg-primary/5 rounded-xl border border-primary/20 space-y-2">
-                       <p className="text-[10px] font-black uppercase text-primary tracking-widest">Manual Verification</p>
+                       <p className="text-[10px] font-black uppercase text-primary tracking-widest font-logo">Manual Verification</p>
                        <div className="grid grid-cols-2 gap-2 text-[11px]">
                           <div>
                              <span className="text-muted-foreground block">Method:</span>
@@ -769,6 +802,70 @@ export default function OrderDetailsDialog({
               </div>
             </div>
 
+            {/* BD Courier Fraud Checker UI */}
+            {order.shippingAddress?.phone && (
+              <div className="mt-2 p-3 bg-muted/30 border rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider font-logo">BD Courier Profile</span>
+                  {fraudLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                </div>
+
+                {fraudData?.status === 'success' && fraudData?.data?.summary ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-[10px]">Success Rate:</span>
+                        <span className={`font-black ${fraudData.data.summary.success_ratio >= 80 ? 'text-green-600' : fraudData.data.summary.success_ratio >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          {fraudData.data.summary.success_ratio}%
+                        </span>
+                      </div>
+                      <span className="text-muted-foreground/35">|</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-[10px]">Total Parcels:</span>
+                        <span className="font-bold text-slate-800 dark:text-zinc-200">{fraudData.data.summary.total_parcel}</span>
+                      </div>
+                      <span className="text-muted-foreground/35">|</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-[10px]">Delivered:</span>
+                        <span className="font-bold text-green-600">{fraudData.data.summary.success_parcel}</span>
+                      </div>
+                      <span className="text-muted-foreground/35">|</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground text-[10px]">Cancelled:</span>
+                        <span className="font-bold text-red-600">{fraudData.data.summary.cancelled_parcel}</span>
+                      </div>
+                    </div>
+
+                    {/* Reports List */}
+                    {fraudData.reports && fraudData.reports.length > 0 && (
+                      <div className="border-t pt-2 mt-1">
+                        <span className="text-[10px] font-bold text-red-600 block mb-1">⚠️ Merchant Fraud Reports ({fraudData.reports.length})</span>
+                        <div className="space-y-1.5 max-h-[80px] overflow-y-auto">
+                          {fraudData.reports.map((report: any, idx: number) => (
+                            <div key={idx} className="bg-red-50 dark:bg-red-950/20 p-1.5 rounded text-[10px] border border-red-100 dark:border-red-900/50">
+                              <p className="font-semibold text-red-700 dark:text-red-400">{report.name || 'Anonymous'}: <span className="font-normal text-slate-700 dark:text-zinc-300">{report.details}</span></p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : !fraudLoading && (
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-muted-foreground">Click to fetch courier history</span>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="h-6 px-2 text-[10px] rounded-xl" 
+                      onClick={() => fetchFraudData(order.shippingAddress.phone)}
+                    >
+                      Verify Number
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <Separator />
 
             {/* Shipping Management (Admin Action) */}
@@ -784,7 +881,7 @@ export default function OrderDetailsDialog({
                       <p className="text-xs text-muted-foreground">Courier Service</p>
                       <p className="font-bold text-sm">{order.shippingDetails.courierName}</p>
                     </div>
-                    <Badge variant="outline" className="bg-white">
+                    <Badge variant="outline" className="bg-white rounded-xl">
                       {order.shippingDetails.courierStatus || 'Processing'}
                     </Badge>
                   </div>
@@ -808,12 +905,12 @@ export default function OrderDetailsDialog({
               ) : (
                 <div className="flex flex-col gap-3">
                   {settings?.courierConfig?.activeProvider === 'none' ? (
-                    <div className="text-xs bg-yellow-50 text-yellow-700 p-3 rounded-lg border border-yellow-200">
+                    <div className="text-xs bg-yellow-50 text-yellow-700 p-3 rounded-xl border border-yellow-200">
                       <strong>Note:</strong> Courier integration is not configured. Please go to Settings &gt; Courier to enable automated booking.
                     </div>
                   ) : (
                     <>
-                      <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                      <div className="space-y-3 border rounded-xl p-3 bg-muted/30">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-bold uppercase">Booking Details ({settings?.courierConfig?.activeProvider})</span>
                         </div>
@@ -824,24 +921,24 @@ export default function OrderDetailsDialog({
                                     <>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold">City ID</label>
-                                            <input type="text" value={cityId} onChange={(e) => setCityId(e.target.value)} placeholder="e.g. 1" className="w-full text-xs p-2 border rounded" />
+                                            <input type="text" value={cityId} onChange={(e) => setCityId(e.target.value)} placeholder="e.g. 1" className="w-full text-xs p-2 border rounded-xl" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold">Zone ID</label>
-                                            <input type="text" value={zoneId} onChange={(e) => setZoneId(e.target.value)} placeholder="e.g. 1" className="w-full text-xs p-2 border rounded" />
+                                            <input type="text" value={zoneId} onChange={(e) => setZoneId(e.target.value)} placeholder="e.g. 1" className="w-full text-xs p-2 border rounded-xl" />
                                         </div>
                                     </>
                                 )}
                                 <div className="space-y-1 col-span-2">
                                     <label className="text-[10px] font-bold">Area ID</label>
-                                    <input type="text" value={areaId} onChange={(e) => setAreaId(e.target.value)} placeholder="e.g. 123" className="w-full text-xs p-2 border rounded" />
+                                    <input type="text" value={areaId} onChange={(e) => setAreaId(e.target.value)} placeholder="e.g. 123" className="w-full text-xs p-2 border rounded-xl" />
                                 </div>
                             </div>
                         )}
 
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold">Shipping Note</label>
-                            <input type="text" value={shippingNote} onChange={(e) => setShippingNote(e.target.value)} placeholder="Package handle with care..." className="w-full text-xs p-2 border rounded" />
+                            <input type="text" value={shippingNote} onChange={(e) => setShippingNote(e.target.value)} placeholder="Package handle with care..." className="w-full text-xs p-2 border rounded-xl" />
                         </div>
                       </div>
 
@@ -863,7 +960,7 @@ export default function OrderDetailsDialog({
                               : `Hand over order #${order._id} to ${settings?.courierConfig?.activeProvider}?`,
                             icon: 'question',
                             showCancelButton: true,
-                            confirmButtonColor: '#2563eb',
+                            confirmButtonColor: 'var(--primary)',
                             confirmButtonText: 'Yes, send now!'
                           });
                           
@@ -877,7 +974,7 @@ export default function OrderDetailsDialog({
                                 body: JSON.stringify(payload)
                             });
                             
-                                                         const data = await res.json();
+                            const data = await res.json();
                              if (res.ok) {
                                const hasFailures = data.results && data.results.some((r: any) => !r.success);
                                if (hasFailures) {
@@ -898,7 +995,7 @@ export default function OrderDetailsDialog({
                             setBookingLoading(false);
                           }
                         }}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
                       >
                         {bookingLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />} 
                         Hand over to {settings?.courierConfig?.activeProvider ? settings.courierConfig.activeProvider.toUpperCase() : 'Courier'}
@@ -909,6 +1006,17 @@ export default function OrderDetailsDialog({
               )}
             </div>
 
+            {/* Internal Note */}
+            {order.internalNote && (
+              <>
+                <Separator />
+                <div className="space-y-2 bg-yellow-50 dark:bg-yellow-950/20 p-3 rounded-xl border border-yellow-200/50">
+                  <h4 className="text-xs font-bold uppercase text-amber-800 dark:text-amber-300 font-logo">Internal Note (Admin/Manager)</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{order.internalNote}</p>
+                </div>
+              </>
+            )}
+
             <Separator />
             
             {/* Items */}
@@ -918,7 +1026,7 @@ export default function OrderDetailsDialog({
                 {(order.items || []).map((item: any, i: number) => (
                   <div key={item._id || item.id || i} className="flex items-center justify-between text-sm gap-4">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="h-12 w-12 rounded border overflow-hidden bg-muted flex-shrink-0">
+                      <div className="h-12 w-12 rounded-xl border overflow-hidden bg-muted flex-shrink-0">
                          {item.image ? (
                              <Image src={item.image} alt={item.name} width={48} height={48} className="h-full w-full object-cover" />
                          ) : (
@@ -928,8 +1036,8 @@ export default function OrderDetailsDialog({
                       <div className="flex flex-col">
                         <span className="font-medium line-clamp-1">{item.name}</span>
                         <div className="flex items-center gap-2 mt-0.5">
-                          {item.color && <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 bg-muted/50">{item.color}</Badge>}
-                          {item.size && <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 bg-muted/50">Size: {item.size}</Badge>}
+                          {item.color && <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 bg-muted/50 rounded-xl">{item.color}</Badge>}
+                          {item.size && <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 bg-muted/50 rounded-xl">Size: {item.size}</Badge>}
                           <span className="text-xs text-muted-foreground ml-1">৳{Math.round(Number(item.price) || 0)} × {item.quantity}</span>
                         </div>
                       </div>
@@ -992,7 +1100,7 @@ export default function OrderDetailsDialog({
                       text: `Confirm manual payment and mark order #${order._id.slice(-8).toUpperCase()} as Confirmed & Paid?`,
                       icon: 'question',
                       showCancelButton: true,
-                      confirmButtonColor: '#00D1B2',
+                      confirmButtonColor: 'var(--primary)',
                       confirmButtonText: 'Yes, Approve!'
                     });
                     if (result.isConfirmed) {

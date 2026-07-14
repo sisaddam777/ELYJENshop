@@ -480,13 +480,57 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const fetchAll = searchParams.get('all') === 'true';
-    const isAdmin = ['admin', 'super_admin'].includes((session.user as any)?.role);
+    const isAdmin = ['admin', 'super_admin', 'manager'].includes((session.user as any)?.role);
+
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '20'));
+    const search = searchParams.get('search') || '';
+    const status = searchParams.get('status') || '';
+    const fromDate = searchParams.get('from') || '';
+    const toDate = searchParams.get('to') || '';
 
     await connectToDatabase();
 
     let query: any = { deletedAt: null };
     if (fetchAll && isAdmin) {
-      query = { deletedAt: null };
+      if (status && status !== 'All') {
+        query.status = status;
+      }
+      if (fromDate || toDate) {
+        query.createdAt = {};
+        if (fromDate) query.createdAt.$gte = new Date(fromDate);
+        if (toDate) {
+          const end = new Date(toDate);
+          end.setHours(23, 59, 59, 999);
+          query.createdAt.$lte = end;
+        }
+      }
+      if (search) {
+        const userIds = await User.find({
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } }
+          ]
+        }).select('_id');
+        
+        const searchConditions: any[] = [
+          { "shippingAddress.fullName": { $regex: search, $options: 'i' } },
+          { "shippingAddress.phone": { $regex: search, $options: 'i' } }
+        ];
+
+        if (mongoose.Types.ObjectId.isValid(search)) {
+          searchConditions.push({ _id: search });
+        } else if (search.length >= 8) {
+          searchConditions.push({ shortId: { $regex: search, $options: 'i' } });
+        }
+
+        if (userIds.length > 0) {
+          searchConditions.push({ user: { $in: userIds.map(u => u._id) } });
+        }
+
+        query.$and = query.$and || [];
+        query.$and.push({ $or: searchConditions });
+      }
     } else {
       const userId = (session.user as any).id;
       if (!userId) {
@@ -495,9 +539,60 @@ export async function GET(req: NextRequest) {
       query = { user: userId, deletedAt: null };
     }
 
-    const orders = await Order.find(query)
-      .sort({ createdAt: -1 })
-      .populate('user', 'name email'); // Populate user info for admin view
+    const totalCount = await Order.countDocuments(query);
+    
+    let ordersQuery = Order.find(query).sort({ createdAt: -1 });
+
+    if (fetchAll && isAdmin) {
+      ordersQuery = ordersQuery.skip((page - 1) * limit).limit(limit);
+    }
+
+    const orders = await ordersQuery.populate('user', 'name email');
+
+    let processedOrders = orders;
+    if (fetchAll && isAdmin) {
+      processedOrders = await Promise.all(orders.map(async (order: any) => {
+        const phone = order.shippingAddress?.phone;
+        if (!phone) return { ...order.toObject(), isRepeat: false, isDuplicate: false };
+
+        const otherOrders = await Order.find({
+          "shippingAddress.phone": phone,
+          _id: { $ne: order._id },
+          deletedAt: null
+        }).select('items');
+
+        if (otherOrders.length === 0) {
+          return { ...order.toObject(), isRepeat: false, isDuplicate: false };
+        }
+
+        const isDuplicate = otherOrders.some(other => {
+          if (other.items.length !== order.items.length) return false;
+          return order.items.every((item: any) => {
+            return other.items.some((otherItem: any) => {
+              return String(otherItem.product) === String(item.product) &&
+                     String(otherItem.color || '') === String(item.color || '') &&
+                     String(otherItem.size || '') === String(item.size || '') &&
+                     otherItem.quantity === item.quantity;
+            });
+          });
+        });
+
+        return {
+          ...order.toObject(),
+          isRepeat: true,
+          isDuplicate
+        };
+      })) as any[];
+    }
+
+    if (fetchAll && isAdmin) {
+      return NextResponse.json({
+        orders: processedOrders,
+        totalCount,
+        page,
+        totalPages: Math.ceil(totalCount / limit)
+      });
+    }
 
     return NextResponse.json(orders);
   } catch (error) {
