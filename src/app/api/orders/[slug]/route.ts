@@ -7,8 +7,8 @@ import User from '@/models/User';
 import Product from '@/models/Product';
 import GlobalSettings from '@/models/GlobalSettings';
 import WalletTransaction from '@/models/WalletTransaction';
-import { auth } from '@/auth';
-
+// Prevent tree-shaking of models to ensure Mongoose registers their schemas
+const _ = { Product };
 
 // GET single order details
 export async function GET(

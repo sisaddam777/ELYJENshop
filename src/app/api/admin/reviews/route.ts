@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import connectToDatabase from '@/lib/db';
 import Review from '@/models/Review';
 import Product from '@/models/Product';
 import User from '@/models/User';
-import { auth } from '@/auth';
-
+// Prevent tree-shaking of models to ensure Mongoose registers their schemas
+const _ = { Product, User };
 
 // GET all reviews for moderation (with pagination)
 export async function GET(req: NextRequest) {
