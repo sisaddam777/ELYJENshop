@@ -196,5 +196,4 @@ export async function generateInvoicePDF(orderOrOrders: any | any[], settings: a
     doc.save(filename);
   }
 }
-}
 
