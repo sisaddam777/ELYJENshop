@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
+import { auth } from '@/auth';
 import connectToDatabase from '@/lib/db';
 import Order from '@/models/Order';
 import User from '@/models/User';
