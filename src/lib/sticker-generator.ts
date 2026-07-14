@@ -347,23 +347,47 @@ export async function printStickerInvoice(orderOrOrders: any | any[], settings: 
     </html>
   `;
 
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+  if (typeof window !== 'undefined') {
+    // Create a hidden iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '-9999px';
     
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    };
+    document.body.appendChild(iframe);
     
-    setTimeout(() => {
-      if (printWindow.document.readyState === 'complete') {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-      }
-    }, 1000);
+    const iframeDoc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (iframeDoc) {
+      iframeDoc.open();
+      iframeDoc.write(htmlContent);
+      iframeDoc.close();
+      
+      const triggerPrint = () => {
+        if (iframe.contentWindow) {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          
+          // Delay removing the iframe so that mobile browsers don't cancel/terminate the print task early
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 10000);
+        }
+      };
+
+      // Wait for the content to fully load inside the iframe
+      iframe.onload = triggerPrint;
+      
+      // Fallback if onload doesn't fire
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          triggerPrint();
+        }
+      }, 1500);
+    }
   }
 }
