@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Review from '@/models/Review';
+import Product from '@/models/Product';
+import User from '@/models/User';
 import { auth } from '@/auth';
+
 
 // GET all reviews for moderation (with pagination)
 export async function GET(req: NextRequest) {

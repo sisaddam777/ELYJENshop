@@ -4,9 +4,11 @@ import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/db';
 import Order from '@/models/Order';
 import User from '@/models/User';
+import Product from '@/models/Product';
 import GlobalSettings from '@/models/GlobalSettings';
 import WalletTransaction from '@/models/WalletTransaction';
 import { auth } from '@/auth';
+
 
 // GET single order details
 export async function GET(
