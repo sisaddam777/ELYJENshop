@@ -202,19 +202,21 @@ export async function POST(req: NextRequest) {
     const cleanPhone = phone.replace(/\s+/g, '').trim();
     const token = cartToken || crypto.randomUUID();
 
-    // Atomic update/upsert by cartToken and domain to prevent concurrent duplicates
+    // Atomic update/upsert by phone and domain to prevent concurrent duplicates
     const cart = await AbandonedCart.findOneAndUpdate(
-      { cartToken: token, domain },
+      { phone: cleanPhone, domain },
       {
         $set: {
           user: userId || undefined,
           fullName: fullName.trim(),
-          phone: cleanPhone,
           email: email?.trim() || undefined,
           street: street?.trim() || undefined,
           deliveryArea: deliveryArea || undefined,
           items,
           totalAmount,
+        },
+        $setOnInsert: {
+          cartToken: token
         }
       },
       { upsert: true, new: true }

@@ -316,6 +316,48 @@ function CheckoutContent() {
     });
   }, [isHydrated, items, totalAmount]); 
 
+  // Debounced sync of checkout info for abandoned carts tracking
+  const watchedFullName = form.watch('fullName');
+  const watchedPhone = form.watch('phone');
+  const watchedStreet = form.watch('street');
+  const watchedShippingRegion = form.watch('shippingRegion');
+
+  useEffect(() => {
+    if (!isHydrated || items.length === 0 || submissionSucceededRef.current) return;
+    if (!watchedPhone || watchedPhone.trim().length < 11 || !watchedFullName || watchedFullName.trim().length < 2) return;
+
+    const syncAbandonedCart = async () => {
+      try {
+        await fetch('/api/cart/abandoned', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName: watchedFullName,
+            phone: watchedPhone,
+            email: profile?.email || '',
+            street: watchedStreet,
+            deliveryArea: watchedShippingRegion,
+            items: items.map(item => ({
+              product: item.productId,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              image: item.image,
+              color: item.color,
+              size: item.size
+            })),
+            totalAmount
+          })
+        });
+      } catch (error) {
+        console.error('Failed to sync abandoned cart:', error);
+      }
+    };
+
+    const timer = setTimeout(syncAbandonedCart, 2000); // 2 seconds debounce
+    return () => clearTimeout(timer);
+  }, [watchedFullName, watchedPhone, watchedStreet, watchedShippingRegion, items, totalAmount, isHydrated, profile?.email]);
+
   const submissionSucceededRef = useRef(false);
 
   const onSubmit = async (values: CheckoutValues) => {
