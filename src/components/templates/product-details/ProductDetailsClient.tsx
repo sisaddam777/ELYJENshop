@@ -1,22 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ShoppingCart,
-  Heart,
   Minus,
   Plus,
-  Star,
   MoreVertical,
   Edit,
   Trash2,
   Settings,
   PlusCircle,
-  Loader2
+  Loader2,
+  Share2
 } from 'lucide-react';
 import { generateHtml } from '@/lib/server-html';
+import ShareDialog from '@/components/storefront/ShareDialog';
 import { RatingStars } from '@/components/ui/rating-stars';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +26,7 @@ import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { Suspense } from 'react';
+import Image from 'next/image';
 import ReviewsSection from '@/components/storefront/ReviewsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -72,6 +72,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   const [eligibility, setEligibility] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('description');
   const [shouldScrollToReviewForm, setShouldScrollToReviewForm] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Derive available options from variants
   const uniqueColors = useMemo(() =>
@@ -118,21 +119,31 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
 
     setSelectedImage(0);
     setQuantity(1);
+  }, [product?._id, uniqueColors, product.variants]);
 
-    // Track ViewContent
-    fbEvent('ViewContent', {
+  // Track ViewContent exactly once per product page view
+  const trackedProductIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!product?._id) return;
+    if (trackedProductIdRef.current === product._id) return;
+
+    const viewContentPayload = {
       content_name: product.name,
       content_category: product.categories?.[0]?.name || 'Uncategorized',
       content_ids: [product._id],
       content_type: 'product',
       value: product.salePrice || product.price,
       currency: 'BDT'
-    }, {
+    };
+    const trackingUser = {
       em: session?.user?.email || undefined,
       ph: (session?.user as any)?.phone || undefined,
       fn: session?.user?.name || undefined
-    });
-  }, [product?._id, uniqueColors, product.variants, session]);
+    };
+
+    fbEvent('ViewContent', viewContentPayload, trackingUser);
+    trackedProductIdRef.current = product._id;
+  }, [product?._id, session]);
 
   // Fetch review eligibility separately to avoid unnecessary re-triggers
   useEffect(() => {
@@ -218,6 +229,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
       console.log('Computed displayStock:', displayStock);
     }
   }, [selectedColor, selectedSize, activeVariant, displayStock]);
+
   const handleAddToCart = () => {
     if (uniqueColors.length > 0 && !selectedColor) {
       toast.error('Please select a color');
@@ -247,11 +259,12 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
       quantity: finalQuantity,
       image: activeVariant?.image || product.images?.[0],
       color: selectedColor || undefined,
-      size: selectedSize || undefined
+      size: selectedSize || undefined,
+      isFreeDelivery: product.isFreeDelivery
     }));
 
     // Track AddToCart
-    fbEvent('AddToCart', {
+    const addToCartPayload = {
       content_name: product.name,
       content_category: product.categories?.[0]?.name || 'Uncategorized',
       content_ids: [product._id],
@@ -259,11 +272,14 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
       value: (displaySalePrice || displayPrice) * finalQuantity,
       currency: 'BDT',
       quantity: finalQuantity
-    }, {
+    };
+    const trackingUser = {
       em: session?.user?.email || undefined,
       ph: (session?.user as any)?.phone || undefined,
       fn: session?.user?.name || undefined
-    });
+    };
+
+    fbEvent('AddToCart', addToCartPayload, trackingUser);
 
     toast.success(`Added ${finalQuantity} ${product.name} to cart`);
     return true;
@@ -325,18 +341,21 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
 
       if (willBeInWishlist) {
         // Track AddToWishlist
-        fbEvent('AddToWishlist', {
+        const addToWishlistPayload = {
           content_name: product.name,
           content_category: product.categories?.[0]?.name || 'Uncategorized',
           content_ids: [product._id],
           content_type: 'product',
           value: displaySalePrice || displayPrice,
           currency: 'BDT'
-        }, {
+        };
+        const trackingUser = {
           em: session?.user?.email || undefined,
           ph: (session?.user as any)?.phone || undefined,
           fn: session?.user?.name || undefined
-        });
+        };
+
+        fbEvent('AddToWishlist', addToWishlistPayload, trackingUser);
       }
     } catch (err) {
       console.error('API toggle error:', err);
@@ -414,7 +433,12 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                 <Image
                   src={product.images[selectedImage]}
                   alt={product.name}
-                  fill
+                  width={400}
+                  height={400}
+                  priority
+                  loading="eager"
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 100vw, 400px"
                   className="h-full w-full object-contain p-4"
                 />
 
@@ -445,7 +469,6 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
 
           {/* External Zoom Preview Window - Daraz Style */}
-          {/* Placed outside the overflow-hidden container so it can overlay the right column */}
           {showZoom && product.images && product.images.length > 0 && product.images[selectedImage] && (
             <div
               className="absolute left-full ml-10 top-0 w-[120%] h-full border-2 border-primary/20 rounded-2xl bg-white shadow-2xl z-50 pointer-events-none overflow-hidden hidden lg:block animate-in fade-in zoom-in-95 duration-200"
@@ -474,6 +497,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               className={`relative h-20 w-20 flex-shrink-0 rounded-md border-2 overflow-hidden transition-all ${selectedImage === i ? 'border-primary ring-2 ring-primary/20 scale-105' : 'border-muted hover:border-primary/50'
                 }`}
               onClick={() => setSelectedImage(i)}
+              aria-label={`View product thumbnail image ${i + 1}`}
             >
               <Image src={img} alt="" width={80} height={80} className="h-full w-full object-cover" />
             </button>
@@ -484,7 +508,6 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
       {/* Product Info Section */}
       <div className="flex flex-col gap-6">
         <div className="space-y-2">
-
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight">{product.name}</h1>
             {isAdmin && (
@@ -520,6 +543,15 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               <span className="font-bold text-foreground">{product.numReviews || 0}</span>
               <span>Reviews</span>
             </div>
+            <Separator orientation="vertical" className="h-4" />
+            <button
+              onClick={() => setIsShareOpen(true)}
+              className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+              title="Share product"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>Share</span>
+            </button>
             {eligibility?.eligible && (
               <>
                 <Separator orientation="vertical" className="h-4" />
@@ -646,7 +678,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-4 py-8 sm:py-6 border-t">
-          {/* Row 1: Quantity and Wishlist */}
+          {/* Row 1: Quantity */}
           <div className="flex items-center gap-4">
             <div className="flex items-center border rounded-full overflow-hidden h-12 bg-muted/50">
               <Button
@@ -654,6 +686,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                 size="icon"
                 className="h-full rounded-none px-4 hover:bg-muted"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                aria-label="Decrease quantity"
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -664,40 +697,22 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                 className="h-full rounded-none px-4 hover:bg-muted"
                 onClick={() => setQuantity(Math.min(displayStock || 0, quantity + 1))}
                 disabled={quantity >= (displayStock || 0)}
+                aria-label="Increase quantity"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-12 w-12 rounded-full transition-all hover:scale-110 active:scale-95 flex-shrink-0"
-              onClick={handleFavorite}
-              aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-            >
-              <Heart className={`h-5 w-5 transition-colors ${isInWishlist ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
-            </Button>
           </div>
 
-          {/* Row 2: Add to Cart and Buy Now */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Row 2: Buy Now */}
+          <div>
             <Button
               size="lg"
-              variant="outline"
-              className="h-14 rounded-full font-black text-[10px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.2em] border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all hover:scale-[1.02] active:scale-95"
-              onClick={handleAddToCart}
-              disabled={(displayStock || 0) === 0}
-            >
-              <ShoppingCart className="mr-2 h-5 w-5 hidden sm:block" /> Add to Cart
-            </Button>
-            <Button
-              size="lg"
-              className="h-14 rounded-full font-black text-[10px] sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/25"
+              className="w-full h-14 rounded-full font-black text-base uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/25"
               onClick={handleBuyNow}
               disabled={(displayStock || 0) === 0}
             >
-              Buy Now
+              অর্ডার করুন
             </Button>
           </div>
 
@@ -706,18 +721,36 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             <Button
               size="lg"
               variant="outline"
-              className="w-full h-14 rounded-full font-black text-xs uppercase tracking-[0.2em] border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
+              className="w-full h-14 rounded-full font-black text-xs uppercase tracking-[0.2em] border-2 border-[#075E54] text-[#075E54] hover:bg-[#075E54] hover:text-white transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
               onClick={() => {
-                // Sanitize number: remove all non-digits
-                let sanitizedNumber = whatsappNumber.replace(/\D/g, '');
+                const message = encodeURIComponent(`Hi, I'm interested in ${product.name}. Price: ${CURRENCY_SYMBOL}${Math.round(displaySalePrice || displayPrice)}`);
                 
-                // If it's a standard Bangladesh number starting with 0 (e.g., 017...), prepend 88
-                if (sanitizedNumber.startsWith('0') && sanitizedNumber.length === 11) {
-                  sanitizedNumber = '88' + sanitizedNumber;
+                // Parse whatsappNumber robustly
+                let cleanNumber = (whatsappNumber || '').trim();
+                let phone = '';
+                
+                if (cleanNumber.includes('wa.me/')) {
+                  const parts = cleanNumber.split('wa.me/');
+                  phone = parts[parts.length - 1];
+                } else if (cleanNumber.includes('whatsapp.com/')) {
+                  const parts = cleanNumber.split('phone=');
+                  if (parts.length > 1) {
+                    phone = parts[1];
+                  } else {
+                    phone = cleanNumber.replace(/[^0-9]/g, '');
+                  }
+                } else {
+                  phone = cleanNumber.replace(/[^0-9]/g, '');
                 }
                 
-                const message = encodeURIComponent(`Hi, I'm interested in ${product.name}. Price: ${CURRENCY_SYMBOL}${displaySalePrice || displayPrice}`);
-                window.open(`https://wa.me/${sanitizedNumber}?text=${message}`, '_blank');
+                // Strip any query parameters or non-digit chars
+                phone = phone.split('?')[0].replace(/[^0-9]/g, '');
+                
+                if (phone.startsWith('0') && phone.length === 11) {
+                  phone = '880' + phone.substring(1);
+                }
+                
+                window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
               }}
             >
               <svg 
@@ -731,8 +764,6 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             </Button>
           )}
         </div>
-
-
       </div>
 
       {/* Tabs Section for Description & Reviews */}
@@ -800,7 +831,13 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Share Modal */}
+      <ShareDialog
+        isOpen={isShareOpen}
+        onOpenChange={setIsShareOpen}
+        title={product.name}
+      />
     </div>
   );
 }
-

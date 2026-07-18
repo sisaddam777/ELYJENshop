@@ -391,7 +391,7 @@ function UsersContent() {
 
       {/* User Details Modal */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black tracking-tighter flex items-center gap-2">
               User Profile

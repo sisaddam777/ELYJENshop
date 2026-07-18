@@ -73,6 +73,11 @@ export async function PATCH(req: NextRequest) {
 
     let modifiedCount = 0;
     try {
+      let ordersToLog: any[] = [];
+      if (paymentStatus === 'Paid') {
+        ordersToLog = await Order.find({ _id: { $in: ids }, domain, paymentStatus: { $ne: 'Paid' } }).session(dbSession);
+      }
+
       const Product = (await import('@/models/Product')).default;
       const becomesValid = ['Confirmed', 'Paid', 'Delivered'].includes(status || '');
 
@@ -120,7 +125,20 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
+      const { queueOutboxTask } = await import('@/lib/ledgerHelper');
+      if (ordersToLog.length > 0) {
+        for (const order of ordersToLog) {
+          await queueOutboxTask('ORDER_PAYMENT', { orderId: order._id.toString() }, dbSession);
+        }
+      }
+
       await dbSession.commitTransaction();
+
+      if (ordersToLog.length > 0) {
+        const { processPendingOutboxTasks } = await import('@/lib/ledgerHelper');
+        processPendingOutboxTasks().catch(err => console.error('[Ledger] Outbox processing error:', err));
+      }
+
       return NextResponse.json({ 
         message: `${modifiedCount} orders updated successfully`,
         count: modifiedCount 

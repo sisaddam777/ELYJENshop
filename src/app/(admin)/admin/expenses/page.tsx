@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash, Edit, Search } from 'lucide-react';
+import { Plus, Trash, Edit, Search, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,6 +23,12 @@ import { ExpenseForm } from '@/components/admin/ExpenseForm';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -138,27 +144,29 @@ export default function ExpensesPage() {
                     <TableCell>{expense.category}</TableCell>
                     <TableCell className="text-right font-semibold">৳{expense.amount.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            setEditingExpense(expense);
-                            setIsDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => handleDelete(expense._id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setEditingExpense(expense);
+                              setIsDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" /> Edit Expense
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(expense._id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash className="mr-2 h-4 w-4" /> Delete Expense
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))

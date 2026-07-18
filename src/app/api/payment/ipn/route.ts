@@ -23,6 +23,20 @@ export async function POST(req: NextRequest) {
         order.paymentStatus = 'Paid';
         order.status = 'Confirmed';
         await order.save();
+
+        try {
+          const { logOrderPaymentToLedgerIdempotent } = await import('@/lib/ledgerHelper');
+          await logOrderPaymentToLedgerIdempotent(order);
+        } catch (ledgerErr) {
+          console.error('Error logging payment to ledger on IPN, queueing outbox:', ledgerErr);
+          try {
+            const { queueOutboxTask, processPendingOutboxTasks } = await import('@/lib/ledgerHelper');
+            await queueOutboxTask('ORDER_PAYMENT', { orderId: order._id.toString() });
+            processPendingOutboxTasks().catch(err => console.error('[Ledger] Outbox processing error:', err));
+          } catch (queueErr) {
+            console.error('Failed to queue outbox task for IPN order payment:', queueErr);
+          }
+        }
       }
     }
 

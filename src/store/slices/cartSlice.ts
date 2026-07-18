@@ -9,6 +9,7 @@ interface CartItem {
   image?: string;
   color?: string;
   size?: string;
+  isFreeDelivery?: boolean;
 }
 
 interface CartState {

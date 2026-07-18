@@ -118,7 +118,8 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       quantity: quantity,
       image: activeVariant?.image || product.images?.[0],
       color: selectedColor || undefined,
-      size: selectedSize || undefined
+      size: selectedSize || undefined,
+      isFreeDelivery: product.isFreeDelivery
     }));
 
     // Track AddToCart

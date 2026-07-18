@@ -15,6 +15,7 @@ import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { generateOrganizationSchema } from "@/lib/seo";
 import FacebookPixel from "./components/FacebookPixel";
+import TikTokPixel from "./components/TikTokPixel";
 import SubscriptionBlocker from "./components/SubscriptionBlocker";
 import { headers } from "next/headers";
 import { getCachedSettings } from "@/lib/data-fetching";
@@ -222,6 +223,12 @@ export default async function RootLayout({
           <Suspense fallback={null}>
             <FacebookPixel
               pixelId={settings?.metaPixelId}
+            />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <TikTokPixel
+              pixelId={settings?.tiktokPixelId}
             />
           </Suspense>
 

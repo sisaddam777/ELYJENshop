@@ -11,6 +11,7 @@ export type Product = ({ id: string; _id?: string } | { _id: string; id?: string
   numReviews?: number;
   isNew?: boolean;
   isFeatured?: boolean;
+  isFreeDelivery?: boolean;
   categories?: { name: string }[];
   specifications?: {
     performance?: string;

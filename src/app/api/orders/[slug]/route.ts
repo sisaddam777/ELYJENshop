@@ -232,7 +232,19 @@ export async function PATCH(
         { session: dbSession, new: true }
       );
 
+      const shouldLogPayment = order.paymentStatus !== 'Paid' && updatedOrder?.paymentStatus === 'Paid';
+      if (shouldLogPayment && updatedOrder) {
+        const { queueOutboxTask } = await import('@/lib/ledgerHelper');
+        await queueOutboxTask('ORDER_PAYMENT', { orderId: updatedOrder._id.toString() }, dbSession);
+      }
+
       await dbSession.commitTransaction();
+
+      if (shouldLogPayment && updatedOrder) {
+        const { processPendingOutboxTasks } = await import('@/lib/ledgerHelper');
+        processPendingOutboxTasks().catch(err => console.error('[Ledger] Outbox processing error:', err));
+      }
+
       return NextResponse.json(updatedOrder);
 
     } catch (error) {

@@ -35,6 +35,7 @@ export interface IProduct extends Document {
   isNewArrival: boolean;
   isFlashSale: boolean;
   isPublished: boolean;
+  isFreeDelivery: boolean;
   ratings: number;
   numReviews: number;
   views: number;
@@ -87,6 +88,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
     isNewArrival: { type: Boolean, default: false },
     isFlashSale: { type: Boolean, default: false },
     isPublished: { type: Boolean, default: true },
+    isFreeDelivery: { type: Boolean, default: false },
     ratings: { type: Number, default: 0, min: [0, 'Rating cannot be below 0'], max: [5, 'Rating cannot be above 5'] },
     numReviews: { type: Number, default: 0, min: [0, 'Number of reviews cannot be negative'] },
     views: { type: Number, default: 0, min: [0, 'Views cannot be negative'] },

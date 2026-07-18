@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fbEvent } from '@/lib/fpixel';
+import { ttEvent } from '@/lib/tiktok';
 
 import {
   Dialog,
@@ -271,26 +272,48 @@ function CheckoutContent() {
   const [syncData, setSyncData] = useState<any>(null);
 
   const hasTrackedInitiate = useRef(false);
-  // Track InitiateCheckout
   useEffect(() => {
-    if (isHydrated && items.length > 0 && !hasTrackedInitiate.current) {
-      const validItems = items.filter(i => i.productId);
-      if (validItems.length === 0) return;
+    if (!isHydrated || items.length === 0 || hasTrackedInitiate.current) return;
 
-      fbEvent('InitiateCheckout', {
-        content_ids: validItems.map(i => i.productId),
-        content_type: 'product',
-        value: totalAmount,
-        currency: 'BDT',
-        num_items: validItems.length,
-        contents: validItems.map(i => ({
-          id: i.productId,
-          quantity: i.quantity,
-          item_price: i.price
-        }))
+    const validItems = items.filter(i => i.productId);
+    if (validItems.length === 0) return;
+
+    hasTrackedInitiate.current = true;
+
+    const checkoutPayload = {
+      content_ids: validItems.map(i => i.productId),
+      content_type: 'product',
+      value: totalAmount,
+      currency: 'BDT',
+      num_items: validItems.length,
+      contents: validItems.map(i => ({
+        id: i.productId,
+        quantity: i.quantity,
+        item_price: i.price
+      }))
+    };
+
+    const initiateUserData = { em: profile?.email, country: 'bd' };
+
+    // Wait for fbq to initialize before firing browser pixel
+    // CAPI still fires immediately regardless
+    const waitForFbq = (maxWaitMs = 5000, intervalMs = 200) =>
+      new Promise<void>((resolve) => {
+        if (typeof window !== 'undefined' && window.fbq) { resolve(); return; }
+        let elapsed = 0;
+        const timer = setInterval(() => {
+          elapsed += intervalMs;
+          if ((typeof window !== 'undefined' && window.fbq) || elapsed >= maxWaitMs) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, intervalMs);
       });
-      hasTrackedInitiate.current = true;
-    }
+
+    waitForFbq().then(() => {
+      fbEvent('InitiateCheckout', checkoutPayload, initiateUserData);
+      ttEvent('InitiateCheckout', checkoutPayload, initiateUserData);
+    });
   }, [isHydrated, items, totalAmount]); 
 
   const submissionSucceededRef = useRef(false);
@@ -363,24 +386,25 @@ function CheckoutContent() {
             contents: safeItems.map((i: any) => ({
               id: i.product?._id || i.product || i.productId,
               quantity: i.quantity,
-              price: i.price,
               item_price: i.price,
             })),
           };
 
-          const detectedCity = detectDistrict(values.street) || (values.shippingRegion === 'Inside Dhaka' ? 'Dhaka' : undefined);
-
-          const purchaseUserData = {
-            em: profile?.email || `${values.phone}@store.com`,
+          const purchaseUserData: any = {
+            em: profile?.email || '',
             ph: values.phone,
             fn: nameParts[0] || '',
             ln: nameParts.slice(1).join(' ') || '',
-            ct: detectedCity,
-            st: detectedCity,
             country: 'bd',
           };
 
+          if (values.shippingRegion === 'Inside Dhaka') {
+            purchaseUserData.ct = 'Dhaka';
+            purchaseUserData.st = 'Dhaka';
+          }
+
           fbEvent('Purchase', purchaseEventData, purchaseUserData, order._id);
+          ttEvent('Purchase', purchaseEventData, purchaseUserData, order._id);
         } catch (trackingError) {
           console.error('Tracking error:', trackingError);
         }
@@ -474,7 +498,8 @@ function CheckoutContent() {
 
   
   const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
-  const isFreeDelivery = freeDeliveryThreshold > 0 && totalAmount >= freeDeliveryThreshold;
+  const hasFreeDeliveryProduct = items.some(item => item.isFreeDelivery === true);
+  const isFreeDelivery = (freeDeliveryThreshold > 0 && totalAmount >= freeDeliveryThreshold) || hasFreeDeliveryProduct;
   
   const chargeInsideDhaka = settings?.deliveryChargeInsideDhaka ?? 0;
   const chargeOutsideDhaka = settings?.deliveryChargeOutsideDhaka ?? 0;

@@ -60,6 +60,7 @@ const productSchema = z.object({
   isNewArrival: z.boolean(),
   isFlashSale: z.boolean().optional(),
   isPublished: z.boolean(),
+  isFreeDelivery: z.boolean().optional(),
   attributes: z.array(z.object({
     key: z.string(),
     value: z.string()
@@ -109,6 +110,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     isFeatured: initialData?.isFeatured ?? false,
     isNewArrival: initialData?.isNewArrival ?? false,
     isFlashSale: initialData?.isFlashSale ?? false,
+    isFreeDelivery: initialData?.isFreeDelivery ?? false,
     attributes: initialData?.attributes || [],
     variants: initialData?.variants?.map((v: any) => ({
       ...v,
@@ -843,6 +845,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
                         id="published"
                         {...form.register('isPublished')} 
                         className="h-4 w-4" 
+                    />
+                </div>
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="free-delivery" className="cursor-pointer">Offer Free Delivery</Label>
+                    <input 
+                        type="checkbox" 
+                        id="free-delivery"
+                        {...form.register('isFreeDelivery')} 
+                        className="h-4 w-4 accent-primary cursor-pointer hover:scale-110 transition-transform" 
                     />
                 </div>
               </CardContent>

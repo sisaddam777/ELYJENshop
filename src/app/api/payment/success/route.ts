@@ -54,6 +54,20 @@ export async function POST(req: NextRequest) {
           // Note: isSalesCounted is already true, so we won't retry this specific part 
           // unless we add more complex logic, but consistency is mostly maintained.
         }
+
+        try {
+          const { logOrderPaymentToLedgerIdempotent } = await import('@/lib/ledgerHelper');
+          await logOrderPaymentToLedgerIdempotent(order);
+        } catch (ledgerErr) {
+          console.error('[Ledger] Error logging payment on success route, queueing outbox:', ledgerErr);
+          try {
+            const { queueOutboxTask, processPendingOutboxTasks } = await import('@/lib/ledgerHelper');
+            await queueOutboxTask('ORDER_PAYMENT', { orderId: order._id.toString() });
+            processPendingOutboxTasks().catch(err => console.error('[Ledger] Outbox processing error:', err));
+          } catch (queueErr) {
+            console.error('[Ledger] Failed to queue outbox task for payment success:', queueErr);
+          }
+        }
       } else {
         // If findOneAndUpdate returns null, it means isSalesCounted was already true 
         // OR the order ID is invalid. Check if order exists for redirection.

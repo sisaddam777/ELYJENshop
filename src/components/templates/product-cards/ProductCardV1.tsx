@@ -46,6 +46,7 @@ interface ProductCardProps {
     variants?: any[];
     ratings?: number;
     numReviews?: number;
+    isFreeDelivery?: boolean;
   };
   isFlashSale?: boolean;
 }
@@ -81,7 +82,8 @@ export default function ProductCardV1({ product, isFlashSale }: ProductCardProps
       basePrice: displayPrice,
       quantity: 1,
       color: undefined,
-      size: undefined
+      size: undefined,
+      isFreeDelivery: product.isFreeDelivery
     }));
 
     // Track AddToCart

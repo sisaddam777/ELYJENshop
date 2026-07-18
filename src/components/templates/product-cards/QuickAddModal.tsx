@@ -96,7 +96,8 @@ export function QuickAddModal({ product, isOpen, onClose }: QuickAddModalProps) 
       quantity: 1,
       image: activeVariant?.image || product.images?.[0],
       color: selectedColor || undefined,
-      size: selectedSize || undefined
+      size: selectedSize || undefined,
+      isFreeDelivery: product.isFreeDelivery
     }));
     toast.success(`${product.name} added to cart`);
     onClose();

@@ -85,6 +85,10 @@ export async function POST(req: NextRequest) {
     const clientProvidedDeliveryCharge = validation.data.deliveryCharge;
 
     const conn = await connectToDatabase();
+    const { getTenantDomain } = await import('@/lib/tenant');
+    const domain = await getTenantDomain();
+
+
 
     // Fetch Settings
     const settings = await GlobalSettings.findOne({});
@@ -98,6 +102,32 @@ export async function POST(req: NextRequest) {
       throw new Error('Failed to start database session');
     }
     session.startTransaction();
+
+    // Check for pending/unconfirmed orders ('Order Placed') inside transaction session to ensure atomicity
+    const queryConditions: any[] = [];
+    if (sessionUser?.user?.id) {
+      queryConditions.push({ user: sessionUser.user.id });
+    }
+    if (shippingAddress.phone) {
+      queryConditions.push({ 'shippingAddress.phone': shippingAddress.phone });
+    }
+
+    if (queryConditions.length > 0) {
+      const existingPendingOrder = await Order.findOne({
+        domain,
+        $or: queryConditions,
+        status: 'Order Placed',
+        deletedAt: null
+      }).session(session);
+
+      if (existingPendingOrder) {
+        await session.abortTransaction();
+        session.endSession();
+        return NextResponse.json({
+          message: 'You already have a pending order. Please wait for it to be confirmed before placing another order.'
+        }, { status: 400 });
+      }
+    }
 
     let user = null;
     if (sessionUser?.user?.id) {
@@ -125,6 +155,7 @@ export async function POST(req: NextRequest) {
 
     let serverComputedTotal = 0;
     const validatedItems: IOrderItem[] = [];
+    let hasFreeDeliveryProduct = false;
 
     try {
       // 2a. Group items by product/variant to avoid duplicate checks failing during deduction
@@ -224,10 +255,12 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2d. Price Verification and Validated Items List (using ORIGINAL items for order structure)
       for (const item of items) {
         const product = await Product.findOne({ _id: item.product }).session(session);
         if (!product) throw new Error('Product not found during price verification');
+        if (product.isFreeDelivery) {
+          hasFreeDeliveryProduct = true;
+        }
 
         const hasVariant = !!(item.color || item.size);
         let itemPrice = product.salePrice ?? product.price;
@@ -271,7 +304,7 @@ export async function POST(req: NextRequest) {
       !city.includes('outside'); // Explicitly exclude "Outside Dhaka"
 
     const freeDeliveryThreshold = settings?.freeDeliveryThreshold || 0;
-    const isFreeDelivery = freeDeliveryThreshold > 0 && serverComputedTotal >= freeDeliveryThreshold;
+    const isFreeDelivery = (freeDeliveryThreshold > 0 && serverComputedTotal >= freeDeliveryThreshold) || hasFreeDeliveryProduct;
 
     const freeDistricts = (settings?.freeDeliveryDistricts || '')
       .split(',')
@@ -586,11 +619,41 @@ export async function GET(req: NextRequest) {
     }
 
     if (fetchAll && isAdmin) {
+      // Calculate status counts based on base query (without status filter)
+      const baseQuery = { ...query };
+      delete baseQuery.status;
+
+      const countsAggregate = await Order.aggregate([
+        { $match: baseQuery },
+        { $group: { _id: "$status", count: { $sum: 1 } } }
+      ]);
+
+      const statusCounts: Record<string, number> = {
+        All: 0,
+        'Order Placed': 0,
+        Confirmed: 0,
+        Paid: 0,
+        'Ready for Delivery': 0,
+        'Released for Delivery': 0,
+        Delivered: 0,
+        Cancelled: 0
+      };
+
+      let totalAll = 0;
+      countsAggregate.forEach((item: any) => {
+        if (item._id && item._id in statusCounts) {
+          statusCounts[item._id] = item.count;
+          totalAll += item.count;
+        }
+      });
+      statusCounts['All'] = totalAll;
+
       return NextResponse.json({
         orders: processedOrders,
         totalCount,
         page,
-        totalPages: Math.ceil(totalCount / limit)
+        totalPages: Math.ceil(totalCount / limit),
+        statusCounts
       });
     }
 

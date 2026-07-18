@@ -219,8 +219,7 @@ export default async function Home() {
         />
       )}
 
-      {/* 8. Loyalty Promotion */}
-      <LoyaltyBanner settings={data.settings} />
+
 
       {/* 3. Flash Sale (Timed) */}
       {data.flashSale.length > 0 && (
@@ -270,8 +269,7 @@ export default async function Home() {
       {/* 8. Testimonials Section */}
       <Testimonials />
 
-      {/* 11. Newsletter V2 Integration */}
-      <NewsletterV2 />
+
 
       {/* 10. FAQ Accordion Section */}
       <FAQSection faqs={data.faqs} />

@@ -78,6 +78,34 @@ export async function POST(req: NextRequest) {
     const expense = await Expense.create({
         ...safePayload,
     });
+
+    // Log to ledger
+    try {
+      const { logLedgerTransaction } = await import('@/lib/ledgerHelper');
+      // Credit Cash (decreases cash asset)
+      await logLedgerTransaction(
+        'CASH',
+        'credit',
+        amount,
+        `Expense Paid: ${title} (${category})`,
+        expense._id.toString()
+      );
+    } catch (err) {
+      console.error('Error logging expense to ledger, queueing outbox:', err);
+      try {
+        const { queueOutboxTask } = await import('@/lib/ledgerHelper');
+        await queueOutboxTask('EXPENSE_MUTATION', {
+          action: 'UPSERT',
+          expenseId: expense._id.toString(),
+          title: expense.title,
+          category: expense.category,
+          amount: expense.amount
+        });
+      } catch (queueErr) {
+        console.error('Failed to queue outbox task for expense creation:', queueErr);
+      }
+    }
+
     return NextResponse.json(expense, { status: 201 });
   } catch (error) {
     console.error('Error creating expense:', error);

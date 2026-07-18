@@ -45,6 +45,7 @@ interface ProductCardProps {
     variants?: any[];
     ratings?: number;
     numReviews?: number;
+    isFreeDelivery?: boolean;
   };
   isFlashSale?: boolean;
 }
@@ -82,7 +83,8 @@ export default function ProductCardV2({ product, isFlashSale }: ProductCardProps
       price: product.salePrice ?? product.price,
       basePrice: product.price,
       quantity: 1,
-      image: product.images?.[0]
+      image: product.images?.[0],
+      isFreeDelivery: product.isFreeDelivery
     }));
     toast.success(`${product.name} added to cart`);
   };
