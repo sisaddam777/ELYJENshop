@@ -82,7 +82,7 @@ const detectDistrict = (address: string): string | undefined => {
 
 const checkoutSchema = z.object({
   fullName: z.string().min(2, 'আপনার নাম লিখুন'),
-  phone: z.string().min(1, 'মোবাইল নম্বর লিখুন'),
+  phone: z.string().min(11, 'সঠিক মোবাইল নম্বর লিখুন'),
   street: z.string().min(5, 'আপনার সম্পূর্ণ ঠিকানা লিখুন'),
   shippingRegion: z.string().min(1, 'ডেলিভারি এলাকা সিলেক্ট করুন'),
   paymentMethod: z.enum(['COD', 'Online', 'Manual'], {
@@ -324,7 +324,7 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (!isHydrated || items.length === 0 || submissionSucceededRef.current) return;
-    if (!watchedPhone || watchedPhone.trim().length < 1 || !watchedFullName || watchedFullName.trim().length < 2) return;
+    if (!watchedPhone || watchedPhone.trim().length < 11 || !watchedFullName || watchedFullName.trim().length < 2) return;
 
     const syncAbandonedCart = async () => {
       try {
@@ -584,7 +584,7 @@ function CheckoutContent() {
 
   // Validation check for mandatory fields to show/hide the order button
   const watchedFields = form.watch();
-  const isPhoneValid = (watchedFields.phone || '').trim().length >= 1;
+  const isPhoneValid = /^(?:01)[3-9]\d{8}$/.test(watchedFields.phone || '');
   const isAddressValid = (watchedFields.street || '').trim().length >= 5;
   const isNameValid = (watchedFields.fullName || '').trim().length >= 2;
   const isFormValid = !!(
