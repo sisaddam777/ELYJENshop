@@ -600,7 +600,7 @@ function CheckoutContent() {
 
   // Validation check for mandatory fields to show/hide the order button
   const watchedFields = form.watch();
-  const isPhoneValid = /^(?:01)[3-9]\d{8}$/.test(watchedFields.phone || '');
+  const isPhoneValid = /^(?:\+88|88|\+৮৮|৮৮|0088|০০৮৮)?(?:01|০১)[3-9৩-৯][\d০-৯]{8}$/.test(watchedFields.phone || '');
   const isAddressValid = (watchedFields.street || '').trim().length >= 5;
   const isNameValid = (watchedFields.fullName || '').trim().length >= 2;
   const isFormValid = !!(
@@ -781,8 +781,14 @@ function CheckoutContent() {
                         <FormLabel className="text-sm font-bold">মোবাইল নম্বর</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="আপনার মোবাইল নম্বর লিখুন (যেমন: 017... বা +88017...)" 
+                            placeholder="আপনার মোবাইল নম্বর লিখুন (যেমন: 017XXXXXXXX)" 
                             {...field} 
+                            onChange={(e) => {
+                              let value = e.target.value;
+                              // Keep only English/Bangla digits and plus sign
+                              let sanitized = value.replace(/[^\d০-৯+]/g, '');
+                              field.onChange(sanitized);
+                            }}
                             className="h-12 focus-visible:ring-primary/20" 
                           />
                         </FormControl>
